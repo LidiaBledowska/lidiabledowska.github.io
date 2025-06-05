@@ -608,7 +608,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function getFilters() {
+    window.getFilters = function() {
         return {
             stanowisko: document.getElementById('filterStanowisko')?.value || "",
             firma: document.getElementById('filterFirma')?.value || "",
@@ -618,7 +618,7 @@ document.addEventListener('DOMContentLoaded', function () {
             umowa: document.getElementById('filterUmowa')?.value || "",
             status: window.filters?.status || ""
         };
-    }
+    };
 
     document.getElementById('closeEditModal').onclick = function () {
         document.getElementById('editModal').classList.remove('active');
