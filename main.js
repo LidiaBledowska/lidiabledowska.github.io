@@ -812,6 +812,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const notatki = document.getElementById('editNotatki').value;
         const favorite = document.getElementById('editFavorite').checked;
 
+        // Validation for mandatory salary field
+        if (!wynagrodzenie || wynagrodzenie.trim() === '') {
+            document.getElementById('editFormMessage').textContent = "Pole wynagrodzenie jest wymagane!";
+            document.getElementById('editFormMessage').style.color = "red";
+            document.getElementById('editWynagrodzenie').focus();
+            return;
+        }
+
         let statusHistory = [];
         try {
             statusHistory = JSON.parse(this.dataset.statusHistory || "[]");
@@ -845,7 +853,7 @@ document.addEventListener('DOMContentLoaded', function () {
             firma,
             data,
             status,
-            wynagrodzenie,
+            wynagrodzenie: parseFloat(wynagrodzenie), // Now mandatory and parsed as number
             waluta,
             wynRodzaj,
             tryb,

@@ -373,9 +373,9 @@
             <div class="salary-group">
                 <div class="salary-main">
                     <div class="form-group">
-                        <label for="wynagrodzenie"><i class="fas fa-money-bill-wave"></i> Wynagrodzenie</label>
+                        <label for="wynagrodzenie"><i class="fas fa-money-bill-wave"></i> Wynagrodzenie <span style="color: red;">*</span></label>
                         <input type="number" id="wynagrodzenie" name="wynagrodzenie" min="0" step="any"
-                            placeholder="np. 8000">
+                            placeholder="np. 8000" required>
                     </div>
                 </div>
                 <div class="salary-currency">
@@ -736,6 +736,14 @@
             const notatki = sanitizeHTML(document.getElementById('notatki').value);
             const favorite = document.getElementById('favorite').checked;
 
+            // Validation for mandatory salary field
+            if (!wynagrodzenie || wynagrodzenie.trim() === '') {
+                document.getElementById('form-message').textContent = "Pole wynagrodzenie jest wymagane!";
+                document.getElementById('form-message').style.color = "red";
+                document.getElementById('wynagrodzenie').focus();
+                return;
+            }
+
             try {
 
 
@@ -773,7 +781,7 @@
                 };
 
                 // Dodaj opcjonalne pola tylko jeśli są wypełnione
-                if (wynagrodzenie) applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
+                applicationData.wynagrodzenie = parseFloat(wynagrodzenie); // Now mandatory
                 if (kontakt) applicationData.kontakt = kontakt;
                 if (link) applicationData.link = link;
                 if (notatki) applicationData.notatki = notatki;
@@ -833,7 +841,7 @@
                             };
 
                             // Add optional fields
-                            if (wynagrodzenie) applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
+                            applicationData.wynagrodzenie = parseFloat(wynagrodzenie); // Now mandatory
                             if (kontakt) applicationData.kontakt = kontakt;
                             if (link) applicationData.link = link;
                             if (notatki) applicationData.notatki = notatki;

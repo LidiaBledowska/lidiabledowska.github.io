@@ -268,6 +268,14 @@
             const notatki = document.getElementById('notatki').value;
             const favorite = document.getElementById('favorite').checked;
 
+            // Validation for mandatory salary field
+            if (!wynagrodzenie || wynagrodzenie.trim() === '') {
+                document.getElementById('form-message').textContent = "Pole wynagrodzenie jest wymagane!";
+                document.getElementById('form-message').style.color = "red";
+                document.getElementById('wynagrodzenie').focus();
+                return;
+            }
+
             try {;;;
                 
                 // Test auth token
@@ -310,7 +318,7 @@
                 };
 
                 // Dodaj opcjonalne pola tylko jeśli są wypełnione
-                if (wynagrodzenie) applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
+                applicationData.wynagrodzenie = parseFloat(wynagrodzenie); // Now mandatory
                 if (kontakt) applicationData.kontakt = kontakt;
                 if (link) applicationData.link = link;
                 if (notatki) applicationData.notatki = notatki;
@@ -370,7 +378,7 @@
                             };
                             
                             // Add optional fields
-                            if (wynagrodzenie) applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
+                            applicationData.wynagrodzenie = parseFloat(wynagrodzenie); // Now mandatory
                             if (kontakt) applicationData.kontakt = kontakt;
                             if (link) applicationData.link = link;
                             if (notatki) applicationData.notatki = notatki;
