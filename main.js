@@ -86,7 +86,6 @@ function showImagesPreview(images) {;
             return;
         }
 
-        img.loading = 'lazy';
         img.style.maxWidth = '80px';
         img.style.maxHeight = '80px';
         img.style.borderRadius = '6px';
@@ -108,48 +107,43 @@ function showImagesPreview(images) {;
 
         // Add click to preview larger image
         img.onclick = function () {
-            // Use the new image modal
-            if (window.openImageModal) {
-                window.openImageModal(imageUrl, imageName);
-            } else {
-                // Fallback to old method if modal is not available
-                if (imageUrl.startsWith('data:')) {
-                    const newWindow = window.open('', '_blank', 'noopener,noreferrer');
-                    if (newWindow) {
-                        newWindow.document.write(`
-                            <!DOCTYPE html>
-                            <html>
-                            <head>
-                                <title>${imageName}</title>
-                                <style>
-                                    body { 
-                                        margin: 0; 
-                                        padding: 20px; 
-                                        background: #000; 
-                                        display: flex; 
-                                        justify-content: center; 
-                                        align-items: center; 
-                                        min-height: 100vh;
-                                    }
-                                    img { 
-                                        max-width: 100%; 
-                                        max-height: 100vh; 
-                                        object-fit: contain;
-                                        box-shadow: 0 4px 20px rgba(255,255,255,0.1);
-                                    }
-                                </style>
-                            </head>
-                            <body>
-                                <img src="${imageUrl}" alt="${imageName}" />
-                            </body>
-                            </html>
-                        `);
-                        newWindow.document.close();
-                    }
-                } else {
-                    // For regular URLs, use the traditional method
-                    window.open(imageUrl, '_blank', 'noopener,noreferrer');
+            // For Base64 data, create a new window with the image
+            if (imageUrl.startsWith('data:')) {
+                const newWindow = window.open('', '_blank', 'noopener,noreferrer');
+                if (newWindow) {
+                    newWindow.document.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>${imageName}</title>
+                            <style>
+                                body { 
+                                    margin: 0; 
+                                    padding: 20px; 
+                                    background: #000; 
+                                    display: flex; 
+                                    justify-content: center; 
+                                    align-items: center; 
+                                    min-height: 100vh;
+                                }
+                                img { 
+                                    max-width: 100%; 
+                                    max-height: 100vh; 
+                                    object-fit: contain;
+                                    box-shadow: 0 4px 20px rgba(255,255,255,0.1);
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <img src="${imageUrl}" alt="${imageName}" />
+                        </body>
+                        </html>
+                    `);
+                    newWindow.document.close();
                 }
+            } else {
+                // For regular URLs, use the traditional method
+                window.open(imageUrl, '_blank', 'noopener,noreferrer');
             }
         };
 
@@ -185,7 +179,16 @@ function loadFavorites() {
         querySnapshot.forEach((doc) => {
             const app = doc.data();
             let wynagrodzenieText = "";
-            if (app.wynagrodzenie) {
+            if (app.salaryType === 'range' && (app.wynagrodzenieOd || app.wynagrodzenieDo)) {
+                // Formatowanie widełek
+                const od = app.wynagrodzenieOd || '';
+                const do_kwota = app.wynagrodzenieDo || '';
+                wynagrodzenieText = `${od}-${do_kwota} ${app.waluta || "PLN"}`;
+                if (app.wynRodzaj) {
+                    wynagrodzenieText += ` ${app.wynRodzaj}`;
+                }
+            } else if (app.wynagrodzenie) {
+                // Formatowanie pojedynczej kwoty (legacy i nowe)
                 wynagrodzenieText = `${app.wynagrodzenie} ${app.waluta || "PLN"}`;
                 if (app.wynRodzaj) {
                     wynagrodzenieText += ` ${app.wynRodzaj}`;
@@ -254,7 +257,26 @@ async function openEditModal(appId) {
     document.getElementById('editFirma').value = app.firma;
     document.getElementById('editData').value = app.data;
     document.getElementById('editStatus').value = app.status || "";
-    document.getElementById('editWynagrodzenie').value = app.wynagrodzenie || "";
+    
+    // Obsługa wynagrodzenia - sprawdź typ
+    const salaryType = app.salaryType || 'exact';
+    document.getElementById('editSalaryType').value = salaryType;
+    
+    if (salaryType === 'exact') {
+        document.getElementById('editWynagrodzenie').value = app.wynagrodzenie || "";
+        document.getElementById('editWynagrodzenieOd').value = "";
+        document.getElementById('editWynagrodzenieDo').value = "";
+    } else {
+        document.getElementById('editWynagrodzenie').value = "";
+        document.getElementById('editWynagrodzenieOd').value = app.wynagrodzenieOd || "";
+        document.getElementById('editWynagrodzenieDo').value = app.wynagrodzenieDo || "";
+    }
+    
+    // Wywołaj funkcję przełączania pól
+    if (window.toggleEditSalaryFields) {
+        window.toggleEditSalaryFields();
+    }
+    
     document.getElementById('editWaluta').value = app.waluta || "PLN";
     document.getElementById('editWynRodzaj').value = app.wynRodzaj || "BRUTTO";
     document.getElementById('editTryb').value = app.tryb || "STACJONARNY";
@@ -420,7 +442,16 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
             }
 
             let wynagrodzenieCell = "";
-            if (app.wynagrodzenie) {
+            if (app.salaryType === 'range' && (app.wynagrodzenieOd || app.wynagrodzenieDo)) {
+                // Formatowanie widełek
+                const od = app.wynagrodzenieOd || '';
+                const do_kwota = app.wynagrodzenieDo || '';
+                wynagrodzenieCell = `${od}-${do_kwota} ${app.waluta || "PLN"}`;
+                if (app.wynRodzaj) {
+                    wynagrodzenieCell += " " + app.wynRodzaj;
+                }
+            } else if (app.wynagrodzenie) {
+                // Formatowanie pojedynczej kwoty (legacy i nowe)
                 wynagrodzenieCell = app.wynagrodzenie + " " + (app.waluta || "PLN");
                 if (app.wynRodzaj) {
                     wynagrodzenieCell += " " + app.wynRodzaj;
@@ -566,53 +597,32 @@ function enhanceTableRowVisuals() {
 
 document.addEventListener('DOMContentLoaded', function () {
     // Wait for Firebase to be ready
-    function waitForFirebase(callback, attempt = 0) {
-        const MAX_ATTEMPTS = 50; // ~5s fallback
+    function waitForFirebase(callback) {
         if (window.firebaseModules && window.auth) {
             callback();
-        } else if (attempt < MAX_ATTEMPTS) {
-            setTimeout(() => waitForFirebase(callback, attempt + 1), 100);
         } else {
-            // Firebase failed to load, show landing page anyway
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            if (loadingOverlay) loadingOverlay.style.display = 'none';
-            const landingPage = document.getElementById('landingPage');
-            const mainContent = document.getElementById('mainContent');
-            if (landingPage) landingPage.style.display = 'block';
-            if (mainContent) mainContent.style.display = 'none';
+            setTimeout(() => waitForFirebase(callback), 100);
         }
     }
 
-    waitForFirebase(function () {
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        // Login/Logout functionality
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const userInfo = document.getElementById('userInfo');
-
-        if (loginBtn) {
-            loginBtn.addEventListener('click', function () {
-                window.location.href = 'login.html';
-            });
-        }
-
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', function () {
-                if (window.firebaseModules && window.firebaseModules.signOut && window.auth) {
-                    window.firebaseModules.signOut(window.auth).then(() => {
-                        window.location.reload();
-                    }).catch((error) => {
-                        console.error('Logout error:', error);
-                        // Still reload the page to clear the session
-                        window.location.reload();
-                    });
-                } else {
-                    // Fallback: just reload the page to clear any cached state
+    // Logout button functionality
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function () {
+            if (window.firebaseModules && window.firebaseModules.signOut && window.auth) {
+                window.firebaseModules.signOut(window.auth).then(() => {
                     window.location.reload();
-                }
-            });
-        }
-    });
+                }).catch((error) => {
+                    console.error('Logout error:', error);
+                    // Still reload the page to clear the session
+                    window.location.reload();
+                });
+            } else {
+                // Fallback: just reload the page to clear any cached state
+                window.location.reload();
+            }
+        });
+    }
 
     // Toggle filters functionality
     const toggleFiltersButton = document.getElementById('toggleFilters');
@@ -624,18 +634,6 @@ document.addEventListener('DOMContentLoaded', function () {
             filtersContainer.style.display = isHidden ? 'block' : 'none';
             toggleFiltersButton.innerHTML = isHidden ? '<i class="fas fa-filter"></i> Ukryj filtry' : '<i class="fas fa-filter"></i> Pokaż filtry';
         });
-    }
-
-    function getFilters() {
-        return {
-            stanowisko: document.getElementById('filterStanowisko')?.value || "",
-            firma: document.getElementById('filterFirma')?.value || "",
-            data: document.getElementById('filterData')?.value || "",
-            tryb: document.getElementById('filterTryb')?.value || "",
-            rodzaj: document.getElementById('filterRodzaj')?.value || "",
-            umowa: document.getElementById('filterUmowa')?.value || "",
-            status: window.filters?.status || ""
-        };
     }
 
     document.getElementById('closeEditModal').onclick = function () {
@@ -801,7 +799,20 @@ document.addEventListener('DOMContentLoaded', function () {
         const firma = document.getElementById('editFirma').value;
         const data = document.getElementById('editData').value;
         const status = document.getElementById('editStatus').value;
-        const wynagrodzenie = document.getElementById('editWynagrodzenie').value;
+        
+        // Obsługa wynagrodzenia - sprawdź typ
+        const salaryType = document.getElementById('editSalaryType').value;
+        let wynagrodzenie = '';
+        let wynagrodzenieOd = '';
+        let wynagrodzenieDo = '';
+        
+        if (salaryType === 'exact') {
+            wynagrodzenie = document.getElementById('editWynagrodzenie').value;
+        } else {
+            wynagrodzenieOd = document.getElementById('editWynagrodzenieOd').value;
+            wynagrodzenieDo = document.getElementById('editWynagrodzenieDo').value;
+        }
+        
         const waluta = document.getElementById('editWaluta').value;
         const wynRodzaj = document.getElementById('editWynRodzaj').value;
         const tryb = document.getElementById('editTryb').value;
@@ -811,14 +822,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const link = document.getElementById('editLink').value;
         const notatki = document.getElementById('editNotatki').value;
         const favorite = document.getElementById('editFavorite').checked;
-
-        // Validation for mandatory salary field
-        if (!wynagrodzenie || wynagrodzenie.trim() === '') {
-            document.getElementById('editFormMessage').textContent = "Pole wynagrodzenie jest wymagane!";
-            document.getElementById('editFormMessage').style.color = "red";
-            document.getElementById('editWynagrodzenie').focus();
-            return;
-        }
 
         let statusHistory = [];
         try {
@@ -853,7 +856,6 @@ document.addEventListener('DOMContentLoaded', function () {
             firma,
             data,
             status,
-            wynagrodzenie: parseFloat(wynagrodzenie), // Now mandatory and parsed as number
             waluta,
             wynRodzaj,
             tryb,
@@ -864,8 +866,22 @@ document.addEventListener('DOMContentLoaded', function () {
             notatki,
             statusHistory,
             images,
-            favorite
+            favorite,
+            salaryType
         };
+
+        // Dodaj odpowiednie pola wynagrodzenia w zależności od typu
+        if (salaryType === 'exact' && wynagrodzenie) {
+            updateData.wynagrodzenie = parseFloat(wynagrodzenie);
+            // Usuń stare pola widełek jeśli istnieją
+            updateData.wynagrodzenieOd = null;
+            updateData.wynagrodzenieDo = null;
+        } else if (salaryType === 'range') {
+            // Usuń stare pole pojedynczej kwoty
+            updateData.wynagrodzenie = null;
+            if (wynagrodzenieOd) updateData.wynagrodzenieOd = parseFloat(wynagrodzenieOd);
+            if (wynagrodzenieDo) updateData.wynagrodzenieDo = parseFloat(wynagrodzenieDo);
+        }
 
         window.firebaseModules.updateDoc(window.firebaseModules.doc(db, "applications", appId), updateData).then(() => {
             document.getElementById('editFormMessage').textContent = "Zapisano zmiany!";
@@ -1343,49 +1359,5 @@ function clearAllFilters() {
     const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
     loadApplications(getFilters(), showArchived?.checked || false, sortOrder);
 }
-
-// Image Modal functionality
-(function(){
-    function escListener(e) {
-        if (e.key === 'Escape') {
-            closeImageModal();
-        }
-    }
-
-    function initModal() {
-        const imageModalEl = document.getElementById('imageModal');
-        if (imageModalEl) {
-            imageModalEl.addEventListener('click', function (e) {
-                if (e.target === imageModalEl) {
-                    window.closeImageModal();
-                }
-            });
-        }
-    }
-
-    window.openImageModal = function(src, alt = '') {
-        const modal = document.getElementById('imageModal');
-        const img = document.getElementById('imageModalImg');
-        if (modal && img) {
-            img.src = src;
-            img.alt = alt;
-            modal.classList.add('active');
-            document.addEventListener('keydown', escListener);
-        }
-    };
-
-    window.closeImageModal = function() {
-        const modal = document.getElementById('imageModal');
-        if (modal) modal.classList.remove('active');
-        document.removeEventListener('keydown', escListener);
-    };
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initModal);
-    } else {
-        initModal();
-    }
-})();
-
 //# sourceMappingURL=app.js.map
 

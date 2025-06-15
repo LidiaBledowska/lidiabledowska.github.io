@@ -419,7 +419,10 @@
                                     Sortowanie</h3>
                                 <div class="flex max-w-[480px] flex-wrap items-end gap-4 py-3">
                                     <label class="flex flex-col min-w-40 flex-1">
-                                        <p class="text-[#141414] text-base font-medium leading-normal pb-2">Sortuj według daty aplikowania</p>
+                                        <p class="text-[#141414] text-base font-medium leading-normal pb-2">Sortuj
+                                            według
+                                            daty
+                                        </p>
                                         <select id="sortOrder"
                                             class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#141414] focus:outline-0 focus:ring-0 border border-[#e5e7eb] bg-white focus:border-[#141414] h-14 bg-[image:--select-button-svg] placeholder:text-neutral-500 p-[15px] text-base font-normal leading-normal">
                                             <option value="desc">Od najnowszych</option>
@@ -574,14 +577,37 @@
                             </select>
                         </div>
                         <div class="salary-group">
-                            <div class="salary-main">
-                                <div class="form-group">
-                                    <label for="wynagrodzenie"><i class="fas fa-money-bill-wave"></i>
-                                        Wynagrodzenie <span style="color: red;">*</span></label>
+                            <!-- Wybór typu wynagrodzenia -->
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label for="modalSalaryType"><i class="fas fa-money-bill-wave"></i> Typ wynagrodzenia</label>
+                                <select id="modalSalaryType" name="salaryType" onchange="toggleModalSalaryFields()">
+                                    <option value="exact">Pełna kwota</option>
+                                    <option value="range">Widełki (od-do)</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Pola wynagrodzenia -->
+                            <div class="salary-main" id="modalSalaryFields">
+                                <!-- Pojedyncza kwota -->
+                                <div class="form-group" id="modalExactSalaryGroup">
+                                    <label for="wynagrodzenie">Wynagrodzenie</label>
                                     <input type="number" id="wynagrodzenie" name="wynagrodzenie" min="0" step="any"
-                                        placeholder="np. 8000" required>
+                                        placeholder="np. 8000">
+                                </div>
+                                
+                                <!-- Widełki -->
+                                <div class="form-group" id="modalRangeSalaryGroup" style="display: none;">
+                                    <label for="modalWynagrodzenieOd">Od</label>
+                                    <input type="number" id="modalWynagrodzenieOd" name="wynagrodzenieOd" min="0" step="any"
+                                        placeholder="np. 6000">
+                                </div>
+                                <div class="form-group" id="modalRangeSalaryGroupTo" style="display: none;">
+                                    <label for="modalWynagrodzenieDo">Do</label>
+                                    <input type="number" id="modalWynagrodzenieDo" name="wynagrodzenieDo" min="0" step="any"
+                                        placeholder="np. 10000">
                                 </div>
                             </div>
+                            
                             <div class="salary-currency">
                                 <div class="form-group no-icon">
                                     <label for="waluta">Waluta</label>
@@ -727,14 +753,37 @@
                     </div>
 
                     <div class="salary-group">
-                        <div class="salary-main">
-                            <div class="form-group">
-                                <label for="editWynagrodzenie"><i class="fas fa-money-bill-wave"></i>
-                                    Wynagrodzenie <span style="color: red;">*</span></label>
+                        <!-- Wybór typu wynagrodzenia -->
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="editSalaryType"><i class="fas fa-money-bill-wave"></i> Typ wynagrodzenia</label>
+                            <select id="editSalaryType" name="salaryType" onchange="toggleEditSalaryFields()">
+                                <option value="exact">Pełna kwota</option>
+                                <option value="range">Widełki (od-do)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Pola wynagrodzenia -->
+                        <div class="salary-main" id="editSalaryFields">
+                            <!-- Pojedyncza kwota -->
+                            <div class="form-group" id="editExactSalaryGroup">
+                                <label for="editWynagrodzenie">Wynagrodzenie</label>
                                 <input type="number" id="editWynagrodzenie" name="wynagrodzenie" min="0" step="any"
-                                    placeholder="np. 8000" required>
+                                    placeholder="np. 8000">
+                            </div>
+                            
+                            <!-- Widełki -->
+                            <div class="form-group" id="editRangeSalaryGroup" style="display: none;">
+                                <label for="editWynagrodzenieOd">Od</label>
+                                <input type="number" id="editWynagrodzenieOd" name="wynagrodzenieOd" min="0" step="any"
+                                    placeholder="np. 6000">
+                            </div>
+                            <div class="form-group" id="editRangeSalaryGroupTo" style="display: none;">
+                                <label for="editWynagrodzenieDo">Do</label>
+                                <input type="number" id="editWynagrodzenieDo" name="wynagrodzenieDo" min="0" step="any"
+                                    placeholder="np. 10000">
                             </div>
                         </div>
+                        
                         <div class="salary-currency">
                             <div class="form-group no-icon">
                                 <label for="editWaluta">Waluta</label>
@@ -1073,6 +1122,55 @@
                 }
 
                 // Image modal click handler moved to image-modal.js
+                
+                // Funkcje do przełączania pól wynagrodzenia
+                window.toggleModalSalaryFields = function() {
+                    const salaryType = document.getElementById('modalSalaryType').value;
+                    const exactGroup = document.getElementById('modalExactSalaryGroup');
+                    const rangeGroup = document.getElementById('modalRangeSalaryGroup');
+                    const rangeGroupTo = document.getElementById('modalRangeSalaryGroupTo');
+                    
+                    if (salaryType === 'exact') {
+                        exactGroup.style.display = 'block';
+                        rangeGroup.style.display = 'none';
+                        rangeGroupTo.style.display = 'none';
+                        
+                        // Wyczyść pola widełek
+                        document.getElementById('modalWynagrodzenieOd').value = '';
+                        document.getElementById('modalWynagrodzenieDo').value = '';
+                    } else {
+                        exactGroup.style.display = 'none';
+                        rangeGroup.style.display = 'block';
+                        rangeGroupTo.style.display = 'block';
+                        
+                        // Wyczyść pole pojedynczej kwoty
+                        document.getElementById('wynagrodzenie').value = '';
+                    }
+                };
+                
+                window.toggleEditSalaryFields = function() {
+                    const salaryType = document.getElementById('editSalaryType').value;
+                    const exactGroup = document.getElementById('editExactSalaryGroup');
+                    const rangeGroup = document.getElementById('editRangeSalaryGroup');
+                    const rangeGroupTo = document.getElementById('editRangeSalaryGroupTo');
+                    
+                    if (salaryType === 'exact') {
+                        exactGroup.style.display = 'block';
+                        rangeGroup.style.display = 'none';
+                        rangeGroupTo.style.display = 'none';
+                        
+                        // Wyczyść pola widełek
+                        document.getElementById('editWynagrodzenieOd').value = '';
+                        document.getElementById('editWynagrodzenieDo').value = '';
+                    } else {
+                        exactGroup.style.display = 'none';
+                        rangeGroup.style.display = 'block';
+                        rangeGroupTo.style.display = 'block';
+                        
+                        // Wyczyść pole pojedynczej kwoty
+                        document.getElementById('editWynagrodzenie').value = '';
+                    }
+                };
             });
         </script>
 </body>

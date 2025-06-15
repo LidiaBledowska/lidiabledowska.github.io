@@ -38,6 +38,34 @@
             return div.innerHTML;
         }
 
+        // Salary fields toggle function
+        function toggleSalaryFields() {
+            const salaryType = document.getElementById('salaryType').value;
+            const exactSalaryGroup = document.getElementById('exactSalaryGroup');
+            const rangeSalaryGroup = document.getElementById('rangeSalaryGroup');
+            const rangeSalaryGroupTo = document.getElementById('rangeSalaryGroupTo');
+            
+            if (salaryType === 'exact') {
+                exactSalaryGroup.style.display = 'block';
+                rangeSalaryGroup.style.display = 'none';
+                rangeSalaryGroupTo.style.display = 'none';
+                
+                // Clear range fields
+                document.getElementById('wynagrodzenieOd').value = '';
+                document.getElementById('wynagrodzenieDo').value = '';
+            } else {
+                exactSalaryGroup.style.display = 'none';
+                rangeSalaryGroup.style.display = 'block';
+                rangeSalaryGroupTo.style.display = 'block';
+                
+                // Clear exact amount field
+                document.getElementById('wynagrodzenie').value = '';
+            }
+        }
+
+        // Make the function globally available
+        window.toggleSalaryFields = toggleSalaryFields;
+
         // Base64 image conversion utility with basic compression
         function convertFileToBase64(file) {
             return new Promise((resolve, reject) => {
@@ -257,7 +285,20 @@
             const firma = document.getElementById('firma').value;
             const data = document.getElementById('data').value;
             const status = document.getElementById('status').value;
-            const wynagrodzenie = document.getElementById('wynagrodzenie').value;
+            
+            // Obsługa wynagrodzenia - sprawdź typ
+            const salaryType = document.getElementById('salaryType').value;
+            let wynagrodzenie = '';
+            let wynagrodzenieOd = '';
+            let wynagrodzenieDo = '';
+            
+            if (salaryType === 'exact') {
+                wynagrodzenie = document.getElementById('wynagrodzenie').value;
+            } else {
+                wynagrodzenieOd = document.getElementById('wynagrodzenieOd').value;
+                wynagrodzenieDo = document.getElementById('wynagrodzenieDo').value;
+            }
+            
             const waluta = document.getElementById('waluta').value;
             const wynRodzaj = document.getElementById('wynRodzaj').value;
             const tryb = document.getElementById('tryb').value;
@@ -267,14 +308,6 @@
             const link = document.getElementById('link').value;
             const notatki = document.getElementById('notatki').value;
             const favorite = document.getElementById('favorite').checked;
-
-            // Validation for mandatory salary field
-            if (!wynagrodzenie || wynagrodzenie.trim() === '') {
-                document.getElementById('form-message').textContent = "Pole wynagrodzenie jest wymagane!";
-                document.getElementById('form-message').style.color = "red";
-                document.getElementById('wynagrodzenie').focus();
-                return;
-            }
 
             try {;;;
                 
@@ -318,7 +351,15 @@
                 };
 
                 // Dodaj opcjonalne pola tylko jeśli są wypełnione
-                applicationData.wynagrodzenie = parseFloat(wynagrodzenie); // Now mandatory
+                if (salaryType === 'exact' && wynagrodzenie) {
+                    applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
+                    applicationData.salaryType = 'exact';
+                } else if (salaryType === 'range' && (wynagrodzenieOd || wynagrodzenieDo)) {
+                    applicationData.salaryType = 'range';
+                    if (wynagrodzenieOd) applicationData.wynagrodzenieOd = parseFloat(wynagrodzenieOd);
+                    if (wynagrodzenieDo) applicationData.wynagrodzenieDo = parseFloat(wynagrodzenieDo);
+                }
+                
                 if (kontakt) applicationData.kontakt = kontakt;
                 if (link) applicationData.link = link;
                 if (notatki) applicationData.notatki = notatki;
@@ -378,7 +419,14 @@
                             };
                             
                             // Add optional fields
-                            applicationData.wynagrodzenie = parseFloat(wynagrodzenie); // Now mandatory
+                            if (salaryType === 'exact' && wynagrodzenie) {
+                                applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
+                                applicationData.salaryType = 'exact';
+                            } else if (salaryType === 'range' && (wynagrodzenieOd || wynagrodzenieDo)) {
+                                applicationData.salaryType = 'range';
+                                if (wynagrodzenieOd) applicationData.wynagrodzenieOd = parseFloat(wynagrodzenieOd);
+                                if (wynagrodzenieDo) applicationData.wynagrodzenieDo = parseFloat(wynagrodzenieDo);
+                            }
                             if (kontakt) applicationData.kontakt = kontakt;
                             if (link) applicationData.link = link;
                             if (notatki) applicationData.notatki = notatki;

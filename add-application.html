@@ -371,13 +371,37 @@
             </div>
 
             <div class="salary-group">
-                <div class="salary-main">
-                    <div class="form-group">
-                        <label for="wynagrodzenie"><i class="fas fa-money-bill-wave"></i> Wynagrodzenie <span style="color: red;">*</span></label>
+                <!-- Wybór typu wynagrodzenia -->
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="salaryType"><i class="fas fa-money-bill-wave"></i> Typ wynagrodzenia</label>
+                    <select id="salaryType" name="salaryType" onchange="toggleSalaryFields()">
+                        <option value="exact">Pełna kwota</option>
+                        <option value="range">Widełki (od-do)</option>
+                    </select>
+                </div>
+                
+                <!-- Pola wynagrodzenia -->
+                <div class="salary-main" id="salaryFields">
+                    <!-- Pojedyncza kwota -->
+                    <div class="form-group" id="exactSalaryGroup">
+                        <label for="wynagrodzenie">Wynagrodzenie</label>
                         <input type="number" id="wynagrodzenie" name="wynagrodzenie" min="0" step="any"
-                            placeholder="np. 8000" required>
+                            placeholder="np. 8000">
+                    </div>
+                    
+                    <!-- Widełki -->
+                    <div class="form-group" id="rangeSalaryGroup" style="display: none;">
+                        <label for="wynagrodzenieOd">Od</label>
+                        <input type="number" id="wynagrodzenieOd" name="wynagrodzenieOd" min="0" step="any"
+                            placeholder="np. 6000">
+                    </div>
+                    <div class="form-group" id="rangeSalaryGroupTo" style="display: none;">
+                        <label for="wynagrodzenieDo">Do</label>
+                        <input type="number" id="wynagrodzenieDo" name="wynagrodzenieDo" min="0" step="any"
+                            placeholder="np. 10000">
                     </div>
                 </div>
+                
                 <div class="salary-currency">
                     <div class="form-group no-icon">
                         <label for="waluta">Waluta</label>
@@ -736,14 +760,6 @@
             const notatki = sanitizeHTML(document.getElementById('notatki').value);
             const favorite = document.getElementById('favorite').checked;
 
-            // Validation for mandatory salary field
-            if (!wynagrodzenie || wynagrodzenie.trim() === '') {
-                document.getElementById('form-message').textContent = "Pole wynagrodzenie jest wymagane!";
-                document.getElementById('form-message').style.color = "red";
-                document.getElementById('wynagrodzenie').focus();
-                return;
-            }
-
             try {
 
 
@@ -781,7 +797,7 @@
                 };
 
                 // Dodaj opcjonalne pola tylko jeśli są wypełnione
-                applicationData.wynagrodzenie = parseFloat(wynagrodzenie); // Now mandatory
+                if (wynagrodzenie) applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
                 if (kontakt) applicationData.kontakt = kontakt;
                 if (link) applicationData.link = link;
                 if (notatki) applicationData.notatki = notatki;
@@ -841,7 +857,7 @@
                             };
 
                             // Add optional fields
-                            applicationData.wynagrodzenie = parseFloat(wynagrodzenie); // Now mandatory
+                            if (wynagrodzenie) applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
                             if (kontakt) applicationData.kontakt = kontakt;
                             if (link) applicationData.link = link;
                             if (notatki) applicationData.notatki = notatki;
@@ -896,6 +912,7 @@
                 document.getElementById('form-message').style.color = "red";
             }
         });
+
     </script>
     <!-- Image Preview Modal -->
     <div id="imageModal" class="modal">
