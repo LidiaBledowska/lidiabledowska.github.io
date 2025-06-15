@@ -252,7 +252,16 @@ function loadFavorites() {
         querySnapshot.forEach((doc) => {
             const app = doc.data();
             let wynagrodzenieText = "";
-            if (app.wynagrodzenie) {
+            if (app.salaryType === 'range' && (app.wynagrodzenieOd || app.wynagrodzenieDo)) {
+                // Format as range
+                const od = app.wynagrodzenieOd || 0;
+                const doo = app.wynagrodzenieDo || 0;
+                wynagrodzenieText = `${od}-${doo} ${app.waluta || "PLN"}`;
+                if (app.wynRodzaj) {
+                    wynagrodzenieText += ` ${app.wynRodzaj}`;
+                }
+            } else if (app.wynagrodzenie) {
+                // Format as exact amount (legacy and new exact format)
                 wynagrodzenieText = `${app.wynagrodzenie} ${app.waluta || "PLN"}`;
                 if (app.wynRodzaj) {
                     wynagrodzenieText += ` ${app.wynRodzaj}`;
@@ -321,7 +330,26 @@ async function openEditModal(appId) {
     document.getElementById('editFirma').value = app.firma;
     document.getElementById('editData').value = app.data;
     document.getElementById('editStatus').value = app.status || "";
-    document.getElementById('editWynagrodzenie').value = app.wynagrodzenie || "";
+    
+    // Handle salary fields based on salary type
+    const salaryType = app.salaryType || 'exact';
+    document.getElementById('editSalaryType').value = salaryType;
+    
+    if (salaryType === 'exact') {
+        document.getElementById('editWynagrodzenie').value = app.wynagrodzenie || "";
+        document.getElementById('editWynagrodzenieOd').value = "";
+        document.getElementById('editWynagrodzenieDo').value = "";
+    } else {
+        document.getElementById('editWynagrodzenie').value = "";
+        document.getElementById('editWynagrodzenieOd').value = app.wynagrodzenieOd || "";
+        document.getElementById('editWynagrodzenieDo').value = app.wynagrodzenieDo || "";
+    }
+    
+    // Trigger the field toggle to show/hide appropriate fields
+    if (window.toggleEditSalaryFields) {
+        window.toggleEditSalaryFields();
+    }
+    
     document.getElementById('editWaluta').value = app.waluta || "PLN";
     document.getElementById('editWynRodzaj').value = app.wynRodzaj || "BRUTTO";
     document.getElementById('editTryb').value = app.tryb || "STACJONARNY";
@@ -522,7 +550,16 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
             }
 
             let wynagrodzenieCell = "";
-            if (app.wynagrodzenie) {
+            if (app.salaryType === 'range' && (app.wynagrodzenieOd || app.wynagrodzenieDo)) {
+                // Format as range
+                const od = app.wynagrodzenieOd || 0;
+                const doo = app.wynagrodzenieDo || 0;
+                wynagrodzenieCell = `${od}-${doo} ${app.waluta || "PLN"}`;
+                if (app.wynRodzaj) {
+                    wynagrodzenieCell += " " + app.wynRodzaj;
+                }
+            } else if (app.wynagrodzenie) {
+                // Format as exact amount (legacy and new exact format)
                 wynagrodzenieCell = app.wynagrodzenie + " " + (app.waluta || "PLN");
                 if (app.wynRodzaj) {
                     wynagrodzenieCell += " " + app.wynRodzaj;
@@ -907,7 +944,20 @@ document.addEventListener('DOMContentLoaded', function () {
         const firma = document.getElementById('editFirma').value;
         const data = document.getElementById('editData').value;
         const status = document.getElementById('editStatus').value;
-        const wynagrodzenie = document.getElementById('editWynagrodzenie').value;
+        
+        // Handle salary fields based on salary type
+        const salaryType = document.getElementById('editSalaryType').value;
+        let wynagrodzenie = '';
+        let wynagrodzenieOd = '';
+        let wynagrodzenieDo = '';
+        
+        if (salaryType === 'exact') {
+            wynagrodzenie = document.getElementById('editWynagrodzenie').value;
+        } else {
+            wynagrodzenieOd = document.getElementById('editWynagrodzenieOd').value;
+            wynagrodzenieDo = document.getElementById('editWynagrodzenieDo').value;
+        }
+        
         const waluta = document.getElementById('editWaluta').value;
         const wynRodzaj = document.getElementById('editWynRodzaj').value;
         const tryb = document.getElementById('editTryb').value;
@@ -918,11 +968,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const notatki = document.getElementById('editNotatki').value;
         const favorite = document.getElementById('editFavorite').checked;
 
-        // Validation for mandatory salary field
-        if (!wynagrodzenie || wynagrodzenie.trim() === '') {
+        // Validation for salary fields based on type
+        if (salaryType === 'exact' && (!wynagrodzenie || wynagrodzenie.trim() === '')) {
             document.getElementById('editFormMessage').textContent = "Pole wynagrodzenie jest wymagane!";
             document.getElementById('editFormMessage').style.color = "red";
             document.getElementById('editWynagrodzenie').focus();
+            return;
+        } else if (salaryType === 'range' && (!wynagrodzenieOd || !wynagrodzenieDo)) {
+            document.getElementById('editFormMessage').textContent = "Wypełnij oba pola widełek (od i do)!";
+            document.getElementById('editFormMessage').style.color = "red";
+            if (!wynagrodzenieOd) document.getElementById('editWynagrodzenieOd').focus();
+            else document.getElementById('editWynagrodzenieDo').focus();
             return;
         }
 
@@ -947,7 +1003,7 @@ document.addEventListener('DOMContentLoaded', function () {
             firma,
             data,
             status,
-            wynagrodzenie: parseFloat(wynagrodzenie), // Now mandatory and parsed as number
+            salaryType,
             waluta,
             wynRodzaj,
             tryb,
@@ -960,6 +1016,19 @@ document.addEventListener('DOMContentLoaded', function () {
             images,
             favorite
         };
+
+        // Add salary fields based on type
+        if (salaryType === 'exact' && wynagrodzenie) {
+            updateData.wynagrodzenie = parseFloat(wynagrodzenie);
+            // Clear range fields if switching from range to exact
+            updateData.wynagrodzenieOd = null;
+            updateData.wynagrodzenieDo = null;
+        } else if (salaryType === 'range') {
+            updateData.wynagrodzenieOd = wynagrodzenieOd ? parseFloat(wynagrodzenieOd) : null;
+            updateData.wynagrodzenieDo = wynagrodzenieDo ? parseFloat(wynagrodzenieDo) : null;
+            // Clear exact field if switching from exact to range
+            updateData.wynagrodzenie = null;
+        }
 
         window.firebaseModules.updateDoc(window.firebaseModules.doc(db, "applications", appId), updateData).then(() => {
             document.getElementById('editFormMessage').textContent = "Zapisano zmiany!";

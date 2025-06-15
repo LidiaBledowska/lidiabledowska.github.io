@@ -371,11 +371,34 @@
             </div>
 
             <div class="salary-group">
-                <div class="salary-main">
-                    <div class="form-group">
-                        <label for="wynagrodzenie"><i class="fas fa-money-bill-wave"></i> Wynagrodzenie <span style="color: red;">*</span></label>
+                <!-- Wybór typu wynagrodzenia -->
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="salaryType"><i class="fas fa-money-bill-wave"></i> Typ wynagrodzenia</label>
+                    <select id="salaryType" name="salaryType" onchange="toggleSalaryFields()">
+                        <option value="exact">Pełna kwota</option>
+                        <option value="range">Widełki (od-do)</option>
+                    </select>
+                </div>
+                
+                <!-- Pola wynagrodzenia -->
+                <div class="salary-main" id="salaryFields">
+                    <!-- Pojedyncza kwota -->
+                    <div class="form-group" id="exactSalaryGroup">
+                        <label for="wynagrodzenie">Wynagrodzenie</label>
                         <input type="number" id="wynagrodzenie" name="wynagrodzenie" min="0" step="any"
-                            placeholder="np. 8000" required>
+                            placeholder="np. 8000">
+                    </div>
+                    
+                    <!-- Widełki -->
+                    <div class="form-group" id="rangeSalaryGroup" style="display: none;">
+                        <label for="wynagrodzenieOd">Od</label>
+                        <input type="number" id="wynagrodzenieOd" name="wynagrodzenieOd" min="0" step="any"
+                            placeholder="np. 6000">
+                    </div>
+                    <div class="form-group" id="rangeSalaryGroupTo" style="display: none;">
+                        <label for="wynagrodzenieDo">Do</label>
+                        <input type="number" id="wynagrodzenieDo" name="wynagrodzenieDo" min="0" step="any"
+                            placeholder="np. 10000">
                     </div>
                 </div>
                 <div class="salary-currency">
@@ -705,189 +728,6 @@
             }
         }
 
-        // Obsługa formularza
-        document.getElementById('addApplicationForm').addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            // Check if user is authenticated
-            const user = auth.currentUser;
-            if (!user) {
-                alert('Musisz być zalogowany, aby dodać aplikację.');
-                window.location.href = 'login.html';
-                return;
-            }
-
-            // Pokaż komunikat o przetwarzaniu
-            document.getElementById('form-message').textContent = "Przetwarzanie...";
-            document.getElementById('form-message').style.color = "blue";
-
-            const stanowisko = sanitizeHTML(document.getElementById('stanowisko').value);
-            const firma = sanitizeHTML(document.getElementById('firma').value);
-            const data = document.getElementById('data').value;
-            const status = document.getElementById('status').value;
-            const wynagrodzenie = document.getElementById('wynagrodzenie').value;
-            const waluta = document.getElementById('waluta').value;
-            const wynRodzaj = document.getElementById('wynRodzaj').value;
-            const tryb = document.getElementById('tryb').value;
-            const rodzaj = document.getElementById('rodzaj').value;
-            const umowa = document.getElementById('umowa').value;
-            const kontakt = sanitizeHTML(document.getElementById('kontakt').value);
-            const link = sanitizeHTML(document.getElementById('link').value);
-            const notatki = sanitizeHTML(document.getElementById('notatki').value);
-            const favorite = document.getElementById('favorite').checked;
-
-            try {
-
-
-
-                // Konwertuj zdjęcia do Base64 jeśli są
-                let base64Images = [];
-                if (selectedFiles.length > 0) {
-                    document.getElementById('form-message').textContent = `Konwersja ${selectedFiles.length} zdjęć...`;
-                    document.getElementById('form-message').style.color = "blue";
-
-                    base64Images = await uploadImages();
-
-                    document.getElementById('form-message').textContent = "Zapisywanie aplikacji...";
-                }
-
-                // Przygotuj dane do zapisania
-                const applicationData = {
-                    stanowisko,
-                    firma,
-                    data,
-                    status,
-                    tryb,
-                    rodzaj,
-                    umowa,
-                    waluta,
-                    wynRodzaj,
-                    statusHistory: [{
-                        status: status,
-                        date: data
-                    }],
-                    archiwalna: false,
-                    favorite: favorite,
-                    userId: user.uid, // Add user ID for security
-                    createdAt: serverTimestamp()
-                };
-
-                // Dodaj opcjonalne pola tylko jeśli są wypełnione
-                applicationData.wynagrodzenie = parseFloat(wynagrodzenie); // Now mandatory
-                if (kontakt) applicationData.kontakt = kontakt;
-                if (link) applicationData.link = link;
-                if (notatki) applicationData.notatki = notatki;
-                if (base64Images.length > 0) applicationData.images = base64Images;
-
-                await addDoc(collection(db, "applications"), applicationData);
-
-                document.getElementById('form-message').textContent = "Aplikacja została dodana pomyślnie!";
-                document.getElementById('form-message').style.color = "green";
-                this.reset();
-                clearAllImages(); // Clear image arrays and preview
-
-                // Przekieruj po 2 sekundach
-                setTimeout(() => {
-                    window.location.href = "index.html";
-                }, 2000);
-            } catch (error) {
-                console.error("Błąd podczas dodawania aplikacji:", error);
-                console.error("Error details:", {
-                    code: error.code,
-                    message: error.message,
-                    stack: error.stack,
-                    customData: error.customData
-                });
-
-                // Check if error is related to image upload
-                if (error.message && error.message.includes('zdjęć') && selectedFiles.length > 0) {
-                    const saveWithoutImages = confirm(
-                        `Wystąpił błąd podczas przesyłania zdjęć: ${error.message}\n\n` +
-                        `Czy chcesz zapisać aplikację bez zdjęć?`
-                    );
-
-                    if (saveWithoutImages) {
-                        try {
-                            document.getElementById('form-message').textContent = "Zapisywanie bez zdjęć...";
-                            document.getElementById('form-message').style.color = "orange";
-
-                            // Save without images
-                            const applicationData = {
-                                stanowisko,
-                                firma,
-                                data,
-                                status,
-                                tryb,
-                                rodzaj,
-                                umowa,
-                                waluta,
-                                wynRodzaj,
-                                statusHistory: [{
-                                    status: status,
-                                    date: data
-                                }],
-                                archiwalna: false,
-                                favorite: favorite,
-                                userId: user.uid,
-                                createdAt: serverTimestamp()
-                            };
-
-                            // Add optional fields
-                            applicationData.wynagrodzenie = parseFloat(wynagrodzenie); // Now mandatory
-                            if (kontakt) applicationData.kontakt = kontakt;
-                            if (link) applicationData.link = link;
-                            if (notatki) applicationData.notatki = notatki;
-
-                            await addDoc(collection(db, "applications"), applicationData);
-
-                            document.getElementById('form-message').textContent = "Aplikacja zapisana (bez zdjęć)!";
-                            document.getElementById('form-message').style.color = "green";
-                            this.reset();
-                            clearAllImages();
-
-                            setTimeout(() => {
-                                window.location.href = "index.html";
-                            }, 2000);
-                            return;
-
-                        } catch (saveError) {
-                            console.error("Error saving without images:", saveError);
-                        }
-                    }
-                }
-
-                // More detailed error handling
-                let errorMessage = "Błąd podczas dodawania aplikacji.";
-                if (error.code) {
-                    switch (error.code) {
-                        case 'permission-denied':
-                            errorMessage = "Brak uprawnień. Sprawdź czy jesteś zalogowany.";
-                            break;
-                        case 'unavailable':
-                            errorMessage = "Usługa tymczasowo niedostępna. Spróbuj ponownie.";
-                            break;
-                        case 'unauthenticated':
-                            errorMessage = "Nie jesteś zalogowany. Przekierowywanie...";
-                            setTimeout(() => window.location.href = 'login.html', 2000);
-                            break;
-                        case 'storage/unauthorized':
-                            errorMessage = "Brak dostępu do przesyłania plików. Skontaktuj się z administratorem.";
-                            break;
-                        case 'storage/canceled':
-                            errorMessage = "Przesyłanie zostało anulowane.";
-                            break;
-                        case 'storage/unknown':
-                            errorMessage = "Nieznany błąd podczas przesyłania plików.";
-                            break;
-                        default:
-                            errorMessage = `Błąd: ${error.message}`;
-                    }
-                }
-
-                document.getElementById('form-message').textContent = errorMessage;
-                document.getElementById('form-message').style.color = "red";
-            }
-        });
     </script>
     <!-- Image Preview Modal -->
     <div id="imageModal" class="modal">
