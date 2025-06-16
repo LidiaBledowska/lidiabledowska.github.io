@@ -1640,16 +1640,20 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('=== END UI BLOCKERS CHECK ===');
     };
 
-    // Initial load
-    loadApplications(getFilters(), document.getElementById('showArchived')?.checked, 'desc');
+    // Initial load - wait for Firebase to be ready before loading data
+    waitForFirebase(() => {
+        loadApplications(
+            getFilters(),
+            document.getElementById('showArchived')?.checked,
+            'desc'
+        );
 
-    const pendingEditId = localStorage.getItem('editAppId');
-    if (pendingEditId) {
-        setTimeout(() => {
+        const pendingEditId = localStorage.getItem('editAppId');
+        if (pendingEditId) {
             openEditModal(pendingEditId);
             localStorage.removeItem('editAppId');
-        }, 500);
-    }
+        }
+    });
 
     // Inicjalizacja kolorowych kart filtrów - z opóźnieniem, żeby być pewnym że DOM jest gotowy
     setTimeout(() => {
