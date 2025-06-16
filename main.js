@@ -48,7 +48,7 @@ function normalizeText(str) {
 
 
 
-function showImagesPreview(images) {;
+function showImagesPreview(images) {
     const preview = document.getElementById('editImagesPreview');
 
     if (!preview) {
@@ -58,12 +58,21 @@ function showImagesPreview(images) {;
 
     preview.innerHTML = '';
 
-    if (!images || !Array.isArray(images) || images.length === 0) {;
+    if (!images || !Array.isArray(images) || images.length === 0) {
         preview.innerHTML = '<p style="color: #6b7280; font-size: 0.8em; margin: 0.5em 0;">Brak zdjęć</p>';
+        currentEditImages = [];
         return;
-    };
+    }
 
-    images.forEach((imageItem, index) => {;
+    // Store current images globally
+    currentEditImages = [...images];
+
+    images.forEach((imageItem, index) => {
+        const container = document.createElement('div');
+        container.className = 'image-preview-container';
+        container.style.position = 'relative';
+        container.style.display = 'inline-block';
+        container.style.margin = '0.25rem';
 
         const img = document.createElement('img');
         let imageUrl = '';
@@ -90,9 +99,9 @@ function showImagesPreview(images) {;
         img.style.maxHeight = '80px';
         img.style.borderRadius = '6px';
         img.style.border = '1px solid #e5e7eb';
-        img.style.marginRight = '0.5em';
         img.style.cursor = 'pointer';
         img.title = `${imageName} - kliknij aby powiększyć`;
+        img.className = 'image-preview';
 
         // Add error handling for broken images
         img.onerror = function () {
@@ -100,9 +109,6 @@ function showImagesPreview(images) {;
             this.style.border = '2px solid #dc2626';
             this.title = `Błąd ładowania: ${imageName}`;
             this.alt = 'Błąd ładowania';
-        };
-
-        img.onload = function () {;
         };
 
         // Add click to preview larger image
@@ -147,10 +153,71 @@ function showImagesPreview(images) {;
             }
         };
 
-        preview.appendChild(img);
+        // Create delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'image-remove-btn';
+        deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+        deleteBtn.type = 'button';
+        deleteBtn.title = 'Usuń zdjęcie';
+        deleteBtn.style.position = 'absolute';
+        deleteBtn.style.top = '-5px';
+        deleteBtn.style.right = '-5px';
+        deleteBtn.style.background = '#dc3545';
+        deleteBtn.style.color = 'white';
+        deleteBtn.style.border = 'none';
+        deleteBtn.style.borderRadius = '50%';
+        deleteBtn.style.width = '20px';
+        deleteBtn.style.height = '20px';
+        deleteBtn.style.fontSize = '12px';
+        deleteBtn.style.cursor = 'pointer';
+        deleteBtn.style.display = 'flex';
+        deleteBtn.style.alignItems = 'center';
+        deleteBtn.style.justifyContent = 'center';
+        deleteBtn.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
+        deleteBtn.style.transition = 'all 0.2s ease';
+
+        deleteBtn.onmouseover = function() {
+            this.style.background = '#c82333';
+            this.style.transform = 'scale(1.1)';
+        };
+
+        deleteBtn.onmouseout = function() {
+            this.style.background = '#dc3545';
+            this.style.transform = 'scale(1)';
+        };
+
+        deleteBtn.onclick = function(e) {
+            e.stopPropagation(); // Prevent triggering image preview
+            removeImageFromEdit(index);
+        };
+
+        container.appendChild(img);
+        container.appendChild(deleteBtn);
+        preview.appendChild(container);
     });
 }
 
+// Function to remove image from edit modal
+function removeImageFromEdit(index) {
+    if (currentEditImages && currentEditImages.length > index) {
+        currentEditImages.splice(index, 1);
+        showImagesPreview(currentEditImages);
+        
+        // Show feedback message
+        const editMessage = document.getElementById('editFormMessage');
+        if (editMessage) {
+            editMessage.textContent = 'Zdjęcie usunięte (nie zapomnij zapisać zmian)';
+            editMessage.style.color = 'orange';
+            
+            // Clear message after 3 seconds
+            setTimeout(() => {
+                if (editMessage.textContent.includes('usunięte')) {
+                    editMessage.textContent = '';
+                }
+            }, 3000);
+        }
+    }
+}
 function loadFavorites() {
     const favoritesContent = document.getElementById('favoritesContent');
     if (!favoritesContent) return;
@@ -179,6 +246,7 @@ function loadFavorites() {
         querySnapshot.forEach((doc) => {
             const app = doc.data();
             let wynagrodzenieText = "";
+<<<<<<< HEAD
             if (app.salaryType === 'range' && (app.wynagrodzenieOd || app.wynagrodzenieDo)) {
                 // Formatowanie widełek
                 const od = app.wynagrodzenieOd || '';
@@ -189,10 +257,15 @@ function loadFavorites() {
                 }
             } else if (app.wynagrodzenie) {
                 // Formatowanie pojedynczej kwoty (legacy i nowe)
+=======
+            if (app.wynagrodzenieOd != null && app.wynagrodzenieDo != null) {
+                wynagrodzenieText = `${app.wynagrodzenieOd}-${app.wynagrodzenieDo} ${app.waluta || "PLN"}`;
+            } else if (app.wynagrodzenie) {
+>>>>>>> refs/remotes/rekrutracker/main
                 wynagrodzenieText = `${app.wynagrodzenie} ${app.waluta || "PLN"}`;
-                if (app.wynRodzaj) {
-                    wynagrodzenieText += ` ${app.wynRodzaj}`;
-                }
+            }
+            if (wynagrodzenieText && app.wynRodzaj) {
+                wynagrodzenieText += ` ${app.wynRodzaj}`;
             }
 
             html += `
@@ -290,7 +363,8 @@ async function openEditModal(appId) {
     // Debug: Log application data;;
 
     // Pokaz podgląd zdjęć
-    showImagesPreview(app.images || []);
+    currentEditImages = [...(app.images || [])]; // Store in global array
+    showImagesPreview(currentEditImages);
     document.getElementById('editImages').value = "";
 
     // Historia statusu
@@ -313,7 +387,13 @@ async function openEditModal(appId) {
     document.getElementById('editModal').classList.add('active');
 }
 
-function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc') {;
+function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc') {
+    console.log('=== LOAD APPLICATIONS CALLED ===');
+    console.log('loadApplications called with sortOrder:', sortOrder);
+    console.log('loadApplications called with filters:', filters);
+    console.log('loadApplications called with showArchived:', showArchived);
+    console.log('=================================');
+    
     const user = window.auth.currentUser;
     if (!user) {;
         // Update counters to 0 when no user is logged in
@@ -360,11 +440,25 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
         updateStatusCounters(applications);
 
         // Sort applications based on sortOrder
+        console.log('=== SORTING SECTION ===');
+        console.log('Sorting applications, sortOrder:', sortOrder);
+        console.log('Number of applications to sort:', applications.length);
+        console.log('Applications before sort:', applications.map(a => ({ firma: a.firma, data: a.data, favorite: a.favorite })));
+        
         applications.sort((a, b) => {
+            console.log(`Comparing: ${a.firma} (${a.data}, fav: ${a.favorite}) vs ${b.firma} (${b.data}, fav: ${b.favorite})`);
+            
             // First sort by favorites
-            if (a.favorite && !b.favorite) return -1;
-            if (!a.favorite && b.favorite) return 1;
+            if (a.favorite && !b.favorite) {
+                console.log('  -> a is favorite, b is not: a comes first');
+                return -1;
+            }
+            if (!a.favorite && b.favorite) {
+                console.log('  -> b is favorite, a is not: b comes first');
+                return 1;
+            }
 
+<<<<<<< HEAD
             // Then sort by date with fallback for invalid values
             const timeA = a.data ? new Date(a.data).getTime() : 0;
             const timeB = b.data ? new Date(b.data).getTime() : 0;
@@ -373,8 +467,33 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                 return timeA - timeB; // oldest first
             } else {
                 return timeB - timeA; // newest first
+=======
+            // Then sort by date
+            const dateA = new Date(a.data);
+            const dateB = new Date(b.data);
+            
+            // Debug date parsing
+            console.log(`  -> Comparing dates: ${a.data} (${dateA.toISOString()}) vs ${b.data} (${dateB.toISOString()})`);
+
+            if (sortOrder === 'asc') {
+                const result = dateA - dateB; // oldest first
+                console.log(`  -> ASC sort result: ${result} (${result < 0 ? 'a first' : result > 0 ? 'b first' : 'equal'})`);
+                return result;
+            } else {
+                const result = dateB - dateA; // newest first
+                console.log(`  -> DESC sort result: ${result} (${result < 0 ? 'a first' : result > 0 ? 'b first' : 'equal'})`);
+                return result;
+>>>>>>> refs/remotes/rekrutracker/main
             }
         });
+        
+        console.log('=== SORT COMPLETED ===');
+        console.log('Applications after sort:', applications.map(a => ({ firma: a.firma, data: a.data, favorite: a.favorite })));
+        console.log('Final sort order verification:');
+        applications.forEach((app, index) => {
+            console.log(`  ${index + 1}. ${app.favorite ? '⭐' : ''} ${app.firma} - ${app.data}`);
+        });
+        console.log('=====================');
 
         applications.forEach((app) => {
             if (!showArchived && app.archiwalna === true) return;
@@ -442,6 +561,7 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
             }
 
             let wynagrodzenieCell = "";
+<<<<<<< HEAD
             if (app.salaryType === 'range' && (app.wynagrodzenieOd || app.wynagrodzenieDo)) {
                 // Formatowanie widełek
                 const od = app.wynagrodzenieOd || '';
@@ -452,10 +572,15 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                 }
             } else if (app.wynagrodzenie) {
                 // Formatowanie pojedynczej kwoty (legacy i nowe)
+=======
+            if (app.wynagrodzenieOd != null && app.wynagrodzenieDo != null) {
+                wynagrodzenieCell = `${app.wynagrodzenieOd}-${app.wynagrodzenieDo} ${app.waluta || "PLN"}`;
+            } else if (app.wynagrodzenie) {
+>>>>>>> refs/remotes/rekrutracker/main
                 wynagrodzenieCell = app.wynagrodzenie + " " + (app.waluta || "PLN");
-                if (app.wynRodzaj) {
-                    wynagrodzenieCell += " " + app.wynRodzaj;
-                }
+            }
+            if (wynagrodzenieCell && app.wynRodzaj) {
+                wynagrodzenieCell += " " + app.wynRodzaj;
             }
 
             // Funkcje do konwersji wartości na czytelny tekst
@@ -651,6 +776,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Global array to store current images in edit modal
+    let currentEditImages = [];
+
     // Obsługa uploadu zdjęć - Base64 version
     let uploadedImages = [];
     document.getElementById('editImages').addEventListener('change', async function (e) {
@@ -729,12 +857,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
-            // Dodaj do już istniejących - dla Base64 używamy data URL do preview
-            const prev = document.getElementById('editImagesPreview').querySelectorAll('img');
-            const prevUrls = Array.from(prev).map(img => img.src);
-            const newUrls = uploadedImages.map(img => img.data);
-            const allUrls = prevUrls.concat(newUrls);
-            showImagesPreview(allUrls);
+            // Add new images to the global currentEditImages array
+            uploadedImages.forEach(imageData => {
+                currentEditImages.push(imageData);
+            });
+            
+            // Update preview with all images
+            showImagesPreview(currentEditImages);
 
             // Show results
             if (successCount > 0 && errorCount === 0) {
@@ -835,21 +964,9 @@ document.addEventListener('DOMContentLoaded', function () {
             statusHistory.push({ status, date: today });
         }
 
-        // Pobierz wszystkie zdjęcia z podglądu - handle both URLs and Base64
-        const imageElements = Array.from(document.getElementById('editImagesPreview').querySelectorAll('img'));
-        const images = imageElements.map(img => {
-            const src = img.src;
-            // If it's a data URL (Base64), convert back to object format
-            if (src.startsWith('data:')) {
-                return {
-                    name: img.alt || 'image.jpg',
-                    type: src.split(';')[0].split(':')[1] || 'image/jpeg',
-                    data: src
-                };
-            }
-            // If it's a regular URL, keep as string for backward compatibility
-            return src;
-        });
+        // Use the global currentEditImages array instead of reading from DOM
+        // This ensures deleted images are properly removed
+        const images = currentEditImages ? [...currentEditImages] : [];
 
         const updateData = {
             stanowisko,
@@ -971,22 +1088,69 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Sort functionality
-    if (document.getElementById('sortOrder')) {
-        document.getElementById('sortOrder').addEventListener('change', function () {
+    const sortOrderElement = document.getElementById('sortOrder');
+    console.log('Checking sortOrder element at startup:', sortOrderElement);
+    console.log('sortOrder element exists:', !!sortOrderElement);
+    
+    if (sortOrderElement) {
+        console.log('Setting up sortOrder event listener');
+        sortOrderElement.addEventListener('change', function () {
+            console.log('Sort order changed to:', this.value);
             const showArchived = document.getElementById('showArchived')?.checked || false;
             loadApplications(getFilters(), showArchived, this.value);
         });
+        sortOrderElement.setAttribute('data-listener-added', 'true');
+        console.log('sortOrder event listener attached successfully');
+    } else {
+        console.log('sortOrder element not found at startup - will use fallback');
+    }
+
+    // Fallback event listener registration with retries
+    function ensureSortListeners() {
+        const sortOrderElement = document.getElementById('sortOrder');
+        console.log('ensureSortListeners called - element found:', !!sortOrderElement);
+        
+        if (sortOrderElement && !sortOrderElement.hasAttribute('data-listener-added')) {
+            console.log('Fallback: Adding sortOrder change listener');
+            sortOrderElement.addEventListener('change', function () {
+                console.log('Fallback sort order changed to:', this.value);
+                const showArchived = document.getElementById('showArchived')?.checked || false;
+                loadApplications(getFilters(), showArchived, this.value);
+            });
+            sortOrderElement.setAttribute('data-listener-added', 'true');
+            console.log('Fallback event listener attached successfully');
+            return true;
+        } else if (sortOrderElement) {
+            console.log('sortOrder element already has listener attached');
+            return true;
+        }
+        console.log('sortOrder element still not found');
+        return false;
     }
 
     // Toggle sort button functionality
     const toggleSortButton = document.getElementById('toggleSort');
     const sortContainer = document.getElementById('sortContainer');
 
+    console.log('Toggle sort button:', toggleSortButton);
+    console.log('Sort container:', sortContainer);
+
     if (toggleSortButton && sortContainer) {
         toggleSortButton.addEventListener('click', function () {
+            console.log('Toggle sort button clicked');
             const isHidden = sortContainer.style.display === 'none';
+            console.log('Sort container was hidden:', isHidden);
             sortContainer.style.display = isHidden ? 'block' : 'none';
-            toggleSortButton.innerHTML = isHidden ? '<i class="fas fa-sort"></i> Ukryj sortowanie' : '<i class="fas fa-sort"></i> Sortuj';
+            toggleSortButton.innerHTML = isHidden ? '<i class="fas fa-sort"></i> Ukryj sortowanie' : '<i class="fas fa-sort"></i> Sortuj według daty aplikowania';
+            
+            // If showing the container, ensure sort listeners are attached
+            if (isHidden) {
+                console.log('Container was shown, ensuring sort listeners...');
+                setTimeout(() => {
+                    const result = ensureSortListeners();
+                    console.log('ensureSortListeners result:', result);
+                }, 50);
+            }
         });
     }
 
@@ -1145,8 +1309,66 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
+    // Test function to verify sorting works
+    window.testSorting = function() {
+        console.log('=== MANUAL SORT TEST ===');
+        const sortOrderElement = document.getElementById('sortOrder');
+        const showArchived = document.getElementById('showArchived')?.checked || false;
+        
+        if (sortOrderElement) {
+            console.log('Current sort order:', sortOrderElement.value);
+            console.log('Calling loadApplications with current filters...');
+            loadApplications(getFilters(), showArchived, sortOrderElement.value);
+        } else {
+            console.log('ERROR: sortOrder element not found');
+        }
+        console.log('========================');
+    };
+
+    // Global function to toggle sort container manually
+    window.toggleSortContainer = function() {
+        const sortContainer = document.getElementById('sortContainer');
+        if (sortContainer) {
+            const isHidden = sortContainer.style.display === 'none';
+            sortContainer.style.display = isHidden ? 'block' : 'none';
+            console.log('Sort container', isHidden ? 'shown' : 'hidden');
+        } else {
+            console.log('ERROR: sortContainer not found');
+        }
+    };
+
     // Initial load
     loadApplications(getFilters(), document.getElementById('showArchived')?.checked, 'desc');
+
+    // Additional sort element verification
+    setTimeout(() => {
+        console.log('=== SORT DEBUG CHECK ===');
+        const sortOrderElement = document.getElementById('sortOrder');
+        const toggleSortElement = document.getElementById('toggleSort');
+        const sortContainerElement = document.getElementById('sortContainer');
+        
+        console.log('sortOrder element found:', !!sortOrderElement);
+        console.log('sortOrder element value:', sortOrderElement?.value);
+        console.log('toggleSort element found:', !!toggleSortElement);
+        console.log('sortContainer element found:', !!sortContainerElement);
+        console.log('sortContainer display style:', sortContainerElement?.style.display);
+        
+        if (sortOrderElement) {
+            console.log('sortOrder has event listeners:', sortOrderElement.hasAttribute('data-listener-added'));
+        }
+        console.log('========================');
+    }, 1000);
+
+    // Try adding listeners with retries
+    let retryCount = 0;
+    const maxRetries = 5;
+    const retryInterval = setInterval(() => {
+        if (ensureSortListeners() || retryCount >= maxRetries) {
+            clearInterval(retryInterval);
+            console.log('Sort listeners setup completed (attempt:', retryCount + 1, ')');
+        }
+        retryCount++;
+    }, 200);
 
     // Inicjalizacja kolorowych kart filtrów - z opóźnieniem, żeby być pewnym że DOM jest gotowy
     setTimeout(() => {;

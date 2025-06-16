@@ -218,6 +218,18 @@
             validateLettersOnly(this);
         });
 
+        document.getElementById('salaryMode').addEventListener('change', function() {
+            const mode = this.value;
+            const single = document.getElementById('salarySingle');
+            const range = document.getElementById('salaryRange');
+            single.style.display = mode === 'single' ? 'block' : 'none';
+            range.style.display = mode === 'range' ? 'block' : 'none';
+            document.getElementById('wynagrodzenie').required = mode === 'single';
+            document.getElementById('wynagrodzenieOd').required = mode === 'range';
+            document.getElementById('wynagrodzenieDo').required = mode === 'range';
+        });
+        document.getElementById('salaryMode').dispatchEvent(new Event('change'));
+
         // Upload images using Base64 encoding
         async function uploadImages() {
             if (selectedFiles.length === 0) {;
@@ -285,6 +297,7 @@
             const firma = document.getElementById('firma').value;
             const data = document.getElementById('data').value;
             const status = document.getElementById('status').value;
+<<<<<<< HEAD
             
             // Obsługa wynagrodzenia - sprawdź typ
             const salaryType = document.getElementById('salaryType').value;
@@ -299,6 +312,12 @@
                 wynagrodzenieDo = document.getElementById('wynagrodzenieDo').value;
             }
             
+=======
+            const salaryMode = document.getElementById('salaryMode').value;
+            const wynagrodzenie = document.getElementById('wynagrodzenie').value;
+            const wynagrodzenieOd = document.getElementById('wynagrodzenieOd').value;
+            const wynagrodzenieDo = document.getElementById('wynagrodzenieDo').value;
+>>>>>>> refs/remotes/rekrutracker/main
             const waluta = document.getElementById('waluta').value;
             const wynRodzaj = document.getElementById('wynRodzaj').value;
             const tryb = document.getElementById('tryb').value;
@@ -340,6 +359,7 @@
                     umowa,
                     waluta,
                     wynRodzaj,
+                    salaryMode,
                     statusHistory: [{
                         status: status,
                         date: data
@@ -351,6 +371,7 @@
                 };
 
                 // Dodaj opcjonalne pola tylko jeśli są wypełnione
+<<<<<<< HEAD
                 if (salaryType === 'exact' && wynagrodzenie) {
                     applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
                     applicationData.salaryType = 'exact';
@@ -360,6 +381,14 @@
                     if (wynagrodzenieDo) applicationData.wynagrodzenieDo = parseFloat(wynagrodzenieDo);
                 }
                 
+=======
+                if (salaryMode === 'single' && wynagrodzenie) {
+                    applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
+                } else if (salaryMode === 'range') {
+                    if (wynagrodzenieOd) applicationData.wynagrodzenieOd = parseFloat(wynagrodzenieOd);
+                    if (wynagrodzenieDo) applicationData.wynagrodzenieDo = parseFloat(wynagrodzenieDo);
+                }
+>>>>>>> refs/remotes/rekrutracker/main
                 if (kontakt) applicationData.kontakt = kontakt;
                 if (link) applicationData.link = link;
                 if (notatki) applicationData.notatki = notatki;
@@ -408,6 +437,7 @@
                                 umowa,
                                 waluta,
                                 wynRodzaj,
+                                salaryMode,
                                 statusHistory: [{
                                     status: status,
                                     date: data
@@ -417,13 +447,19 @@
                                 userId: user.uid,
                                 createdAt: serverTimestamp()
                             };
-                            
+
                             // Add optional fields
+<<<<<<< HEAD
                             if (salaryType === 'exact' && wynagrodzenie) {
                                 applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
                                 applicationData.salaryType = 'exact';
                             } else if (salaryType === 'range' && (wynagrodzenieOd || wynagrodzenieDo)) {
                                 applicationData.salaryType = 'range';
+=======
+                            if (salaryMode === 'single' && wynagrodzenie) {
+                                applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
+                            } else if (salaryMode === 'range') {
+>>>>>>> refs/remotes/rekrutracker/main
                                 if (wynagrodzenieOd) applicationData.wynagrodzenieOd = parseFloat(wynagrodzenieOd);
                                 if (wynagrodzenieDo) applicationData.wynagrodzenieDo = parseFloat(wynagrodzenieDo);
                             }
