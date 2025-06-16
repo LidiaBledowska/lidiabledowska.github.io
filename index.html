@@ -551,23 +551,23 @@
                     <h2><i class="fas fa-plus-circle"></i> Dodaj aplikację</h2>
                     <form id="addApplicationForm">
                         <div class="form-group">
-                            <label for="stanowisko"><i class="fas fa-briefcase"></i> Stanowisko</label>
-                            <input type="text" id="stanowisko" name="stanowisko" required
+                            <label for="addStanowisko"><i class="fas fa-briefcase"></i> Stanowisko</label>
+                            <input type="text" id="addStanowisko" name="stanowisko" required
                                 placeholder="Np. Frontend Developer" pattern="[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s]+"
                                 title="Dozwolone są tylko litery i spacje">
                         </div>
                         <div class="form-group">
-                            <label for="firma"><i class="fas fa-building"></i> Firma</label>
-                            <input type="text" id="firma" name="firma" required placeholder="Np. Tech Innovations"
+                            <label for="addFirma"><i class="fas fa-building"></i> Firma</label>
+                            <input type="text" id="addFirma" name="firma" required placeholder="Np. Tech Innovations"
                                 pattern="[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s]+" title="Dozwolone są tylko litery i spacje">
                         </div>
                         <div class="form-group">
-                            <label for="data"><i class="fas fa-calendar-alt"></i> Data aplikowania</label>
-                            <input type="date" id="data" name="data" required>
+                            <label for="addData"><i class="fas fa-calendar-alt"></i> Data aplikowania</label>
+                            <input type="date" id="addData" name="data" required>
                         </div>
                         <div class="form-group">
-                            <label for="status"><i class="fas fa-tasks"></i> Status</label>
-                            <select id="status" name="status" required>
+                            <label for="addStatus"><i class="fas fa-tasks"></i> Status</label>
+                            <select id="addStatus" name="status" required>
                                 <option value="">Wybierz status...</option>
                                 <option value="Wysłano CV">Wysłano CV</option>
                                 <option value="Rozmowa telefoniczna">Rozmowa telefoniczna</option>
@@ -579,83 +579,59 @@
                         </div>
                         <div class="salary-group">
                             <div class="form-group" style="grid-column: 1 / -1;">
-                                <label for="modalSalaryType"><i class="fas fa-money-bill-wave"></i> Typ
+                                <label for="addSalaryType"><i class="fas fa-money-bill-wave"></i> Typ
                                     wynagrodzenia</label>
-                                <select id="modalSalaryType" name="salaryType" onchange="toggleModalSalaryFields()">
+                                <select id="addSalaryType" name="salaryType" onchange="toggleAddSalaryFields()">
                                     <option value="exact">Pełna kwota</option>
                                     <option value="range">Widełki (od-do)</option>
                                 </select>
                             </div>
 
                             <!-- Pola wynagrodzenia -->
-                            <div class="salary-main" id="modalSalaryFields">
+                            <div class="salary-main" id="addSalaryFields">
                                 <!-- Pojedyncza kwota -->
-                                <div class="form-group" id="modalExactSalaryGroup">
-                                    <label for="wynagrodzenie">Wynagrodzenie</label>
-                                    <input type="number" id="wynagrodzenie" name="wynagrodzenie" min="0" step="any"
+                                <div class="form-group" id="addExactSalaryGroup">
+                                    <label for="addWynagrodzenie">Wynagrodzenie</label>
+                                    <input type="number" id="addWynagrodzenie" name="wynagrodzenie" min="0" step="any"
                                         placeholder="np. 8000">
                                 </div>
 
                                 <!-- Widełki -->
-                                <div class="form-group" id="modalRangeSalaryGroup" style="display: none;">
-                                    <label for="modalWynagrodzenieOd">Od</label>
-                                    <input type="number" id="modalWynagrodzenieOd" name="wynagrodzenieOd" min="0"
+                                <div class="form-group" id="addRangeSalaryGroup" style="display: none;">
+                                    <label for="addWynagrodzenieOd">Od</label>
+                                    <input type="number" id="addWynagrodzenieOd" name="wynagrodzenieOd" min="0"
                                         step="any" placeholder="np. 6000">
                                 </div>
-                                <div class="form-group" id="modalRangeSalaryGroupTo" style="display: none;">
-                                    <label for="modalWynagrodzenieDo">Do</label>
-                                    <input type="number" id="modalWynagrodzenieDo" name="wynagrodzenieDo" min="0"
+                                <div class="form-group" id="addRangeSalaryGroupTo" style="display: none;">
+                                    <label for="addWynagrodzenieDo">Do</label>
+                                    <input type="number" id="addWynagrodzenieDo" name="wynagrodzenieDo" min="0"
                                         step="any" placeholder="np. 10000">
-                                    =======
-                                    <div class="salary-main">
-                                        <div class="form-group">
-                                            <label for="salaryMode"><i class="fas fa-money-bill-wave"></i>
-                                                Wynagrodzenie</label>
-                                            <select id="salaryMode" name="salaryMode">
-                                                <option value="single">Całkowita kwota</option>
-                                                <option value="range">Widełki</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group" id="salarySingle">
-                                            <label for="wynagrodzenie">Kwota</label>
-                                            <input type="number" id="wynagrodzenie" name="wynagrodzenie" min="0"
-                                                step="any" placeholder="np. 8000">
-                                        </div>
-                                        <div class="form-group" id="salaryRange" style="display:none;">
-                                            <label>Widełki</label>
-                                            <div style="display:flex;gap:0.5em;">
-                                                <input type="number" id="wynagrodzenieOd" name="wynagrodzenieOd" min="0"
-                                                    step="any" placeholder="od">
-                                                <input type="number" id="wynagrodzenieDo" name="wynagrodzenieDo" min="0"
-                                                    step="any" placeholder="do">
-                                            </div>
-                                            >>>>>>> refs/remotes/rekrutracker/main
-                                        </div>
-                                    </div>
-
-                                    <div class="salary-currency">
-                                        <div class="form-group no-icon">
-                                            <label for="waluta">Waluta</label>
-                                            <select id="waluta" name="waluta">
-                                                <option value="PLN">PLN</option>
-                                                <option value="EUR">EUR</option>
-                                                <option value="USD">USD</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="salary-type">
-                                        <div class="form-group no-icon">
-                                            <label for="wynRodzaj">Rodzaj</label>
-                                            <select id="wynRodzaj" name="wynRodzaj">
-                                                <option value="BRUTTO">BRUTTO</option>
-                                                <option value="NETTO">NETTO</option>
-                                            </select>
-                                        </div>
-                                    </div>
                                 </div>
+                            </div>
+
+                            <div class="salary-currency">
+                                <div class="form-group no-icon">
+                                    <label for="addWaluta">Waluta</label>
+                                    <select id="addWaluta" name="waluta">
+                                        <option value="PLN">PLN</option>
+                                        <option value="EUR">EUR</option>
+                                        <option value="USD">USD</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="salary-type">
+                                <div class="form-group no-icon">
+                                    <label for="addWynRodzaj">Rodzaj</label>
+                                    <select id="addWynRodzaj" name="wynRodzaj">
+                                        <option value="BRUTTO">BRUTTO</option>
+                                        <option value="NETTO">NETTO</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                                 <div class="form-group">
-                                    <label for="tryb"><i class="fas fa-laptop-house"></i> Tryb pracy</label>
-                                    <select id="tryb" name="tryb" required>
+                                    <label for="addTryb"><i class="fas fa-laptop-house"></i> Tryb pracy</label>
+                                    <select id="addTryb" name="tryb" required>
                                         <option value="">Wybierz tryb...</option>
                                         <option value="STACJONARNY">Stacjonarny</option>
                                         <option value="HYBRYDOWY">Hybrydowy</option>
@@ -663,8 +639,8 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label for="rodzaj"><i class="fas fa-clock"></i> Rodzaj</label>
-                                    <select id="rodzaj" name="rodzaj" required>
+                                    <label for="addRodzaj"><i class="fas fa-clock"></i> Rodzaj</label>
+                                    <select id="addRodzaj" name="rodzaj" required>
                                         <option value="">Wybierz rodzaj...</option>
                                         <option value="PELNY_ETAT">Pełny etat</option>
                                         <option value="NIEPELNY_ETAT">Niepełny etat</option>
@@ -672,8 +648,8 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label for="umowa"><i class="fas fa-file-contract"></i> Umowa</label>
-                                    <select id="umowa" name="umowa" required>
+                                    <label for="addUmowa"><i class="fas fa-file-contract"></i> Umowa</label>
+                                    <select id="addUmowa" name="umowa" required>
                                         <option value="">Wybierz umowę...</option>
                                         <option value="UMOWA_O_PRACE">Umowa o pracę</option>
                                         <option value="UMOWA_B2B">Umowa B2B</option>
@@ -681,45 +657,45 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label for="kontakt"><i class="fas fa-address-book"></i> Kontakt</label>
-                                    <input type="text" id="kontakt" name="kontakt"
+                                    <label for="addKontakt"><i class="fas fa-address-book"></i> Kontakt</label>
+                                    <input type="text" id="addKontakt" name="kontakt"
                                         placeholder="np. imię, email, telefon">
                                 </div>
                                 <div class="form-group">
-                                    <label for="link"><i class="fas fa-link"></i> Link do oferty</label>
-                                    <input type="url" id="link" name="link" placeholder="https://...">
+                                    <label for="addLink"><i class="fas fa-link"></i> Link do oferty</label>
+                                    <input type="url" id="addLink" name="link" placeholder="https://...">
                                 </div>
                                 <div class="form-group">
-                                    <label for="notatki"
+                                    <label for="addNotatki"
                                         style="font-weight:600;font-size:1.1em;display:block;margin-bottom:0.3em;">
                                         <i class="fas fa-sticky-note"
                                             style="color:#4f8cff;margin-right:0.3em;position:static;"></i>Notatki
                                     </label>
-                                    <textarea id="notatki" name="notatki" rows="3"
+                                    <textarea id="addNotatki" name="notatki" rows="3"
                                         placeholder="Dodaj własne notatki do tej aplikacji..."
                                         style="padding-left: 0.7rem;"></textarea>
                                 </div>
                                 <div class="form-group">
-                                    <label for="images"
+                                    <label for="addImages"
                                         style="font-weight:600;font-size:1.1em;display:block;margin-bottom:0.3em;">
                                         <i class="fas fa-image"
                                             style="color:#4f8cff;margin-right:0.3em;position:static;"></i>Załącz
                                         zdjęcia/screeny
                                     </label>
-                                    <input type="file" id="images" name="images" accept="image/*" multiple
+                                    <input type="file" id="addImages" name="images" accept="image/*" multiple
                                         style="width:100%;padding:0.7rem;border:1px solid #e5e7eb;border-radius:12px;background:white;font-size:1em;color:#141414;box-sizing:border-box;cursor:pointer;transition:all 0.2s ease;border:2px dashed #e5e7eb;"
                                         onmouseover="this.style.borderColor='#4f8cff'; this.style.backgroundColor='#f8faff';"
                                         onmouseout="this.style.borderColor='#e5e7eb'; this.style.backgroundColor='white';"
                                         onfocus="this.style.borderColor='#4f8cff'; this.style.boxShadow='0 0 0 3px rgba(79, 140, 255, 0.1)';"
                                         onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
-                                    <div id="imagesPreview" class="images-preview"></div>
-                                    <div id="imageCount"
+                                    <div id="addImagesPreview" class="images-preview"></div>
+                                    <div id="addImageCount"
                                         style="margin-top: 0.5rem; font-size: 0.9em; color: #666; text-align: center; display: none;">
-                                        <i class="fas fa-info-circle"></i> Wybrano <span id="imageCountNumber">0</span>
+                                        <i class="fas fa-info-circle"></i> Wybrano <span id="addImageCountNumber">0</span>
                                         zdjęć
                                     </div>
                                     <div style="margin-top: 0.5rem; text-align: center;">
-                                        <button type="button" onclick="clearAllImages()"
+                                        <button type="button" onclick="clearAllAddImages()"
                                             style="background: #dc3545; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 6px; font-size: 0.9em; cursor: pointer;"
                                             title="Usuń wszystkie zdjęcia">
                                             <i class="fas fa-trash"></i> Usuń wszystkie
@@ -727,7 +703,7 @@
                                     </div>
                                 </div>
                                 <div class="favorite-checkbox">
-                                    <input type="checkbox" id="favorite" name="favorite">
+                                    <input type="checkbox" id="addFavorite" name="favorite">
                                     <span>Dodaj do ulubionych</span>
                                     <i class="fas fa-star"></i>
                                 </div>
@@ -1072,6 +1048,17 @@
                 document.getElementById('addAppModal').classList.remove('active');
             }
 
+            // Clear all images function for add modal
+            window.clearAllAddImages = function() {
+                const imagesInput = document.getElementById('addImages');
+                const imagesPreview = document.getElementById('addImagesPreview');
+                const imageCount = document.getElementById('addImageCount');
+                
+                if (imagesInput) imagesInput.value = '';
+                if (imagesPreview) imagesPreview.innerHTML = '';
+                if (imageCount) imageCount.style.display = 'none';
+            };
+
 
 
             // Event listener for the return button
@@ -1142,14 +1129,23 @@
                     });
                 }
 
+                // Enhanced click-outside-to-close functionality
                 const editModal = document.getElementById('editModal');
                 if (editModal) {
                     editModal.addEventListener('click', function (e) {
+                        // Only close if clicking directly on the modal background (not on the content)
                         if (e.target === editModal) {
-                            const closeBtn = document.getElementById('closeEditModal');
-                            if (closeBtn) closeBtn.click();
+                            console.log('🔴 Click outside modal detected - closing modal');
+                            
+                            editModal.classList.remove('active');
+                            editModal.style.display = 'none'; // Force hide
+                            
+                            const editFormMessage = document.getElementById('editFormMessage');
+                            if (editFormMessage) editFormMessage.textContent = '';
                         }
                     });
+                    
+                    console.log('✅ Click-outside handler setup for edit modal');
                 }
 
                 // Image modal click handler moved to image-modal.js
@@ -1176,6 +1172,30 @@
 
                         // Wyczyść pole pojedynczej kwoty
                         document.getElementById('wynagrodzenie').value = '';
+                    }
+                };
+
+                window.toggleAddSalaryFields = function () {
+                    const salaryType = document.getElementById('addSalaryType').value;
+                    const exactGroup = document.getElementById('addExactSalaryGroup');
+                    const rangeGroup = document.getElementById('addRangeSalaryGroup');
+                    const rangeGroupTo = document.getElementById('addRangeSalaryGroupTo');
+
+                    if (salaryType === 'exact') {
+                        exactGroup.style.display = 'block';
+                        rangeGroup.style.display = 'none';
+                        rangeGroupTo.style.display = 'none';
+
+                        // Wyczyść pola widełek
+                        document.getElementById('addWynagrodzenieOd').value = '';
+                        document.getElementById('addWynagrodzenieDo').value = '';
+                    } else {
+                        exactGroup.style.display = 'none';
+                        rangeGroup.style.display = 'block';
+                        rangeGroupTo.style.display = 'block';
+
+                        // Wyczyść pole pojedynczej kwoty
+                        document.getElementById('addWynagrodzenie').value = '';
                     }
                 };
 

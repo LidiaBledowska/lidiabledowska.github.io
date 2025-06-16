@@ -288,18 +288,18 @@ function loadFavorites() {
             btn.addEventListener('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 const appId = this.getAttribute('data-id');
                 console.log('=== FAVORITES EDIT BUTTON CLICKED ===');
                 console.log('Button element:', this);
                 console.log('App ID from data-id:', appId);
-                
+
                 if (!appId) {
                     console.error('ERROR: No app ID found on favorites button!');
                     alert('Błąd: Brak ID aplikacji na przycisku ulubionych!');
                     return;
                 }
-                
+
                 console.log('Calling openEditModal from favorites with ID:', appId);
                 try {
                     openEditModal(appId);
@@ -318,7 +318,7 @@ async function openEditModal(appId) {
     console.log('App ID:', appId);
     console.log('Current user:', window.auth?.currentUser);
     console.log('Firebase modules available:', !!window.firebaseModules);
-    
+
     const user = window.auth.currentUser;
     if (!user) {
         console.log('User not authenticated - showing alert');
@@ -400,38 +400,30 @@ async function openEditModal(appId) {
 
     document.getElementById('editApplicationForm').dataset.prevStatus = app.status || "";
     document.getElementById('editApplicationForm').dataset.statusHistory = JSON.stringify(app.statusHistory || []);
-    
+
     console.log('About to show edit modal...');
     const editModal = document.getElementById('editModal');
     console.log('Edit modal element:', editModal);
     console.log('Edit modal current classes:', editModal?.className);
-    
+
     if (!editModal) {
         console.error('CRITICAL ERROR: Edit modal not found in DOM!');
         alert('Błąd: Modal edycji nie został znaleziony!');
         return;
     }
-    
+
+    // Show the modal
+    console.log('Opening modal...');
     editModal.classList.add('active');
-    // Ensure modal is visible even if styles are overridden
     editModal.style.display = 'flex';
-    
+    editModal.style.visibility = 'visible';
+
     console.log('Edit modal classes after adding active:', editModal?.className);
     console.log('Edit modal computed display:', window.getComputedStyle(editModal).display);
-    console.log('Edit modal z-index:', window.getComputedStyle(editModal).zIndex);
-    
+
     // Force scroll to top of modal when opened
     editModal.scrollTop = 0;
-    
-    // Add temporary visual indicator that modal is opening
-    const editTile = editModal.querySelector('.edit-tile');
-    if (editTile) {
-        editTile.style.border = '3px solid #4f8cff';
-        setTimeout(() => {
-            editTile.style.border = '1px solid #e5e7eb';
-        }, 1000);
-    }
-    
+
     console.log('=== openEditModal completed ===');
 }
 
@@ -693,7 +685,7 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
             btn.addEventListener('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 const appId = this.getAttribute('data-id');
                 console.log('=== EDIT BUTTON CLICKED ===');
                 console.log('Button element:', this);
@@ -701,13 +693,13 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                 console.log('Button innerHTML:', this.innerHTML);
                 console.log('Event target:', e.target);
                 console.log('Current target:', e.currentTarget);
-                
+
                 if (!appId) {
                     console.error('ERROR: No app ID found on button!');
                     alert('Błąd: Brak ID aplikacji na przycisku!');
                     return;
                 }
-                
+
                 console.log('Calling openEditModal with ID:', appId);
                 try {
                     openEditModal(appId);
@@ -774,7 +766,7 @@ function enhanceTableRowVisuals() {
 
 document.addEventListener('DOMContentLoaded', function () {
     console.log('=== DOMContentLoaded FIRED ===');
-    
+
     // Wait for Firebase to be ready
     function waitForFirebase(callback) {
         console.log('Waiting for Firebase...');
@@ -818,10 +810,76 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    document.getElementById('closeEditModal').onclick = function () {
-        document.getElementById('editModal').classList.remove('active');
-        document.getElementById('editFormMessage').textContent = '';
-    };
+    // Close edit modal button handler - ensure DOM is ready with multiple fallbacks
+    function setupCloseModalHandler() {
+        const closeEditModalBtn = document.getElementById('closeEditModal');
+        if (closeEditModalBtn) {
+            console.log('✅ Setting up close modal handler');
+            
+            // Remove any existing onclick handler first
+            closeEditModalBtn.onclick = null;
+            
+            // Add the onclick handler
+            closeEditModalBtn.onclick = function (e) {
+                console.log('🔴 Close button clicked!');
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const editModal = document.getElementById('editModal');
+                const editFormMessage = document.getElementById('editFormMessage');
+                
+                if (editModal) {
+                    console.log('Closing modal...');
+                    editModal.classList.remove('active');
+                    editModal.style.display = 'none'; // Force hide
+                    
+                    if (editFormMessage) {
+                        editFormMessage.textContent = '';
+                    }
+                    
+                    console.log('Modal closed. Classes:', editModal.className);
+                } else {
+                    console.error('❌ Edit modal not found when trying to close');
+                }
+            };
+            
+            console.log('Close button handler set successfully');
+            return true;
+        } else {
+            console.warn('❌ closeEditModal button not found in DOM');
+            return false;
+        }
+    }
+    
+    // Try to setup immediately
+    if (!setupCloseModalHandler()) {
+        // If failed, try again after a short delay
+        setTimeout(setupCloseModalHandler, 100);
+        
+        // And try again after a longer delay as final fallback
+        setTimeout(setupCloseModalHandler, 500);
+    }
+
+    // Enhanced Escape key listener for edit modal
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' || e.keyCode === 27) {
+            const editModal = document.getElementById('editModal');
+            if (editModal && editModal.classList.contains('active')) {
+                console.log('🔴 Escape key pressed - closing modal');
+                
+                editModal.classList.remove('active');
+                editModal.style.display = 'none'; // Force hide
+                
+                const editFormMessage = document.getElementById('editFormMessage');
+                if (editFormMessage) {
+                    editFormMessage.textContent = '';
+                }
+                
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }
+    });
 
     // Base64 image conversion utility
     function convertFileToBase64(file) {
@@ -1347,7 +1405,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const userInfo = document.getElementById('userInfo');
                 const loginBtn = document.getElementById('loginBtn');
                 const logoutBtn = document.getElementById('logoutBtn');
-                
+
                 if (userInfo) userInfo.style.display = 'none';
                 if (loginBtn) loginBtn.style.display = 'inline';
                 if (logoutBtn) logoutBtn.style.display = 'none';
@@ -1386,36 +1444,36 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // Test function for edit modal
-    window.testEditModal = function() {
+    window.testEditModal = function () {
         console.log('=== TESTING EDIT MODAL ===');
-        
+
         // Check if modal exists
         const editModal = document.getElementById('editModal');
         console.log('Edit modal found:', !!editModal);
-        
+
         if (editModal) {
             console.log('Modal classes:', editModal.className);
             console.log('Modal display style:', editModal.style.display);
             console.log('Modal computed display:', window.getComputedStyle(editModal).display);
-            
+
             // Try to open modal manually
             console.log('Attempting to open modal manually...');
             editModal.classList.add('active');
             console.log('Modal classes after adding active:', editModal.className);
             console.log('Modal computed display after adding active:', window.getComputedStyle(editModal).display);
-            
+
             // Check if form exists
             const form = document.getElementById('editApplicationForm');
             console.log('Form found:', !!form);
-            
+
             if (form) {
                 console.log('Form elements count:', form.elements.length);
                 console.log('Form submit button:', !!form.querySelector('button[type="submit"]'));
             }
         }
-        
+
         console.log('=== END TEST ===');
-        
+
         return {
             modalExists: !!editModal,
             modalVisible: editModal ? window.getComputedStyle(editModal).display !== 'none' : false,
@@ -1424,9 +1482,9 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // Comprehensive debug function
-    window.debugAll = function() {
+    window.debugAll = function () {
         console.log('=== COMPREHENSIVE DEBUG ===');
-        
+
         // Check loading overlay
         const loadingOverlay = document.getElementById('loadingOverlay');
         console.log('Loading overlay:', {
@@ -1434,7 +1492,7 @@ document.addEventListener('DOMContentLoaded', function () {
             display: loadingOverlay?.style.display,
             visible: loadingOverlay ? window.getComputedStyle(loadingOverlay).display : 'not found'
         });
-        
+
         // Check main sections
         const landingPage = document.getElementById('landingPage');
         const mainContent = document.getElementById('mainContent');
@@ -1450,7 +1508,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 visible: mainContent ? window.getComputedStyle(mainContent).display : 'not found'
             }
         });
-        
+
         // Check Firebase
         console.log('Firebase status:', {
             auth: !!window.auth,
@@ -1458,23 +1516,23 @@ document.addEventListener('DOMContentLoaded', function () {
             currentUser: window.auth?.currentUser ? 'logged in' : 'not logged in',
             userEmail: window.auth?.currentUser?.email
         });
-        
+
         // Check edit buttons
         const editButtons = document.querySelectorAll('.edit-btn');
         console.log('Edit buttons:', {
             count: editButtons.length,
             firstButtonId: editButtons[0]?.getAttribute('data-id')
         });
-        
+
         // Check applications table
         const tbody = document.querySelector('.applications-table tbody');
         console.log('Applications table:', {
             element: !!tbody,
             rowCount: tbody?.children.length || 0
         });
-        
+
         console.log('=== END COMPREHENSIVE DEBUG ===');
-        
+
         // Try to force show main content if user is authenticated
         if (window.auth?.currentUser) {
             console.log('User is authenticated - forcing main content display');
@@ -1488,7 +1546,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // Debug function to check Firebase status
-    window.debugFirebase = function() {
+    window.debugFirebase = function () {
         console.log('=== DEBUG FIREBASE ===');
         console.log('window.auth:', window.auth);
         console.log('window.firebaseModules:', window.firebaseModules);
@@ -1501,7 +1559,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // Debug function to check edit buttons
-    window.debugEditButtons = function() {
+    window.debugEditButtons = function () {
         console.log('=== DEBUG EDIT BUTTONS ===');
         const editButtons = document.querySelectorAll('.edit-btn');
         console.log('Found edit buttons:', editButtons.length);
@@ -1514,7 +1572,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
         console.log('=== END DEBUG ===');
-        
+
         // Try to manually trigger openEditModal
         if (editButtons.length > 0) {
             const firstButton = editButtons[0];
@@ -1527,43 +1585,43 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // Simple quick check function for immediate debugging
-    window.quickCheck = function() {
+    window.quickCheck = function () {
         console.log('=== QUICK CHECK ===');
-        
+
         // Check loading overlay
         const loadingOverlay = document.getElementById('loadingOverlay');
         const loadingVisible = loadingOverlay ? window.getComputedStyle(loadingOverlay).display !== 'none' : false;
         console.log('Loading overlay visible:', loadingVisible);
-        
+
         // Check main sections
         const landingPage = document.getElementById('landingPage');
         const mainContent = document.getElementById('mainContent');
         const landingVisible = landingPage ? window.getComputedStyle(landingPage).display !== 'none' : false;
         const mainVisible = mainContent ? window.getComputedStyle(mainContent).display !== 'none' : false;
-        
+
         console.log('Landing page visible:', landingVisible);
         console.log('Main content visible:', mainVisible);
-        
+
         // Check Firebase
         console.log('Firebase auth:', !!window.auth);
         console.log('Current user:', window.auth?.currentUser ? 'logged in' : 'not logged in');
-        
+
         // Check applications table
         const tbody = document.querySelector('.applications-table tbody');
         const rowCount = tbody?.children.length || 0;
         console.log('Application rows:', rowCount);
-        
+
         // Check edit buttons
         const editButtons = document.querySelectorAll('.edit-btn');
         console.log('Edit buttons found:', editButtons.length);
-        
+
         console.log('=== END QUICK CHECK ===');
-        
+
         // Auto-fix if loading overlay is stuck
         if (loadingVisible) {
             console.log('Loading overlay is stuck - hiding it...');
             if (loadingOverlay) loadingOverlay.style.display = 'none';
-            
+
             // Show appropriate content
             if (window.auth?.currentUser) {
                 console.log('User authenticated - showing main content');
@@ -1581,7 +1639,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (mainContent) mainContent.style.display = 'none';
             }
         }
-        
+
         return {
             loadingStuck: loadingVisible,
             userLoggedIn: !!window.auth?.currentUser,
@@ -1592,9 +1650,9 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // Function to force hide loading overlay if it's blocking UI
-    window.forceHideLoadingOverlay = function() {
+    window.forceHideLoadingOverlay = function () {
         console.log('=== FORCE HIDE LOADING OVERLAY ===');
-        
+
         const loadingOverlay = document.getElementById('loadingOverlay');
         if (loadingOverlay) {
             console.log('Loading overlay found, hiding it...');
@@ -1606,23 +1664,23 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             console.log('Loading overlay not found');
         }
-        
+
         console.log('=== END FORCE HIDE ===');
     };
 
     // Function to check what's blocking the UI
-    window.checkUIBlockers = function() {
+    window.checkUIBlockers = function () {
         console.log('=== CHECKING UI BLOCKERS ===');
-        
+
         const elements = [
             'loadingOverlay',
-            'landingPage', 
+            'landingPage',
             'mainContent',
             'editModal',
             'addAppModal',
             'imageModal'
         ];
-        
+
         elements.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
@@ -1638,7 +1696,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log(`${id}: NOT FOUND`);
             }
         });
-        
+
         console.log('=== END UI BLOCKERS CHECK ===');
     };
 
@@ -1669,11 +1727,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (loadingOverlay && loadingOverlay.style.display !== 'none') {
             console.log('Firebase loading timeout - forcing loading overlay hide');
             loadingOverlay.style.display = 'none';
-            
+
             // Show landing page if main content is not visible
             const mainContent = document.getElementById('mainContent');
             const landingPage = document.getElementById('landingPage');
-            
+
             if (mainContent && mainContent.style.display === 'none' && landingPage) {
                 landingPage.style.display = 'block';
             }
@@ -1713,6 +1771,8 @@ function updateStatusCounters(applications = []) {
     ).length;
 
     const interviewCount = activeApplications.filter(app => {
+       
+       
         if (!app.status) return false;
         // Match the exact logic used in filtering
         const interviewStatuses = ['Rozmowa telefoniczna', 'Rozmowa online', 'Rozmowa stacjonarna'];
@@ -1721,6 +1781,7 @@ function updateStatusCounters(applications = []) {
 
     const offerCount = activeApplications.filter(app =>
         app.status && app.status.toLowerCase().includes('oferta')
+   
     ).length;
 
     const rejectedVariants = ['odrzucono', 'odrzucony', 'odrzucona', 'odrzucone'];
@@ -1759,7 +1820,7 @@ function initializeQuickFilters() {
     const statusCards = document.querySelectorAll('.filter-card[data-filter-type="status"]');;
 
     statusCards.forEach((card, index) => {
-                                                         const filterValue = card.dataset.filterValue;;
+        const filterValue = card.dataset.filterValue;;
 
         card.addEventListener('click', function () {
             const filterValue = this.dataset.filterValue;;
@@ -1861,12 +1922,12 @@ function initializeQuickFilters() {
 }
 
 // Debug function to check all modal elements
-window.checkModalElements = function() {
+window.checkModalElements = function () {
     console.log('=== CHECKING MODAL ELEMENTS ===');
-    
+
     const elements = [
         'editModal',
-        'editApplicationForm', 
+        'editApplicationForm',
         'editAppId',
         'editStanowisko',
         'editFirma',
@@ -1892,7 +1953,7 @@ window.checkModalElements = function() {
         'closeEditModal',
         'editFormMessage'
     ];
-    
+
     elements.forEach(id => {
         const element = document.getElementById(id);
         console.log(`${id}:`, element ? '✅ EXISTS' : '❌ MISSING');
@@ -1900,25 +1961,25 @@ window.checkModalElements = function() {
             console.error(`CRITICAL: Missing element with ID: ${id}`);
         }
     });
-    
+
     console.log('=== END MODAL ELEMENTS CHECK ===');
-    
-    return elements.map(id => ({ 
-        id, 
-        exists: !!document.getElementById(id) 
+
+    return elements.map(id => ({
+        id,
+        exists: !!document.getElementById(id)
     }));
 };
 
 // Function to check if edit buttons exist and have correct event listeners
-window.checkEditButtons = function() {
+window.checkEditButtons = function () {
     console.log('=== CHECKING EDIT BUTTONS ===');
-    
+
     const mainEditButtons = document.querySelectorAll('.edit-btn');
     const favEditButtons = document.querySelectorAll('.edit-btn-fav');
-    
+
     console.log('Main edit buttons found:', mainEditButtons.length);
     console.log('Favorites edit buttons found:', favEditButtons.length);
-    
+
     mainEditButtons.forEach((btn, index) => {
         const appId = btn.getAttribute('data-id');
         const hasListener = btn.onclick !== null || btn._addEventListener;
@@ -1928,7 +1989,7 @@ window.checkEditButtons = function() {
             element: btn
         });
     });
-    
+
     favEditButtons.forEach((btn, index) => {
         const appId = btn.getAttribute('data-id');
         const hasListener = btn.onclick !== null || btn._addEventListener;
@@ -1938,9 +1999,9 @@ window.checkEditButtons = function() {
             element: btn
         });
     });
-    
+
     console.log('=== END EDIT BUTTONS CHECK ===');
-    
+
     return {
         mainButtons: mainEditButtons.length,
         favButtons: favEditButtons.length
@@ -1948,24 +2009,24 @@ window.checkEditButtons = function() {
 };
 
 // Function to manually trigger edit button click for testing
-window.testEditButtonClick = function() {
+window.testEditButtonClick = function () {
     console.log('=== TESTING EDIT BUTTON CLICK ===');
-    
+
     const editButtons = document.querySelectorAll('.edit-btn');
     console.log('Found edit buttons:', editButtons.length);
-    
+
     if (editButtons.length === 0) {
         console.log('No edit buttons found. Loading applications first...');
-        
+
         // Try to load applications first
         const currentSort = document.getElementById('sortOrder')?.value || 'desc';
         loadApplications({}, false, currentSort);
-        
+
         // Wait a bit then try again
         setTimeout(() => {
             const editButtonsAfterLoad = document.querySelectorAll('.edit-btn');
             console.log('Edit buttons after loading:', editButtonsAfterLoad.length);
-            
+
             if (editButtonsAfterLoad.length > 0) {
                 const firstButton = editButtonsAfterLoad[0];
                 console.log('Clicking first edit button:', firstButton);
@@ -1979,25 +2040,25 @@ window.testEditButtonClick = function() {
         console.log('Clicking first edit button:', firstButton);
         firstButton.click();
     }
-    
+
     console.log('=== END TEST EDIT BUTTON CLICK ===');
 };
 
 // Function to check if user is logged in and applications are loaded
-window.checkApplicationsState = function() {
+window.checkApplicationsState = function () {
     console.log('=== CHECKING APPLICATIONS STATE ===');
-    
+
     const user = window.auth?.currentUser;
     console.log('User logged in:', !!user);
     console.log('User ID:', user?.uid);
-    
+
     const tbody = document.querySelector('.applications-table tbody');
     const rows = tbody ? tbody.querySelectorAll('tr') : [];
     console.log('Table rows found:', rows.length);
-    
+
     const editButtons = document.querySelectorAll('.edit-btn');
     console.log('Edit buttons found:', editButtons.length);
-    
+
     if (rows.length > 0) {
         console.log('Sample row:', rows[0]);
         const firstRowButton = rows[0].querySelector('.edit-btn');
@@ -2006,9 +2067,9 @@ window.checkApplicationsState = function() {
             console.log('First button data-id:', firstRowButton.getAttribute('data-id'));
         }
     }
-    
+
     console.log('=== END APPLICATIONS STATE CHECK ===');
-    
+
     return {
         userLoggedIn: !!user,
         rowsCount: rows.length,
@@ -2017,9 +2078,9 @@ window.checkApplicationsState = function() {
 };
 
 // Emergency function to diagnose disappeared applications
-window.emergencyDiagnosis = function() {
+window.emergencyDiagnosis = function () {
     console.log('=== EMERGENCY DIAGNOSIS ===');
-    
+
     // Check user authentication
     const user = window.auth?.currentUser;
     console.log('🔐 User authentication:');
@@ -2028,12 +2089,12 @@ window.emergencyDiagnosis = function() {
     console.log('  User email:', user?.email);
     console.log('  Auth ready:', !!window.auth);
     console.log('  Firebase modules:', !!window.firebaseModules);
-    
+
     // Check Firebase connection
     console.log('🔥 Firebase status:');
     console.log('  Database object:', !!window.db);
     console.log('  Firebase modules available:', Object.keys(window.firebaseModules || {}));
-    
+
     // Check DOM elements
     console.log('📄 DOM elements:');
     const tbody = document.querySelector('.applications-table tbody');
@@ -2042,21 +2103,21 @@ window.emergencyDiagnosis = function() {
     console.log('  Loading overlay visible:', document.getElementById('loadingOverlay')?.style.display !== 'none');
     console.log('  Main content visible:', document.getElementById('mainContent')?.style.display !== 'none');
     console.log('  Landing page visible:', document.getElementById('landingPage')?.style.display !== 'none');
-    
+
     // Try to manually query Firebase
     if (user && window.firebaseModules && window.db) {
         console.log('🔍 Attempting manual Firebase query...');
-        
+
         const q = window.firebaseModules.query(
             window.firebaseModules.collection(window.db, "applications"),
             window.firebaseModules.where("userId", "==", user.uid),
             window.firebaseModules.limit(5)
         );
-        
+
         window.firebaseModules.getDocs(q).then((querySnapshot) => {
             console.log('📊 Manual query results:');
             console.log('  Documents found:', querySnapshot.size);
-            
+
             if (querySnapshot.empty) {
                 console.log('  ❌ No documents found for user:', user.uid);
             } else {
@@ -2072,41 +2133,41 @@ window.emergencyDiagnosis = function() {
     } else {
         console.log('  ❌ Cannot perform manual query - missing prerequisites');
     }
-    
+
     console.log('=== END EMERGENCY DIAGNOSIS ===');
 };
 
 // Function to reload applications with full debug
-window.forceReloadApplications = function() {
+window.forceReloadApplications = function () {
     console.log('=== FORCE RELOAD APPLICATIONS ===');
-    
+
     // Clear table first
     const tbody = document.querySelector('.applications-table tbody');
     if (tbody) {
         tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 2rem; color: #6b7280;">Ładowanie aplikacji...</td></tr>';
     }
-    
+
     // Get current filters and sort
     const filters = getFilters();
     const showArchived = document.getElementById('showArchived')?.checked || false;
     const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
-    
+
     console.log('Loading with:', { filters, showArchived, sortOrder });
-    
+
     // Force reload
     loadApplications(filters, showArchived, sortOrder);
-    
+
     console.log('=== END FORCE RELOAD ===');
 };
 
 // Function to check localStorage and reset if needed
-window.checkAndResetStorage = function() {
+window.checkAndResetStorage = function () {
     console.log('=== CHECKING STORAGE ===');
-    
+
     // Check Firebase auth persistence
     const authKeys = Object.keys(localStorage).filter(key => key.includes('firebase'));
     console.log('Firebase localStorage keys:', authKeys);
-    
+
     authKeys.forEach(key => {
         try {
             const value = localStorage.getItem(key);
@@ -2115,76 +2176,206 @@ window.checkAndResetStorage = function() {
             console.log(`${key}:`, 'ERROR reading');
         }
     });
-    
+
     // Check session storage
     const sessionKeys = Object.keys(sessionStorage).filter(key => key.includes('firebase'));
     console.log('Firebase sessionStorage keys:', sessionKeys);
-    
+
     console.log('=== END STORAGE CHECK ===');
 };
 
 // Function to get current filters from form elements
 function getFilters() {
     const filters = {};
-    
+
     // Text filters
     const stanowisko = document.getElementById('filterStanowisko')?.value?.trim();
     const firma = document.getElementById('filterFirma')?.value?.trim();
     const data = document.getElementById('filterData')?.value?.trim();
-    
+
     // Select filters
     const tryb = document.getElementById('filterTryb')?.value;
     const rodzaj = document.getElementById('filterRodzaj')?.value;
     const umowa = document.getElementById('filterUmowa')?.value;
-    
+
     if (stanowisko) filters.stanowisko = stanowisko;
     if (firma) filters.firma = firma;
     if (data) filters.data = data;
     if (tryb) filters.tryb = tryb;
     if (rodzaj) filters.rodzaj = rodzaj;
     if (umowa) filters.umowa = umowa;
-    
+
     // Status filter from global window.filters object (set by quick filter cards)
     if (window.filters && window.filters.status) {
         filters.status = window.filters.status;
     }
-    
+
     return filters;
 }
 
 // Function to clear all filters
 function clearAllFilters() {
     console.log('=== CLEAR ALL FILTERS ===');
-    
+
     // Clear text inputs
     const textFilters = ['filterStanowisko', 'filterFirma', 'filterData'];
     textFilters.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
-    
+
     // Clear select filters
     const selectFilters = ['filterTryb', 'filterRodzaj', 'filterUmowa'];
     selectFilters.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
-    
+
     // Clear global status filter
     if (window.filters) {
         window.filters.status = '';
     }
-    
+
     // Reset quick filter cards
     if (window.resetQuickFilters) {
         window.resetQuickFilters();
     }
-    
+
     // Reload applications with no filters
     const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
     const showArchived = document.getElementById('showArchived')?.checked || false;
     loadApplications({}, showArchived, sortOrder);
-    
+
     console.log('=== FILTERS CLEARED ===');
 }
+
+// Prosty test dla użytkownika - do uruchomienia w konsoli przeglądarki
+window.testujZamykanieModal = function() {
+    console.clear();
+    console.log('🧪 === TEST ZAMYKANIA MODALNEGO OKNA ===');
+    console.log('');
+    
+    const editModal = document.getElementById('editModal');
+    const closeBtn = document.getElementById('closeEditModal');
+    
+    console.log('🔍 Sprawdzanie elementów:');
+    console.log('  ✓ Modal istnieje:', !!editModal);
+    console.log('  ✓ Przycisk X istnieje:', !!closeBtn);
+    
+    if (!editModal || !closeBtn) {
+        console.log('❌ BŁĄD: Nie można znaleźć wszystkich elementów!');
+        return;
+    }
+    
+    console.log('');
+    console.log('🟢 KROK 1: Otwieranie modalnego okna...');
+    
+    // Otwórz modal
+    editModal.classList.add('active');
+    editModal.style.display = 'flex';
+    
+    // Dodaj treść testową
+    const titleElement = editModal.querySelector('h2');
+    if (titleElement) {
+        titleElement.innerHTML = '🧪 TEST ZAMYKANIA - Spróbuj mnie zamknąć!';
+    }
+    
+    const messageEl = document.getElementById('editFormMessage');
+    if (messageEl) {
+        messageEl.innerHTML = `
+                <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px; margin: 1rem 0; text-align: center;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: #1976d2;">🧪 TESTOWANIE ZAMYKANIA MODALNEGO OKNA</h4>
+                    <p style="margin: 0.5rem 0; color: #1976d2; font-weight: bold;">
+                        Wypróbuj te sposoby zamykania:
+                    </p>
+                    <ul style="text-align: left; color: #1976d2; margin: 0.5rem 0;">
+                        <li>Kliknij przycisk ✕ w prawym górnym rogu</li>
+                        <li>Naciśnij klawisz <strong>Escape</strong></li>
+                        <li>Kliknij na ciemne tło <strong>poza</strong> oknem</li>
+                    </ul>
+                    <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9em;">
+                        Po zamknięciu sprawdź konsolę - powinna pojawić się wiadomość o zamknięciu.
+                    </p>
+                </div>
+            `;
+    }
+    
+    console.log('✅ Modal został otwarty!');
+    console.log('');
+    console.log('🎯 INSTRUKCJE:');
+    console.log('   1. Sprawdź czy widzisz niebieskie okno z instrukcjami');
+    console.log('   2. Wypróbuj zamykanie na 3 sposoby (patrz okno)');
+    console.log('   3. Po zamknięciu sprawdź konsolę');
+    console.log('');
+    console.log('⚠️  Jeśli modal się nie zamyka, oznacza to że mamy problem!');
+    
+    // Dodaj nasłuchiwacz na zamknięcie
+    const originalOnclick = closeBtn.onclick;
+    closeBtn.onclick = function(e) {
+        console.log('');
+        console.log('🔴 PRZYCISK X ZOSTAŁ KLIKNIĘTY!');
+        
+        if (originalOnclick) {
+            originalOnclick.call(this, e);
+        }
+        
+        setTimeout(() => {
+            const isStillOpen = editModal.classList.contains('active');
+            if (!isStillOpen) {
+                console.log('✅ SUKCES: Modal został zamknięty przyciskiem X!');
+            } else {
+                console.log('❌ PROBLEM: Modal nadal jest otwarty po kliknięciu X!');
+            }
+        }, 100);
+    };
+    
+    // Nasłuchiwacz na Escape
+    const escapeHandler = function(e) {
+        if (e.key === 'Escape' && editModal.classList.contains('active')) {
+            console.log('');
+            console.log('⌨️  KLAWISZ ESCAPE ZOSTAŁ NACIŚNIĘTY!');
+            setTimeout(() => {
+                const isStillOpen = editModal.classList.contains('active');
+                if (!isStillOpen) {
+                    console.log('✅ SUKCES: Modal został zamknięty klawiszem Escape!');
+                } else {
+                    console.log('❌ PROBLEM: Modal nadal jest otwarty po naciśnięciu Escape!');
+                }
+                document.removeEventListener('keydown', escapeHandler);
+            }, 100);
+        }
+    };
+    document.addEventListener('keydown', escapeHandler);
+    
+    // Nasłuchiwacz na kliknięcie w tło
+    const clickHandler = function(e) {
+        if (e.target === editModal) {
+            console.log('');
+            console.log('🖱️  KLIKNIĘTO W TŁO MODALNEGO OKNA!');
+            setTimeout(() => {
+                const isStillOpen = editModal.classList.contains('active');
+                if (!isStillOpen) {
+                    console.log('✅ SUKCES: Modal został zamknięty kliknięciem w tło!');
+                } else {
+                    console.log('❌ PROBLEM: Modal nadal jest otwarty po kliknięciu w tło!');
+                }
+                editModal.removeEventListener('click', clickHandler);
+            }, 100);
+        }
+    };
+    editModal.addEventListener('click', clickHandler);
+};
+
+// Funkcja pomocnicza do wymuszonego zamknięcia modalnego okna
+window.zamknijModal = function() {
+    console.log('🔧 Wymuszam zamknięcie modalnego okna...');
+    const editModal = document.getElementById('editModal');
+    if (editModal) {
+        editModal.classList.remove('active');
+        editModal.style.display = 'none';
+        console.log('✅ Modal został zamknięty wymuszenie.');
+    } else {
+        console.log('❌ Nie znaleziono modalnego okna.');
+    }
+};
 
