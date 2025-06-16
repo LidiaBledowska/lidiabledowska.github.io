@@ -246,22 +246,9 @@ function loadFavorites() {
         querySnapshot.forEach((doc) => {
             const app = doc.data();
             let wynagrodzenieText = "";
-<<<<<<< HEAD
-            if (app.salaryType === 'range' && (app.wynagrodzenieOd || app.wynagrodzenieDo)) {
-                // Formatowanie widełek
-                const od = app.wynagrodzenieOd || '';
-                const do_kwota = app.wynagrodzenieDo || '';
-                wynagrodzenieText = `${od}-${do_kwota} ${app.waluta || "PLN"}`;
-                if (app.wynRodzaj) {
-                    wynagrodzenieText += ` ${app.wynRodzaj}`;
-                }
-            } else if (app.wynagrodzenie) {
-                // Formatowanie pojedynczej kwoty (legacy i nowe)
-=======
             if (app.wynagrodzenieOd != null && app.wynagrodzenieDo != null) {
                 wynagrodzenieText = `${app.wynagrodzenieOd}-${app.wynagrodzenieDo} ${app.waluta || "PLN"}`;
             } else if (app.wynagrodzenie) {
->>>>>>> refs/remotes/rekrutracker/main
                 wynagrodzenieText = `${app.wynagrodzenie} ${app.waluta || "PLN"}`;
             }
             if (wynagrodzenieText && app.wynRodzaj) {
@@ -460,16 +447,6 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                 return 1;
             }
 
-<<<<<<< HEAD
-            // Then sort by date with fallback for invalid values
-            const timeA = a.data ? new Date(a.data).getTime() : 0;
-            const timeB = b.data ? new Date(b.data).getTime() : 0;
-
-            if (sortOrder === 'asc') {
-                return timeA - timeB; // oldest first
-            } else {
-                return timeB - timeA; // newest first
-=======
             // Then sort by date
             const dateA = new Date(a.data);
             const dateB = new Date(b.data);
@@ -485,7 +462,6 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                 const result = dateB - dateA; // newest first
                 console.log(`  -> DESC sort result: ${result} (${result < 0 ? 'a first' : result > 0 ? 'b first' : 'equal'})`);
                 return result;
->>>>>>> refs/remotes/rekrutracker/main
             }
         });
 
@@ -563,22 +539,9 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
             }
 
             let wynagrodzenieCell = "";
-<<<<<<< HEAD
-            if (app.salaryType === 'range' && (app.wynagrodzenieOd || app.wynagrodzenieDo)) {
-                // Formatowanie widełek
-                const od = app.wynagrodzenieOd || '';
-                const do_kwota = app.wynagrodzenieDo || '';
-                wynagrodzenieCell = `${od}-${do_kwota} ${app.waluta || "PLN"}`;
-                if (app.wynRodzaj) {
-                    wynagrodzenieCell += " " + app.wynRodzaj;
-                }
-            } else if (app.wynagrodzenie) {
-                // Formatowanie pojedynczej kwoty (legacy i nowe)
-=======
             if (app.wynagrodzenieOd != null && app.wynagrodzenieDo != null) {
                 wynagrodzenieCell = `${app.wynagrodzenieOd}-${app.wynagrodzenieDo} ${app.waluta || "PLN"}`;
             } else if (app.wynagrodzenie) {
->>>>>>> refs/remotes/rekrutracker/main
                 wynagrodzenieCell = app.wynagrodzenie + " " + (app.waluta || "PLN");
             }
             if (wynagrodzenieCell && app.wynRodzaj) {

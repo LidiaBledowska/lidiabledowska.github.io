@@ -578,162 +578,161 @@
                             </select>
                         </div>
                         <div class="salary-group">
-                            <<<<<<< HEAD <!-- Wybór typu wynagrodzenia -->
-                                <div class="form-group" style="grid-column: 1 / -1;">
-                                    <label for="modalSalaryType"><i class="fas fa-money-bill-wave"></i> Typ
-                                        wynagrodzenia</label>
-                                    <select id="modalSalaryType" name="salaryType" onchange="toggleModalSalaryFields()">
-                                        <option value="exact">Pełna kwota</option>
-                                        <option value="range">Widełki (od-do)</option>
-                                    </select>
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label for="modalSalaryType"><i class="fas fa-money-bill-wave"></i> Typ
+                                    wynagrodzenia</label>
+                                <select id="modalSalaryType" name="salaryType" onchange="toggleModalSalaryFields()">
+                                    <option value="exact">Pełna kwota</option>
+                                    <option value="range">Widełki (od-do)</option>
+                                </select>
+                            </div>
+
+                            <!-- Pola wynagrodzenia -->
+                            <div class="salary-main" id="modalSalaryFields">
+                                <!-- Pojedyncza kwota -->
+                                <div class="form-group" id="modalExactSalaryGroup">
+                                    <label for="wynagrodzenie">Wynagrodzenie</label>
+                                    <input type="number" id="wynagrodzenie" name="wynagrodzenie" min="0" step="any"
+                                        placeholder="np. 8000">
                                 </div>
 
-                                <!-- Pola wynagrodzenia -->
-                                <div class="salary-main" id="modalSalaryFields">
-                                    <!-- Pojedyncza kwota -->
-                                    <div class="form-group" id="modalExactSalaryGroup">
-                                        <label for="wynagrodzenie">Wynagrodzenie</label>
-                                        <input type="number" id="wynagrodzenie" name="wynagrodzenie" min="0" step="any"
-                                            placeholder="np. 8000">
+                                <!-- Widełki -->
+                                <div class="form-group" id="modalRangeSalaryGroup" style="display: none;">
+                                    <label for="modalWynagrodzenieOd">Od</label>
+                                    <input type="number" id="modalWynagrodzenieOd" name="wynagrodzenieOd" min="0"
+                                        step="any" placeholder="np. 6000">
+                                </div>
+                                <div class="form-group" id="modalRangeSalaryGroupTo" style="display: none;">
+                                    <label for="modalWynagrodzenieDo">Do</label>
+                                    <input type="number" id="modalWynagrodzenieDo" name="wynagrodzenieDo" min="0"
+                                        step="any" placeholder="np. 10000">
+                                    =======
+                                    <div class="salary-main">
+                                        <div class="form-group">
+                                            <label for="salaryMode"><i class="fas fa-money-bill-wave"></i>
+                                                Wynagrodzenie</label>
+                                            <select id="salaryMode" name="salaryMode">
+                                                <option value="single">Całkowita kwota</option>
+                                                <option value="range">Widełki</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group" id="salarySingle">
+                                            <label for="wynagrodzenie">Kwota</label>
+                                            <input type="number" id="wynagrodzenie" name="wynagrodzenie" min="0"
+                                                step="any" placeholder="np. 8000">
+                                        </div>
+                                        <div class="form-group" id="salaryRange" style="display:none;">
+                                            <label>Widełki</label>
+                                            <div style="display:flex;gap:0.5em;">
+                                                <input type="number" id="wynagrodzenieOd" name="wynagrodzenieOd" min="0"
+                                                    step="any" placeholder="od">
+                                                <input type="number" id="wynagrodzenieDo" name="wynagrodzenieDo" min="0"
+                                                    step="any" placeholder="do">
+                                            </div>
+                                            >>>>>>> refs/remotes/rekrutracker/main
+                                        </div>
                                     </div>
 
-                                    <!-- Widełki -->
-                                    <div class="form-group" id="modalRangeSalaryGroup" style="display: none;">
-                                        <label for="modalWynagrodzenieOd">Od</label>
-                                        <input type="number" id="modalWynagrodzenieOd" name="wynagrodzenieOd" min="0"
-                                            step="any" placeholder="np. 6000">
-                                    </div>
-                                    <div class="form-group" id="modalRangeSalaryGroupTo" style="display: none;">
-                                        <label for="modalWynagrodzenieDo">Do</label>
-                                        <input type="number" id="modalWynagrodzenieDo" name="wynagrodzenieDo" min="0"
-                                            step="any" placeholder="np. 10000">
-                                        =======
-                                        <div class="salary-main">
-                                            <div class="form-group">
-                                                <label for="salaryMode"><i class="fas fa-money-bill-wave"></i>
-                                                    Wynagrodzenie</label>
-                                                <select id="salaryMode" name="salaryMode">
-                                                    <option value="single">Całkowita kwota</option>
-                                                    <option value="range">Widełki</option>
-                                                </select>
-                                            </div>
-                                            <div class="form-group" id="salarySingle">
-                                                <label for="wynagrodzenie">Kwota</label>
-                                                <input type="number" id="wynagrodzenie" name="wynagrodzenie" min="0"
-                                                    step="any" placeholder="np. 8000">
-                                            </div>
-                                            <div class="form-group" id="salaryRange" style="display:none;">
-                                                <label>Widełki</label>
-                                                <div style="display:flex;gap:0.5em;">
-                                                    <input type="number" id="wynagrodzenieOd" name="wynagrodzenieOd"
-                                                        min="0" step="any" placeholder="od">
-                                                    <input type="number" id="wynagrodzenieDo" name="wynagrodzenieDo"
-                                                        min="0" step="any" placeholder="do">
-                                                </div>
-                                                >>>>>>> refs/remotes/rekrutracker/main
-                                            </div>
-                                        </div>
-
-                                        <div class="salary-currency">
-                                            <div class="form-group no-icon">
-                                                <label for="waluta">Waluta</label>
-                                                <select id="waluta" name="waluta">
-                                                    <option value="PLN">PLN</option>
-                                                    <option value="EUR">EUR</option>
-                                                    <option value="USD">USD</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="salary-type">
-                                            <div class="form-group no-icon">
-                                                <label for="wynRodzaj">Rodzaj</label>
-                                                <select id="wynRodzaj" name="wynRodzaj">
-                                                    <option value="BRUTTO">BRUTTO</option>
-                                                    <option value="NETTO">NETTO</option>
-                                                </select>
-                                            </div>
+                                    <div class="salary-currency">
+                                        <div class="form-group no-icon">
+                                            <label for="waluta">Waluta</label>
+                                            <select id="waluta" name="waluta">
+                                                <option value="PLN">PLN</option>
+                                                <option value="EUR">EUR</option>
+                                                <option value="USD">USD</option>
+                                            </select>
                                         </div>
                                     </div>
-                                    <div class="form-group">
-                                        <label for="tryb"><i class="fas fa-laptop-house"></i> Tryb pracy</label>
-                                        <select id="tryb" name="tryb" required>
-                                            <option value="">Wybierz tryb...</option>
-                                            <option value="STACJONARNY">Stacjonarny</option>
-                                            <option value="HYBRYDOWY">Hybrydowy</option>
-                                            <option value="ZDALNY">Zdalny</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="rodzaj"><i class="fas fa-clock"></i> Rodzaj</label>
-                                        <select id="rodzaj" name="rodzaj" required>
-                                            <option value="">Wybierz rodzaj...</option>
-                                            <option value="PELNY_ETAT">Pełny etat</option>
-                                            <option value="NIEPELNY_ETAT">Niepełny etat</option>
-                                            <option value="STAZ">Staż</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="umowa"><i class="fas fa-file-contract"></i> Umowa</label>
-                                        <select id="umowa" name="umowa" required>
-                                            <option value="">Wybierz umowę...</option>
-                                            <option value="UMOWA_O_PRACE">Umowa o pracę</option>
-                                            <option value="UMOWA_B2B">Umowa B2B</option>
-                                            <option value="UMOWA_ZLECENIE">Umowa zlecenie</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="kontakt"><i class="fas fa-address-book"></i> Kontakt</label>
-                                        <input type="text" id="kontakt" name="kontakt"
-                                            placeholder="np. imię, email, telefon">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="link"><i class="fas fa-link"></i> Link do oferty</label>
-                                        <input type="url" id="link" name="link" placeholder="https://...">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="notatki"
-                                            style="font-weight:600;font-size:1.1em;display:block;margin-bottom:0.3em;">
-                                            <i class="fas fa-sticky-note"
-                                                style="color:#4f8cff;margin-right:0.3em;position:static;"></i>Notatki
-                                        </label>
-                                        <textarea id="notatki" name="notatki" rows="3"
-                                            placeholder="Dodaj własne notatki do tej aplikacji..."
-                                            style="padding-left: 0.7rem;"></textarea>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="images"
-                                            style="font-weight:600;font-size:1.1em;display:block;margin-bottom:0.3em;">
-                                            <i class="fas fa-image"
-                                                style="color:#4f8cff;margin-right:0.3em;position:static;"></i>Załącz
-                                            zdjęcia/screeny
-                                        </label>
-                                        <input type="file" id="images" name="images" accept="image/*" multiple
-                                            style="width:100%;padding:0.7rem;border:1px solid #e5e7eb;border-radius:12px;background:white;font-size:1em;color:#141414;box-sizing:border-box;cursor:pointer;transition:all 0.2s ease;border:2px dashed #e5e7eb;"
-                                            onmouseover="this.style.borderColor='#4f8cff'; this.style.backgroundColor='#f8faff';"
-                                            onmouseout="this.style.borderColor='#e5e7eb'; this.style.backgroundColor='white';"
-                                            onfocus="this.style.borderColor='#4f8cff'; this.style.boxShadow='0 0 0 3px rgba(79, 140, 255, 0.1)';"
-                                            onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
-                                        <div id="imagesPreview" class="images-preview"></div>
-                                        <div id="imageCount"
-                                            style="margin-top: 0.5rem; font-size: 0.9em; color: #666; text-align: center; display: none;">
-                                            <i class="fas fa-info-circle"></i> Wybrano <span
-                                                id="imageCountNumber">0</span> zdjęć
-                                        </div>
-                                        <div style="margin-top: 0.5rem; text-align: center;">
-                                            <button type="button" onclick="clearAllImages()"
-                                                style="background: #dc3545; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 6px; font-size: 0.9em; cursor: pointer;"
-                                                title="Usuń wszystkie zdjęcia">
-                                                <i class="fas fa-trash"></i> Usuń wszystkie
-                                            </button>
+                                    <div class="salary-type">
+                                        <div class="form-group no-icon">
+                                            <label for="wynRodzaj">Rodzaj</label>
+                                            <select id="wynRodzaj" name="wynRodzaj">
+                                                <option value="BRUTTO">BRUTTO</option>
+                                                <option value="NETTO">NETTO</option>
+                                            </select>
                                         </div>
                                     </div>
-                                    <div class="favorite-checkbox">
-                                        <input type="checkbox" id="favorite" name="favorite">
-                                        <span>Dodaj do ulubionych</span>
-                                        <i class="fas fa-star"></i>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tryb"><i class="fas fa-laptop-house"></i> Tryb pracy</label>
+                                    <select id="tryb" name="tryb" required>
+                                        <option value="">Wybierz tryb...</option>
+                                        <option value="STACJONARNY">Stacjonarny</option>
+                                        <option value="HYBRYDOWY">Hybrydowy</option>
+                                        <option value="ZDALNY">Zdalny</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="rodzaj"><i class="fas fa-clock"></i> Rodzaj</label>
+                                    <select id="rodzaj" name="rodzaj" required>
+                                        <option value="">Wybierz rodzaj...</option>
+                                        <option value="PELNY_ETAT">Pełny etat</option>
+                                        <option value="NIEPELNY_ETAT">Niepełny etat</option>
+                                        <option value="STAZ">Staż</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="umowa"><i class="fas fa-file-contract"></i> Umowa</label>
+                                    <select id="umowa" name="umowa" required>
+                                        <option value="">Wybierz umowę...</option>
+                                        <option value="UMOWA_O_PRACE">Umowa o pracę</option>
+                                        <option value="UMOWA_B2B">Umowa B2B</option>
+                                        <option value="UMOWA_ZLECENIE">Umowa zlecenie</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="kontakt"><i class="fas fa-address-book"></i> Kontakt</label>
+                                    <input type="text" id="kontakt" name="kontakt"
+                                        placeholder="np. imię, email, telefon">
+                                </div>
+                                <div class="form-group">
+                                    <label for="link"><i class="fas fa-link"></i> Link do oferty</label>
+                                    <input type="url" id="link" name="link" placeholder="https://...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="notatki"
+                                        style="font-weight:600;font-size:1.1em;display:block;margin-bottom:0.3em;">
+                                        <i class="fas fa-sticky-note"
+                                            style="color:#4f8cff;margin-right:0.3em;position:static;"></i>Notatki
+                                    </label>
+                                    <textarea id="notatki" name="notatki" rows="3"
+                                        placeholder="Dodaj własne notatki do tej aplikacji..."
+                                        style="padding-left: 0.7rem;"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="images"
+                                        style="font-weight:600;font-size:1.1em;display:block;margin-bottom:0.3em;">
+                                        <i class="fas fa-image"
+                                            style="color:#4f8cff;margin-right:0.3em;position:static;"></i>Załącz
+                                        zdjęcia/screeny
+                                    </label>
+                                    <input type="file" id="images" name="images" accept="image/*" multiple
+                                        style="width:100%;padding:0.7rem;border:1px solid #e5e7eb;border-radius:12px;background:white;font-size:1em;color:#141414;box-sizing:border-box;cursor:pointer;transition:all 0.2s ease;border:2px dashed #e5e7eb;"
+                                        onmouseover="this.style.borderColor='#4f8cff'; this.style.backgroundColor='#f8faff';"
+                                        onmouseout="this.style.borderColor='#e5e7eb'; this.style.backgroundColor='white';"
+                                        onfocus="this.style.borderColor='#4f8cff'; this.style.boxShadow='0 0 0 3px rgba(79, 140, 255, 0.1)';"
+                                        onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                                    <div id="imagesPreview" class="images-preview"></div>
+                                    <div id="imageCount"
+                                        style="margin-top: 0.5rem; font-size: 0.9em; color: #666; text-align: center; display: none;">
+                                        <i class="fas fa-info-circle"></i> Wybrano <span id="imageCountNumber">0</span>
+                                        zdjęć
                                     </div>
-                                    <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Dodaj
-                                        aplikację</button>
+                                    <div style="margin-top: 0.5rem; text-align: center;">
+                                        <button type="button" onclick="clearAllImages()"
+                                            style="background: #dc3545; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 6px; font-size: 0.9em; cursor: pointer;"
+                                            title="Usuń wszystkie zdjęcia">
+                                            <i class="fas fa-trash"></i> Usuń wszystkie
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="favorite-checkbox">
+                                    <input type="checkbox" id="favorite" name="favorite">
+                                    <span>Dodaj do ulubionych</span>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Dodaj
+                                    aplikację</button>
                     </form>
                     <p id="form-message" style="text-align:center; margin-top:1em; color:green;"></p>
                     <div id="auth-debug"

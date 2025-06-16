@@ -300,27 +300,10 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
     const firma = document.getElementById('firma').value;
     const data = document.getElementById('data').value;
     const status = document.getElementById('status').value;
-<<<<<<< HEAD
-
-    // Obsługa wynagrodzenia - sprawdź typ
-    const salaryType = document.getElementById('salaryType').value;
-    let wynagrodzenie = '';
-    let wynagrodzenieOd = '';
-    let wynagrodzenieDo = '';
-
-    if (salaryType === 'exact') {
-        wynagrodzenie = document.getElementById('wynagrodzenie').value;
-    } else {
-        wynagrodzenieOd = document.getElementById('wynagrodzenieOd').value;
-        wynagrodzenieDo = document.getElementById('wynagrodzenieDo').value;
-    }
-
-=======
-            const salaryMode = document.getElementById('salaryMode').value;
-            const wynagrodzenie = document.getElementById('wynagrodzenie').value;
-            const wynagrodzenieOd = document.getElementById('wynagrodzenieOd').value;
-            const wynagrodzenieDo = document.getElementById('wynagrodzenieDo').value;
->>>>>>> refs/remotes/rekrutracker/main
+    const salaryMode = document.getElementById('salaryMode').value;
+    const wynagrodzenie = document.getElementById('wynagrodzenie').value;
+    const wynagrodzenieOd = document.getElementById('wynagrodzenieOd').value;
+    const wynagrodzenieDo = document.getElementById('wynagrodzenieDo').value;
     const waluta = document.getElementById('waluta').value;
     const wynRodzaj = document.getElementById('wynRodzaj').value;
     const tryb = document.getElementById('tryb').value;
@@ -390,24 +373,12 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
         };
 
         // Dodaj opcjonalne pola tylko jeśli są wypełnione
-<<<<<<< HEAD
-        if (salaryType === 'exact' && wynagrodzenie) {
+        if (salaryMode === 'single' && wynagrodzenie) {
             applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
-            applicationData.salaryType = 'exact';
-        } else if (salaryType === 'range' && (wynagrodzenieOd || wynagrodzenieDo)) {
-            applicationData.salaryType = 'range';
+        } else if (salaryMode === 'range') {
             if (wynagrodzenieOd) applicationData.wynagrodzenieOd = parseFloat(wynagrodzenieOd);
             if (wynagrodzenieDo) applicationData.wynagrodzenieDo = parseFloat(wynagrodzenieDo);
         }
-
-=======
-                if (salaryMode === 'single' && wynagrodzenie) {
-                    applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
-                } else if (salaryMode === 'range') {
-                    if (wynagrodzenieOd) applicationData.wynagrodzenieOd = parseFloat(wynagrodzenieOd);
-                    if (wynagrodzenieDo) applicationData.wynagrodzenieDo = parseFloat(wynagrodzenieDo);
-                }
->>>>>>> refs/remotes/rekrutracker/main
         if (kontakt) applicationData.kontakt = kontakt;
         if (link) applicationData.link = link;
         if (notatki) applicationData.notatki = notatki;
@@ -469,17 +440,9 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
                     };
 
                     // Add optional fields
-<<<<<<< HEAD
-                    if (salaryType === 'exact' && wynagrodzenie) {
+                    if (salaryMode === 'single' && wynagrodzenie) {
                         applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
-                        applicationData.salaryType = 'exact';
-                    } else if (salaryType === 'range' && (wynagrodzenieOd || wynagrodzenieDo)) {
-                        applicationData.salaryType = 'range';
-=======
-                            if (salaryMode === 'single' && wynagrodzenie) {
-                                applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
-                            } else if (salaryMode === 'range') {
->>>>>>> refs/remotes/rekrutracker/main
+                    } else if (salaryMode === 'range') {
                         if (wynagrodzenieOd) applicationData.wynagrodzenieOd = parseFloat(wynagrodzenieOd);
                         if (wynagrodzenieDo) applicationData.wynagrodzenieDo = parseFloat(wynagrodzenieDo);
                     }
