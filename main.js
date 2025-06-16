@@ -815,34 +815,34 @@ document.addEventListener('DOMContentLoaded', function () {
         const closeEditModalBtn = document.getElementById('closeEditModal');
         if (closeEditModalBtn) {
             console.log('✅ Setting up close modal handler');
-            
+
             // Remove any existing onclick handler first
             closeEditModalBtn.onclick = null;
-            
+
             // Add the onclick handler
             closeEditModalBtn.onclick = function (e) {
                 console.log('🔴 Close button clicked!');
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 const editModal = document.getElementById('editModal');
                 const editFormMessage = document.getElementById('editFormMessage');
-                
+
                 if (editModal) {
                     console.log('Closing modal...');
                     editModal.classList.remove('active');
                     editModal.style.display = 'none'; // Force hide
-                    
+
                     if (editFormMessage) {
                         editFormMessage.textContent = '';
                     }
-                    
+
                     console.log('Modal closed. Classes:', editModal.className);
                 } else {
                     console.error('❌ Edit modal not found when trying to close');
                 }
             };
-            
+
             console.log('Close button handler set successfully');
             return true;
         } else {
@@ -850,31 +850,31 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         }
     }
-    
+
     // Try to setup immediately
     if (!setupCloseModalHandler()) {
         // If failed, try again after a short delay
         setTimeout(setupCloseModalHandler, 100);
-        
+
         // And try again after a longer delay as final fallback
         setTimeout(setupCloseModalHandler, 500);
     }
 
     // Enhanced Escape key listener for edit modal
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' || e.keyCode === 27) {
             const editModal = document.getElementById('editModal');
             if (editModal && editModal.classList.contains('active')) {
                 console.log('🔴 Escape key pressed - closing modal');
-                
+
                 editModal.classList.remove('active');
                 editModal.style.display = 'none'; // Force hide
-                
+
                 const editFormMessage = document.getElementById('editFormMessage');
                 if (editFormMessage) {
                     editFormMessage.textContent = '';
                 }
-                
+
                 e.preventDefault();
                 e.stopPropagation();
             }
@@ -1771,8 +1771,8 @@ function updateStatusCounters(applications = []) {
     ).length;
 
     const interviewCount = activeApplications.filter(app => {
-       
-       
+
+
         if (!app.status) return false;
         // Match the exact logic used in filtering
         const interviewStatuses = ['Rozmowa telefoniczna', 'Rozmowa online', 'Rozmowa stacjonarna'];
@@ -1781,7 +1781,7 @@ function updateStatusCounters(applications = []) {
 
     const offerCount = activeApplications.filter(app =>
         app.status && app.status.toLowerCase().includes('oferta')
-   
+
     ).length;
 
     const rejectedVariants = ['odrzucono', 'odrzucony', 'odrzucona', 'odrzucone'];
@@ -2250,36 +2250,36 @@ function clearAllFilters() {
 }
 
 // Prosty test dla użytkownika - do uruchomienia w konsoli przeglądarki
-window.testujZamykanieModal = function() {
+window.testujZamykanieModal = function () {
     console.clear();
     console.log('🧪 === TEST ZAMYKANIA MODALNEGO OKNA ===');
     console.log('');
-    
+
     const editModal = document.getElementById('editModal');
     const closeBtn = document.getElementById('closeEditModal');
-    
+
     console.log('🔍 Sprawdzanie elementów:');
     console.log('  ✓ Modal istnieje:', !!editModal);
     console.log('  ✓ Przycisk X istnieje:', !!closeBtn);
-    
+
     if (!editModal || !closeBtn) {
         console.log('❌ BŁĄD: Nie można znaleźć wszystkich elementów!');
         return;
     }
-    
+
     console.log('');
     console.log('🟢 KROK 1: Otwieranie modalnego okna...');
-    
+
     // Otwórz modal
     editModal.classList.add('active');
     editModal.style.display = 'flex';
-    
+
     // Dodaj treść testową
     const titleElement = editModal.querySelector('h2');
     if (titleElement) {
         titleElement.innerHTML = '🧪 TEST ZAMYKANIA - Spróbuj mnie zamknąć!';
     }
-    
+
     const messageEl = document.getElementById('editFormMessage');
     if (messageEl) {
         messageEl.innerHTML = `
@@ -2299,7 +2299,7 @@ window.testujZamykanieModal = function() {
                 </div>
             `;
     }
-    
+
     console.log('✅ Modal został otwarty!');
     console.log('');
     console.log('🎯 INSTRUKCJE:');
@@ -2308,17 +2308,17 @@ window.testujZamykanieModal = function() {
     console.log('   3. Po zamknięciu sprawdź konsolę');
     console.log('');
     console.log('⚠️  Jeśli modal się nie zamyka, oznacza to że mamy problem!');
-    
+
     // Dodaj nasłuchiwacz na zamknięcie
     const originalOnclick = closeBtn.onclick;
-    closeBtn.onclick = function(e) {
+    closeBtn.onclick = function (e) {
         console.log('');
         console.log('🔴 PRZYCISK X ZOSTAŁ KLIKNIĘTY!');
-        
+
         if (originalOnclick) {
             originalOnclick.call(this, e);
         }
-        
+
         setTimeout(() => {
             const isStillOpen = editModal.classList.contains('active');
             if (!isStillOpen) {
@@ -2328,9 +2328,9 @@ window.testujZamykanieModal = function() {
             }
         }, 100);
     };
-    
+
     // Nasłuchiwacz na Escape
-    const escapeHandler = function(e) {
+    const escapeHandler = function (e) {
         if (e.key === 'Escape' && editModal.classList.contains('active')) {
             console.log('');
             console.log('⌨️  KLAWISZ ESCAPE ZOSTAŁ NACIŚNIĘTY!');
@@ -2346,9 +2346,9 @@ window.testujZamykanieModal = function() {
         }
     };
     document.addEventListener('keydown', escapeHandler);
-    
+
     // Nasłuchiwacz na kliknięcie w tło
-    const clickHandler = function(e) {
+    const clickHandler = function (e) {
         if (e.target === editModal) {
             console.log('');
             console.log('🖱️  KLIKNIĘTO W TŁO MODALNEGO OKNA!');
@@ -2367,7 +2367,7 @@ window.testujZamykanieModal = function() {
 };
 
 // Funkcja pomocnicza do wymuszonego zamknięcia modalnego okna
-window.zamknijModal = function() {
+window.zamknijModal = function () {
     console.log('🔧 Wymuszam zamknięcie modalnego okna...');
     const editModal = document.getElementById('editModal');
     if (editModal) {

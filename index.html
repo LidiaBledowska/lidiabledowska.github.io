@@ -629,86 +629,85 @@
                                 </div>
                             </div>
                         </div>
-                                <div class="form-group">
-                                    <label for="addTryb"><i class="fas fa-laptop-house"></i> Tryb pracy</label>
-                                    <select id="addTryb" name="tryb" required>
-                                        <option value="">Wybierz tryb...</option>
-                                        <option value="STACJONARNY">Stacjonarny</option>
-                                        <option value="HYBRYDOWY">Hybrydowy</option>
-                                        <option value="ZDALNY">Zdalny</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="addRodzaj"><i class="fas fa-clock"></i> Rodzaj</label>
-                                    <select id="addRodzaj" name="rodzaj" required>
-                                        <option value="">Wybierz rodzaj...</option>
-                                        <option value="PELNY_ETAT">Pełny etat</option>
-                                        <option value="NIEPELNY_ETAT">Niepełny etat</option>
-                                        <option value="STAZ">Staż</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="addUmowa"><i class="fas fa-file-contract"></i> Umowa</label>
-                                    <select id="addUmowa" name="umowa" required>
-                                        <option value="">Wybierz umowę...</option>
-                                        <option value="UMOWA_O_PRACE">Umowa o pracę</option>
-                                        <option value="UMOWA_B2B">Umowa B2B</option>
-                                        <option value="UMOWA_ZLECENIE">Umowa zlecenie</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="addKontakt"><i class="fas fa-address-book"></i> Kontakt</label>
-                                    <input type="text" id="addKontakt" name="kontakt"
-                                        placeholder="np. imię, email, telefon">
-                                </div>
-                                <div class="form-group">
-                                    <label for="addLink"><i class="fas fa-link"></i> Link do oferty</label>
-                                    <input type="url" id="addLink" name="link" placeholder="https://...">
-                                </div>
-                                <div class="form-group">
-                                    <label for="addNotatki"
-                                        style="font-weight:600;font-size:1.1em;display:block;margin-bottom:0.3em;">
-                                        <i class="fas fa-sticky-note"
-                                            style="color:#4f8cff;margin-right:0.3em;position:static;"></i>Notatki
-                                    </label>
-                                    <textarea id="addNotatki" name="notatki" rows="3"
-                                        placeholder="Dodaj własne notatki do tej aplikacji..."
-                                        style="padding-left: 0.7rem;"></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label for="addImages"
-                                        style="font-weight:600;font-size:1.1em;display:block;margin-bottom:0.3em;">
-                                        <i class="fas fa-image"
-                                            style="color:#4f8cff;margin-right:0.3em;position:static;"></i>Załącz
-                                        zdjęcia/screeny
-                                    </label>
-                                    <input type="file" id="addImages" name="images" accept="image/*" multiple
-                                        style="width:100%;padding:0.7rem;border:1px solid #e5e7eb;border-radius:12px;background:white;font-size:1em;color:#141414;box-sizing:border-box;cursor:pointer;transition:all 0.2s ease;border:2px dashed #e5e7eb;"
-                                        onmouseover="this.style.borderColor='#4f8cff'; this.style.backgroundColor='#f8faff';"
-                                        onmouseout="this.style.borderColor='#e5e7eb'; this.style.backgroundColor='white';"
-                                        onfocus="this.style.borderColor='#4f8cff'; this.style.boxShadow='0 0 0 3px rgba(79, 140, 255, 0.1)';"
-                                        onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
-                                    <div id="addImagesPreview" class="images-preview"></div>
-                                    <div id="addImageCount"
-                                        style="margin-top: 0.5rem; font-size: 0.9em; color: #666; text-align: center; display: none;">
-                                        <i class="fas fa-info-circle"></i> Wybrano <span id="addImageCountNumber">0</span>
-                                        zdjęć
-                                    </div>
-                                    <div style="margin-top: 0.5rem; text-align: center;">
-                                        <button type="button" onclick="clearAllAddImages()"
-                                            style="background: #dc3545; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 6px; font-size: 0.9em; cursor: pointer;"
-                                            title="Usuń wszystkie zdjęcia">
-                                            <i class="fas fa-trash"></i> Usuń wszystkie
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="favorite-checkbox">
-                                    <input type="checkbox" id="addFavorite" name="favorite">
-                                    <span>Dodaj do ulubionych</span>
-                                    <i class="fas fa-star"></i>
-                                </div>
-                                <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Dodaj
-                                    aplikację</button>
+                        <div class="form-group">
+                            <label for="addTryb"><i class="fas fa-laptop-house"></i> Tryb pracy</label>
+                            <select id="addTryb" name="tryb" required>
+                                <option value="">Wybierz tryb...</option>
+                                <option value="STACJONARNY">Stacjonarny</option>
+                                <option value="HYBRYDOWY">Hybrydowy</option>
+                                <option value="ZDALNY">Zdalny</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="addRodzaj"><i class="fas fa-clock"></i> Rodzaj</label>
+                            <select id="addRodzaj" name="rodzaj" required>
+                                <option value="">Wybierz rodzaj...</option>
+                                <option value="PELNY_ETAT">Pełny etat</option>
+                                <option value="NIEPELNY_ETAT">Niepełny etat</option>
+                                <option value="STAZ">Staż</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="addUmowa"><i class="fas fa-file-contract"></i> Umowa</label>
+                            <select id="addUmowa" name="umowa" required>
+                                <option value="">Wybierz umowę...</option>
+                                <option value="UMOWA_O_PRACE">Umowa o pracę</option>
+                                <option value="UMOWA_B2B">Umowa B2B</option>
+                                <option value="UMOWA_ZLECENIE">Umowa zlecenie</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="addKontakt"><i class="fas fa-address-book"></i> Kontakt</label>
+                            <input type="text" id="addKontakt" name="kontakt" placeholder="np. imię, email, telefon">
+                        </div>
+                        <div class="form-group">
+                            <label for="addLink"><i class="fas fa-link"></i> Link do oferty</label>
+                            <input type="url" id="addLink" name="link" placeholder="https://...">
+                        </div>
+                        <div class="form-group">
+                            <label for="addNotatki"
+                                style="font-weight:600;font-size:1.1em;display:block;margin-bottom:0.3em;">
+                                <i class="fas fa-sticky-note"
+                                    style="color:#4f8cff;margin-right:0.3em;position:static;"></i>Notatki
+                            </label>
+                            <textarea id="addNotatki" name="notatki" rows="3"
+                                placeholder="Dodaj własne notatki do tej aplikacji..."
+                                style="padding-left: 0.7rem;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="addImages"
+                                style="font-weight:600;font-size:1.1em;display:block;margin-bottom:0.3em;">
+                                <i class="fas fa-image"
+                                    style="color:#4f8cff;margin-right:0.3em;position:static;"></i>Załącz
+                                zdjęcia/screeny
+                            </label>
+                            <input type="file" id="addImages" name="images" accept="image/*" multiple
+                                style="width:100%;padding:0.7rem;border:1px solid #e5e7eb;border-radius:12px;background:white;font-size:1em;color:#141414;box-sizing:border-box;cursor:pointer;transition:all 0.2s ease;border:2px dashed #e5e7eb;"
+                                onmouseover="this.style.borderColor='#4f8cff'; this.style.backgroundColor='#f8faff';"
+                                onmouseout="this.style.borderColor='#e5e7eb'; this.style.backgroundColor='white';"
+                                onfocus="this.style.borderColor='#4f8cff'; this.style.boxShadow='0 0 0 3px rgba(79, 140, 255, 0.1)';"
+                                onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                            <div id="addImagesPreview" class="images-preview"></div>
+                            <div id="addImageCount"
+                                style="margin-top: 0.5rem; font-size: 0.9em; color: #666; text-align: center; display: none;">
+                                <i class="fas fa-info-circle"></i> Wybrano <span id="addImageCountNumber">0</span>
+                                zdjęć
+                            </div>
+                            <div style="margin-top: 0.5rem; text-align: center;">
+                                <button type="button" onclick="clearAllAddImages()"
+                                    style="background: #dc3545; color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 6px; font-size: 0.9em; cursor: pointer;"
+                                    title="Usuń wszystkie zdjęcia">
+                                    <i class="fas fa-trash"></i> Usuń wszystkie
+                                </button>
+                            </div>
+                        </div>
+                        <div class="favorite-checkbox">
+                            <input type="checkbox" id="addFavorite" name="favorite">
+                            <span>Dodaj do ulubionych</span>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Dodaj
+                            aplikację</button>
                     </form>
                     <p id="form-message" style="text-align:center; margin-top:1em; color:green;"></p>
                     <div id="auth-debug"
@@ -722,9 +721,10 @@
 
         <!-- Modal edycji aplikacji -->
         <div id="editModal" class="modal">
-            <div class="edit-tile">
-                <button id="closeEditModal" type="button">&times;</button>
-                <h2><i class="fas fa-plus-circle"></i> Edytuj aplikację</h2>
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+                <div class="form-container">
+                    <h2><i class="fas fa-plus-circle"></i> Edytuj aplikację</h2>
                 <form id="editApplicationForm">
                     <input type="hidden" id="editAppId">
                     <div class="form-group">
@@ -896,6 +896,7 @@
                     </button>
                 </form>
                 <p id="editFormMessage" style="text-align:center; margin-top:1em; color:green;"></p>
+                </div>
             </div>
         </div>
 
@@ -1048,12 +1049,27 @@
                 document.getElementById('addAppModal').classList.remove('active');
             }
 
+            // Global function for closing edit modal
+            window.closeEditModal = function() {
+                const editModal = document.getElementById('editModal');
+                const editFormMessage = document.getElementById('editFormMessage');
+
+                if (editModal) {
+                    editModal.classList.remove('active');
+                    editModal.style.display = 'none';
+
+                    if (editFormMessage) {
+                        editFormMessage.textContent = '';
+                    }
+                }
+            };
+
             // Clear all images function for add modal
-            window.clearAllAddImages = function() {
+            window.clearAllAddImages = function () {
                 const imagesInput = document.getElementById('addImages');
                 const imagesPreview = document.getElementById('addImagesPreview');
                 const imageCount = document.getElementById('addImageCount');
-                
+
                 if (imagesInput) imagesInput.value = '';
                 if (imagesPreview) imagesPreview.innerHTML = '';
                 if (imageCount) imageCount.style.display = 'none';
@@ -1136,15 +1152,15 @@
                         // Only close if clicking directly on the modal background (not on the content)
                         if (e.target === editModal) {
                             console.log('🔴 Click outside modal detected - closing modal');
-                            
+
                             editModal.classList.remove('active');
                             editModal.style.display = 'none'; // Force hide
-                            
+
                             const editFormMessage = document.getElementById('editFormMessage');
                             if (editFormMessage) editFormMessage.textContent = '';
                         }
                     });
-                    
+
                     console.log('✅ Click-outside handler setup for edit modal');
                 }
 
