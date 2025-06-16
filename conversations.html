@@ -525,6 +525,7 @@
 
     <script>
         let applicationsData = [];
+        let currentApplicationId = null;
 
         // Auth state listener
         window.firebaseModules.onAuthStateChanged(window.firebaseModules.auth, (user) => {
@@ -996,6 +997,8 @@
                 return showConversationDetails(application);
             }
 
+            currentApplicationId = application.id;
+
             // Populate modal with application data
             document.getElementById('modalCompany').textContent = application.company || application.firma || 'Brak danych';
             document.getElementById('modalPosition').textContent = application.position || application.stanowisko || 'Brak danych';
@@ -1069,7 +1072,12 @@
         }
 
         function editApplication() {
-            alert('Funkcja edycji aplikacji będzie wkrótce dostępna!');
+            if (currentApplicationId) {
+                localStorage.setItem('editAppId', currentApplicationId);
+                window.location.href = 'index.html';
+            } else {
+                alert('Brak ID aplikacji do edycji.');
+            }
         }
 
         // Mark all follow-ups as done
