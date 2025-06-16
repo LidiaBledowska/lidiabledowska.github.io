@@ -282,17 +282,43 @@ function loadFavorites() {
 
         // Add event listeners for edit buttons in favorites
         document.querySelectorAll('.edit-btn-fav').forEach(btn => {
-            btn.addEventListener('click', function () {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
                 const appId = this.getAttribute('data-id');
-                openEditModal(appId);
+                console.log('=== FAVORITES EDIT BUTTON CLICKED ===');
+                console.log('Button element:', this);
+                console.log('App ID from data-id:', appId);
+                
+                if (!appId) {
+                    console.error('ERROR: No app ID found on favorites button!');
+                    alert('Błąd: Brak ID aplikacji na przycisku ulubionych!');
+                    return;
+                }
+                
+                console.log('Calling openEditModal from favorites with ID:', appId);
+                try {
+                    openEditModal(appId);
+                } catch (error) {
+                    console.error('ERROR calling openEditModal from favorites:', error);
+                    alert('Błąd podczas otwierania formularza edycji z ulubionych: ' + error.message);
+                }
+                console.log('=== FAVORITES EDIT BUTTON CLICK HANDLED ===');
             });
         });
     });
 }
 
 async function openEditModal(appId) {
+    console.log('=== openEditModal called ===');
+    console.log('App ID:', appId);
+    console.log('Current user:', window.auth?.currentUser);
+    console.log('Firebase modules available:', !!window.firebaseModules);
+    
     const user = window.auth.currentUser;
     if (!user) {
+        console.log('User not authenticated - showing alert');
         alert("Musisz być zalogowany!");
         return;
     }
@@ -371,7 +397,37 @@ async function openEditModal(appId) {
 
     document.getElementById('editApplicationForm').dataset.prevStatus = app.status || "";
     document.getElementById('editApplicationForm').dataset.statusHistory = JSON.stringify(app.statusHistory || []);
-    document.getElementById('editModal').classList.add('active');
+    
+    console.log('About to show edit modal...');
+    const editModal = document.getElementById('editModal');
+    console.log('Edit modal element:', editModal);
+    console.log('Edit modal current classes:', editModal?.className);
+    
+    if (!editModal) {
+        console.error('CRITICAL ERROR: Edit modal not found in DOM!');
+        alert('Błąd: Modal edycji nie został znaleziony!');
+        return;
+    }
+    
+    editModal.classList.add('active');
+    
+    console.log('Edit modal classes after adding active:', editModal?.className);
+    console.log('Edit modal computed display:', window.getComputedStyle(editModal).display);
+    console.log('Edit modal z-index:', window.getComputedStyle(editModal).zIndex);
+    
+    // Force scroll to top of modal when opened
+    editModal.scrollTop = 0;
+    
+    // Add temporary visual indicator that modal is opening
+    const editTile = editModal.querySelector('.edit-tile');
+    if (editTile) {
+        editTile.style.border = '3px solid #4f8cff';
+        setTimeout(() => {
+            editTile.style.border = '1px solid #e5e7eb';
+        }, 1000);
+    }
+    
+    console.log('=== openEditModal completed ===');
 }
 
 function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc') {
@@ -382,7 +438,9 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
     console.log('=================================');
 
     const user = window.auth.currentUser;
+    console.log('User in loadApplications:', user);
     if (!user) {
+        console.log('No user - showing login prompt');
         ;
         // Update counters to 0 when no user is logged in
         updateStatusCounters([]);
@@ -626,9 +684,33 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
         }
 
         document.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
+            console.log('Adding event listener to edit button:', btn.getAttribute('data-id'));
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
                 const appId = this.getAttribute('data-id');
-                openEditModal(appId);
+                console.log('=== EDIT BUTTON CLICKED ===');
+                console.log('Button element:', this);
+                console.log('App ID from data-id:', appId);
+                console.log('Button innerHTML:', this.innerHTML);
+                console.log('Event target:', e.target);
+                console.log('Current target:', e.currentTarget);
+                
+                if (!appId) {
+                    console.error('ERROR: No app ID found on button!');
+                    alert('Błąd: Brak ID aplikacji na przycisku!');
+                    return;
+                }
+                
+                console.log('Calling openEditModal with ID:', appId);
+                try {
+                    openEditModal(appId);
+                } catch (error) {
+                    console.error('ERROR calling openEditModal:', error);
+                    alert('Błąd podczas otwierania formularza edycji: ' + error.message);
+                }
+                console.log('=== EDIT BUTTON CLICK HANDLED ===');
             });
         });
 
@@ -686,11 +768,16 @@ function enhanceTableRowVisuals() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    console.log('=== DOMContentLoaded FIRED ===');
+    
     // Wait for Firebase to be ready
     function waitForFirebase(callback) {
+        console.log('Waiting for Firebase...');
         if (window.firebaseModules && window.auth) {
+            console.log('Firebase ready!');
             callback();
         } else {
+            console.log('Firebase not ready yet, retrying...');
             setTimeout(() => waitForFirebase(callback), 100);
         }
     }
@@ -1180,6 +1267,7 @@ document.addEventListener('DOMContentLoaded', function () {
         window.firebaseModules.onAuthStateChanged(window.auth, function (user) {
             const landingPage = document.getElementById('landingPage');
             const mainContent = document.getElementById('mainContent');
+            const loadingOverlay = document.getElementById('loadingOverlay');
             const googleSigninButtonMain = document.getElementById('google-signin-button-main');
             const mainUserStatus = document.getElementById('main-user-status');
             const mainMenuLink = document.getElementById('mainMenuLink');
@@ -1249,8 +1337,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
 
+                const loadingOverlay = document.getElementById('loadingOverlay');
                 if (loadingOverlay) loadingOverlay.style.display = 'none';
 
+                const userInfo = document.getElementById('userInfo');
+                const loginBtn = document.getElementById('loginBtn');
+                const logoutBtn = document.getElementById('logoutBtn');
+                
                 if (userInfo) userInfo.style.display = 'none';
                 if (loginBtn) loginBtn.style.display = 'inline';
                 if (logoutBtn) logoutBtn.style.display = 'none';
@@ -1288,72 +1381,289 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-    // Test function to verify sorting works
-    window.testSorting = function () {
-        console.log('=== MANUAL SORT TEST ===');
-        const sortOrderElement = document.getElementById('sortOrder');
-        const showArchived = document.getElementById('showArchived')?.checked || false;
-
-        if (sortOrderElement) {
-            console.log('Current sort order:', sortOrderElement.value);
-            console.log('Calling loadApplications with current filters...');
-            loadApplications(getFilters(), showArchived, sortOrderElement.value);
-        } else {
-            console.log('ERROR: sortOrder element not found');
+    // Test function for edit modal
+    window.testEditModal = function() {
+        console.log('=== TESTING EDIT MODAL ===');
+        
+        // Check if modal exists
+        const editModal = document.getElementById('editModal');
+        console.log('Edit modal found:', !!editModal);
+        
+        if (editModal) {
+            console.log('Modal classes:', editModal.className);
+            console.log('Modal display style:', editModal.style.display);
+            console.log('Modal computed display:', window.getComputedStyle(editModal).display);
+            
+            // Try to open modal manually
+            console.log('Attempting to open modal manually...');
+            editModal.classList.add('active');
+            console.log('Modal classes after adding active:', editModal.className);
+            console.log('Modal computed display after adding active:', window.getComputedStyle(editModal).display);
+            
+            // Check if form exists
+            const form = document.getElementById('editApplicationForm');
+            console.log('Form found:', !!form);
+            
+            if (form) {
+                console.log('Form elements count:', form.elements.length);
+                console.log('Form submit button:', !!form.querySelector('button[type="submit"]'));
+            }
         }
-        console.log('========================');
+        
+        console.log('=== END TEST ===');
+        
+        return {
+            modalExists: !!editModal,
+            modalVisible: editModal ? window.getComputedStyle(editModal).display !== 'none' : false,
+            formExists: !!document.getElementById('editApplicationForm')
+        };
     };
 
-    // Global function to toggle sort container manually
-    window.toggleSortContainer = function () {
-        const sortContainer = document.getElementById('sortContainer');
-        if (sortContainer) {
-            const isHidden = sortContainer.style.display === 'none';
-            sortContainer.style.display = isHidden ? 'block' : 'none';
-            console.log('Sort container', isHidden ? 'shown' : 'hidden');
-        } else {
-            console.log('ERROR: sortContainer not found');
+    // Comprehensive debug function
+    window.debugAll = function() {
+        console.log('=== COMPREHENSIVE DEBUG ===');
+        
+        // Check loading overlay
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        console.log('Loading overlay:', {
+            element: !!loadingOverlay,
+            display: loadingOverlay?.style.display,
+            visible: loadingOverlay ? window.getComputedStyle(loadingOverlay).display : 'not found'
+        });
+        
+        // Check main sections
+        const landingPage = document.getElementById('landingPage');
+        const mainContent = document.getElementById('mainContent');
+        console.log('Page sections:', {
+            landingPage: {
+                element: !!landingPage,
+                display: landingPage?.style.display,
+                visible: landingPage ? window.getComputedStyle(landingPage).display : 'not found'
+            },
+            mainContent: {
+                element: !!mainContent,
+                display: mainContent?.style.display,
+                visible: mainContent ? window.getComputedStyle(mainContent).display : 'not found'
+            }
+        });
+        
+        // Check Firebase
+        console.log('Firebase status:', {
+            auth: !!window.auth,
+            firebaseModules: !!window.firebaseModules,
+            currentUser: window.auth?.currentUser ? 'logged in' : 'not logged in',
+            userEmail: window.auth?.currentUser?.email
+        });
+        
+        // Check edit buttons
+        const editButtons = document.querySelectorAll('.edit-btn');
+        console.log('Edit buttons:', {
+            count: editButtons.length,
+            firstButtonId: editButtons[0]?.getAttribute('data-id')
+        });
+        
+        // Check applications table
+        const tbody = document.querySelector('.applications-table tbody');
+        console.log('Applications table:', {
+            element: !!tbody,
+            rowCount: tbody?.children.length || 0
+        });
+        
+        console.log('=== END COMPREHENSIVE DEBUG ===');
+        
+        // Try to force show main content if user is authenticated
+        if (window.auth?.currentUser) {
+            console.log('User is authenticated - forcing main content display');
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+            if (landingPage) landingPage.style.display = 'none';
+            if (mainContent) {
+                mainContent.style.display = 'block';
+                mainContent.style.opacity = '1';
+            }
         }
+    };
+
+    // Debug function to check Firebase status
+    window.debugFirebase = function() {
+        console.log('=== DEBUG FIREBASE ===');
+        console.log('window.auth:', window.auth);
+        console.log('window.firebaseModules:', window.firebaseModules);
+        console.log('window.firebaseModules.onAuthStateChanged:', window.firebaseModules?.onAuthStateChanged);
+        console.log('Current user:', window.auth?.currentUser);
+        console.log('Landing page display:', document.getElementById('landingPage')?.style.display);
+        console.log('Main content display:', document.getElementById('mainContent')?.style.display);
+        console.log('Loading overlay display:', document.getElementById('loadingOverlay')?.style.display);
+        console.log('=== END DEBUG FIREBASE ===');
+    };
+
+    // Debug function to check edit buttons
+    window.debugEditButtons = function() {
+        console.log('=== DEBUG EDIT BUTTONS ===');
+        const editButtons = document.querySelectorAll('.edit-btn');
+        console.log('Found edit buttons:', editButtons.length);
+        editButtons.forEach((btn, index) => {
+            console.log(`Button ${index + 1}:`, {
+                element: btn,
+                dataId: btn.getAttribute('data-id'),
+                hasEventListener: btn.onclick !== null,
+                innerHTML: btn.innerHTML
+            });
+        });
+        console.log('=== END DEBUG ===');
+        
+        // Try to manually trigger openEditModal
+        if (editButtons.length > 0) {
+            const firstButton = editButtons[0];
+            const appId = firstButton.getAttribute('data-id');
+            console.log('Testing openEditModal with appId:', appId);
+            if (appId) {
+                openEditModal(appId);
+            }
+        }
+    };
+
+    // Simple quick check function for immediate debugging
+    window.quickCheck = function() {
+        console.log('=== QUICK CHECK ===');
+        
+        // Check loading overlay
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingVisible = loadingOverlay ? window.getComputedStyle(loadingOverlay).display !== 'none' : false;
+        console.log('Loading overlay visible:', loadingVisible);
+        
+        // Check main sections
+        const landingPage = document.getElementById('landingPage');
+        const mainContent = document.getElementById('mainContent');
+        const landingVisible = landingPage ? window.getComputedStyle(landingPage).display !== 'none' : false;
+        const mainVisible = mainContent ? window.getComputedStyle(mainContent).display !== 'none' : false;
+        
+        console.log('Landing page visible:', landingVisible);
+        console.log('Main content visible:', mainVisible);
+        
+        // Check Firebase
+        console.log('Firebase auth:', !!window.auth);
+        console.log('Current user:', window.auth?.currentUser ? 'logged in' : 'not logged in');
+        
+        // Check applications table
+        const tbody = document.querySelector('.applications-table tbody');
+        const rowCount = tbody?.children.length || 0;
+        console.log('Application rows:', rowCount);
+        
+        // Check edit buttons
+        const editButtons = document.querySelectorAll('.edit-btn');
+        console.log('Edit buttons found:', editButtons.length);
+        
+        console.log('=== END QUICK CHECK ===');
+        
+        // Auto-fix if loading overlay is stuck
+        if (loadingVisible) {
+            console.log('Loading overlay is stuck - hiding it...');
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+            
+            // Show appropriate content
+            if (window.auth?.currentUser) {
+                console.log('User authenticated - showing main content');
+                if (landingPage) landingPage.style.display = 'none';
+                if (mainContent) {
+                    mainContent.style.display = 'block';
+                    mainContent.style.opacity = '1';
+                }
+            } else {
+                console.log('User not authenticated - showing landing page');
+                if (landingPage) {
+                    landingPage.style.display = 'block';
+                    landingPage.style.opacity = '1';
+                }
+                if (mainContent) mainContent.style.display = 'none';
+            }
+        }
+        
+        return {
+            loadingStuck: loadingVisible,
+            userLoggedIn: !!window.auth?.currentUser,
+            mainContentVisible: mainVisible,
+            applicationCount: rowCount,
+            editButtonsCount: editButtons.length
+        };
+    };
+
+    // Function to force hide loading overlay if it's blocking UI
+    window.forceHideLoadingOverlay = function() {
+        console.log('=== FORCE HIDE LOADING OVERLAY ===');
+        
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) {
+            console.log('Loading overlay found, hiding it...');
+            loadingOverlay.style.display = 'none';
+            loadingOverlay.style.visibility = 'hidden';
+            loadingOverlay.style.opacity = '0';
+            loadingOverlay.style.zIndex = '-1';
+            console.log('Loading overlay hidden');
+        } else {
+            console.log('Loading overlay not found');
+        }
+        
+        console.log('=== END FORCE HIDE ===');
+    };
+
+    // Function to check what's blocking the UI
+    window.checkUIBlockers = function() {
+        console.log('=== CHECKING UI BLOCKERS ===');
+        
+        const elements = [
+            'loadingOverlay',
+            'landingPage', 
+            'mainContent',
+            'editModal',
+            'addAppModal',
+            'imageModal'
+        ];
+        
+        elements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                const styles = window.getComputedStyle(element);
+                console.log(`${id}:`, {
+                    display: styles.display,
+                    visibility: styles.visibility,
+                    opacity: styles.opacity,
+                    zIndex: styles.zIndex,
+                    position: styles.position
+                });
+            } else {
+                console.log(`${id}: NOT FOUND`);
+            }
+        });
+        
+        console.log('=== END UI BLOCKERS CHECK ===');
     };
 
     // Initial load
     loadApplications(getFilters(), document.getElementById('showArchived')?.checked, 'desc');
-
-    // Additional sort element verification
-    setTimeout(() => {
-        console.log('=== SORT DEBUG CHECK ===');
-        const sortOrderElement = document.getElementById('sortOrder');
-        const toggleSortElement = document.getElementById('toggleSort');
-        const sortContainerElement = document.getElementById('sortContainer');
-
-        console.log('sortOrder element found:', !!sortOrderElement);
-        console.log('sortOrder element value:', sortOrderElement?.value);
-        console.log('toggleSort element found:', !!toggleSortElement);
-        console.log('sortContainer element found:', !!sortContainerElement);
-        console.log('sortContainer display style:', sortContainerElement?.style.display);
-
-        if (sortOrderElement) {
-            console.log('sortOrder has event listeners:', sortOrderElement.hasAttribute('data-listener-added'));
-        }
-        console.log('========================');
-    }, 1000);
-
-    // Try adding listeners with retries
-    let retryCount = 0;
-    const maxRetries = 5;
-    const retryInterval = setInterval(() => {
-        if (ensureSortListeners() || retryCount >= maxRetries) {
-            clearInterval(retryInterval);
-            console.log('Sort listeners setup completed (attempt:', retryCount + 1, ')');
-        }
-        retryCount++;
-    }, 200);
 
     // Inicjalizacja kolorowych kart filtrów - z opóźnieniem, żeby być pewnym że DOM jest gotowy
     setTimeout(() => {
         ;
         initializeQuickFilters();;
     }, 100);
+
+    // Fallback to hide loading overlay after 10 seconds if Firebase doesn't load
+    setTimeout(() => {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay && loadingOverlay.style.display !== 'none') {
+            console.log('Firebase loading timeout - forcing loading overlay hide');
+            loadingOverlay.style.display = 'none';
+            
+            // Show landing page if main content is not visible
+            const mainContent = document.getElementById('mainContent');
+            const landingPage = document.getElementById('landingPage');
+            
+            if (mainContent && mainContent.style.display === 'none' && landingPage) {
+                landingPage.style.display = 'block';
+            }
+        }
+    }, 10000);
+
 });
 
 // Funkcja do aktualizacji liczników w kartach statusów
@@ -1433,7 +1743,7 @@ function initializeQuickFilters() {
     const statusCards = document.querySelectorAll('.filter-card[data-filter-type="status"]');;
 
     statusCards.forEach((card, index) => {
-        const filterValue = card.dataset.filterValue;;
+                                                         const filterValue = card.dataset.filterValue;;
 
         card.addEventListener('click', function () {
             const filterValue = this.dataset.filterValue;;
@@ -1533,35 +1843,332 @@ function initializeQuickFilters() {
     // Domyślnie aktywuj kartę "Wszystkie aplikacje"
     resetQuickFilters();
 }
-function getFilters() {
+
+// Debug function to check all modal elements
+window.checkModalElements = function() {
+    console.log('=== CHECKING MODAL ELEMENTS ===');
+    
+    const elements = [
+        'editModal',
+        'editApplicationForm', 
+        'editAppId',
+        'editStanowisko',
+        'editFirma',
+        'editData',
+        'editStatus',
+        'editSalaryType',
+        'editWynagrodzenie',
+        'editWynagrodzenieOd',
+        'editWynagrodzenieDo',
+        'editWaluta',
+        'editWynRodzaj',
+        'editTryb',
+        'editRodzaj',
+        'editUmowa',
+        'editKontakt',
+        'editLink',
+        'editNotatki',
+        'editFavorite',
+        'editImages',
+        'editImagesPreview',
+        'statusHistoryBox',
+        'statusHistoryList',
+        'closeEditModal',
+        'editFormMessage'
+    ];
+    
+    elements.forEach(id => {
+        const element = document.getElementById(id);
+        console.log(`${id}:`, element ? '✅ EXISTS' : '❌ MISSING');
+        if (!element) {
+            console.error(`CRITICAL: Missing element with ID: ${id}`);
+        }
+    });
+    
+    console.log('=== END MODAL ELEMENTS CHECK ===');
+    
+    return elements.map(id => ({ 
+        id, 
+        exists: !!document.getElementById(id) 
+    }));
+};
+
+// Function to check if edit buttons exist and have correct event listeners
+window.checkEditButtons = function() {
+    console.log('=== CHECKING EDIT BUTTONS ===');
+    
+    const mainEditButtons = document.querySelectorAll('.edit-btn');
+    const favEditButtons = document.querySelectorAll('.edit-btn-fav');
+    
+    console.log('Main edit buttons found:', mainEditButtons.length);
+    console.log('Favorites edit buttons found:', favEditButtons.length);
+    
+    mainEditButtons.forEach((btn, index) => {
+        const appId = btn.getAttribute('data-id');
+        const hasListener = btn.onclick !== null || btn._addEventListener;
+        console.log(`Main button ${index + 1}:`, {
+            appId,
+            hasListener,
+            element: btn
+        });
+    });
+    
+    favEditButtons.forEach((btn, index) => {
+        const appId = btn.getAttribute('data-id');
+        const hasListener = btn.onclick !== null || btn._addEventListener;
+        console.log(`Fav button ${index + 1}:`, {
+            appId,
+            hasListener,
+            element: btn
+        });
+    });
+    
+    console.log('=== END EDIT BUTTONS CHECK ===');
+    
     return {
-        stanowisko: document.getElementById('filterStanowisko')?.value || "",
-        firma: document.getElementById('filterFirma')?.value || "",
-        data: document.getElementById('filterData')?.value || "",
-        tryb: document.getElementById('filterTryb')?.value || "",
-        rodzaj: document.getElementById('filterRodzaj')?.value || "",
-        umowa: document.getElementById('filterUmowa')?.value || "",
-        status: window.filters?.status || ""
+        mainButtons: mainEditButtons.length,
+        favButtons: favEditButtons.length
     };
+};
+
+// Function to manually trigger edit button click for testing
+window.testEditButtonClick = function() {
+    console.log('=== TESTING EDIT BUTTON CLICK ===');
+    
+    const editButtons = document.querySelectorAll('.edit-btn');
+    console.log('Found edit buttons:', editButtons.length);
+    
+    if (editButtons.length === 0) {
+        console.log('No edit buttons found. Loading applications first...');
+        
+        // Try to load applications first
+        const currentSort = document.getElementById('sortOrder')?.value || 'desc';
+        loadApplications({}, false, currentSort);
+        
+        // Wait a bit then try again
+        setTimeout(() => {
+            const editButtonsAfterLoad = document.querySelectorAll('.edit-btn');
+            console.log('Edit buttons after loading:', editButtonsAfterLoad.length);
+            
+            if (editButtonsAfterLoad.length > 0) {
+                const firstButton = editButtonsAfterLoad[0];
+                console.log('Clicking first edit button:', firstButton);
+                firstButton.click();
+            } else {
+                console.log('Still no edit buttons after loading applications');
+            }
+        }, 2000);
+    } else {
+        const firstButton = editButtons[0];
+        console.log('Clicking first edit button:', firstButton);
+        firstButton.click();
+    }
+    
+    console.log('=== END TEST EDIT BUTTON CLICK ===');
+};
+
+// Function to check if user is logged in and applications are loaded
+window.checkApplicationsState = function() {
+    console.log('=== CHECKING APPLICATIONS STATE ===');
+    
+    const user = window.auth?.currentUser;
+    console.log('User logged in:', !!user);
+    console.log('User ID:', user?.uid);
+    
+    const tbody = document.querySelector('.applications-table tbody');
+    const rows = tbody ? tbody.querySelectorAll('tr') : [];
+    console.log('Table rows found:', rows.length);
+    
+    const editButtons = document.querySelectorAll('.edit-btn');
+    console.log('Edit buttons found:', editButtons.length);
+    
+    if (rows.length > 0) {
+        console.log('Sample row:', rows[0]);
+        const firstRowButton = rows[0].querySelector('.edit-btn');
+        console.log('First row edit button:', firstRowButton);
+        if (firstRowButton) {
+            console.log('First button data-id:', firstRowButton.getAttribute('data-id'));
+        }
+    }
+    
+    console.log('=== END APPLICATIONS STATE CHECK ===');
+    
+    return {
+        userLoggedIn: !!user,
+        rowsCount: rows.length,
+        editButtonsCount: editButtons.length
+    };
+};
+
+// Emergency function to diagnose disappeared applications
+window.emergencyDiagnosis = function() {
+    console.log('=== EMERGENCY DIAGNOSIS ===');
+    
+    // Check user authentication
+    const user = window.auth?.currentUser;
+    console.log('🔐 User authentication:');
+    console.log('  Current user:', user);
+    console.log('  User ID:', user?.uid);
+    console.log('  User email:', user?.email);
+    console.log('  Auth ready:', !!window.auth);
+    console.log('  Firebase modules:', !!window.firebaseModules);
+    
+    // Check Firebase connection
+    console.log('🔥 Firebase status:');
+    console.log('  Database object:', !!window.db);
+    console.log('  Firebase modules available:', Object.keys(window.firebaseModules || {}));
+    
+    // Check DOM elements
+    console.log('📄 DOM elements:');
+    const tbody = document.querySelector('.applications-table tbody');
+    console.log('  Table tbody:', !!tbody);
+    console.log('  Table rows:', tbody?.children.length || 0);
+    console.log('  Loading overlay visible:', document.getElementById('loadingOverlay')?.style.display !== 'none');
+    console.log('  Main content visible:', document.getElementById('mainContent')?.style.display !== 'none');
+    console.log('  Landing page visible:', document.getElementById('landingPage')?.style.display !== 'none');
+    
+    // Try to manually query Firebase
+    if (user && window.firebaseModules && window.db) {
+        console.log('🔍 Attempting manual Firebase query...');
+        
+        const q = window.firebaseModules.query(
+            window.firebaseModules.collection(window.db, "applications"),
+            window.firebaseModules.where("userId", "==", user.uid),
+            window.firebaseModules.limit(5)
+        );
+        
+        window.firebaseModules.getDocs(q).then((querySnapshot) => {
+            console.log('📊 Manual query results:');
+            console.log('  Documents found:', querySnapshot.size);
+            
+            if (querySnapshot.empty) {
+                console.log('  ❌ No documents found for user:', user.uid);
+            } else {
+                console.log('  ✅ Documents exist:');
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    console.log(`    - ${doc.id}: ${data.stanowisko} at ${data.firma}`);
+                });
+            }
+        }).catch((error) => {
+            console.error('  ❌ Manual query failed:', error);
+        });
+    } else {
+        console.log('  ❌ Cannot perform manual query - missing prerequisites');
+    }
+    
+    console.log('=== END EMERGENCY DIAGNOSIS ===');
+};
+
+// Function to reload applications with full debug
+window.forceReloadApplications = function() {
+    console.log('=== FORCE RELOAD APPLICATIONS ===');
+    
+    // Clear table first
+    const tbody = document.querySelector('.applications-table tbody');
+    if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 2rem; color: #6b7280;">Ładowanie aplikacji...</td></tr>';
+    }
+    
+    // Get current filters and sort
+    const filters = getFilters();
+    const showArchived = document.getElementById('showArchived')?.checked || false;
+    const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
+    
+    console.log('Loading with:', { filters, showArchived, sortOrder });
+    
+    // Force reload
+    loadApplications(filters, showArchived, sortOrder);
+    
+    console.log('=== END FORCE RELOAD ===');
+};
+
+// Function to check localStorage and reset if needed
+window.checkAndResetStorage = function() {
+    console.log('=== CHECKING STORAGE ===');
+    
+    // Check Firebase auth persistence
+    const authKeys = Object.keys(localStorage).filter(key => key.includes('firebase'));
+    console.log('Firebase localStorage keys:', authKeys);
+    
+    authKeys.forEach(key => {
+        try {
+            const value = localStorage.getItem(key);
+            console.log(`${key}:`, value ? 'EXISTS' : 'EMPTY');
+        } catch (e) {
+            console.log(`${key}:`, 'ERROR reading');
+        }
+    });
+    
+    // Check session storage
+    const sessionKeys = Object.keys(sessionStorage).filter(key => key.includes('firebase'));
+    console.log('Firebase sessionStorage keys:', sessionKeys);
+    
+    console.log('=== END STORAGE CHECK ===');
+};
+
+// Function to get current filters from form elements
+function getFilters() {
+    const filters = {};
+    
+    // Text filters
+    const stanowisko = document.getElementById('filterStanowisko')?.value?.trim();
+    const firma = document.getElementById('filterFirma')?.value?.trim();
+    const data = document.getElementById('filterData')?.value?.trim();
+    
+    // Select filters
+    const tryb = document.getElementById('filterTryb')?.value;
+    const rodzaj = document.getElementById('filterRodzaj')?.value;
+    const umowa = document.getElementById('filterUmowa')?.value;
+    
+    if (stanowisko) filters.stanowisko = stanowisko;
+    if (firma) filters.firma = firma;
+    if (data) filters.data = data;
+    if (tryb) filters.tryb = tryb;
+    if (rodzaj) filters.rodzaj = rodzaj;
+    if (umowa) filters.umowa = umowa;
+    
+    // Status filter from global window.filters object (set by quick filter cards)
+    if (window.filters && window.filters.status) {
+        filters.status = window.filters.status;
+    }
+    
+    return filters;
 }
 
+// Function to clear all filters
 function clearAllFilters() {
-    ['filterStanowisko', 'filterFirma', 'filterData', 'filterTryb', 'filterRodzaj', 'filterUmowa'].forEach(id => {
+    console.log('=== CLEAR ALL FILTERS ===');
+    
+    // Clear text inputs
+    const textFilters = ['filterStanowisko', 'filterFirma', 'filterData'];
+    textFilters.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
-
-    const showArchived = document.getElementById('showArchived');
-    if (showArchived) showArchived.checked = false;
-
-    if (typeof resetQuickFilters === 'function') {
-        resetQuickFilters();
-    } else if (window.filters) {
+    
+    // Clear select filters
+    const selectFilters = ['filterTryb', 'filterRodzaj', 'filterUmowa'];
+    selectFilters.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    
+    // Clear global status filter
+    if (window.filters) {
         window.filters.status = '';
     }
-
+    
+    // Reset quick filter cards
+    if (window.resetQuickFilters) {
+        window.resetQuickFilters();
+    }
+    
+    // Reload applications with no filters
     const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
-    loadApplications(getFilters(), showArchived?.checked || false, sortOrder);
+    const showArchived = document.getElementById('showArchived')?.checked || false;
+    loadApplications({}, showArchived, sortOrder);
+    
+    console.log('=== FILTERS CLEARED ===');
 }
-//# sourceMappingURL=app.js.map
 

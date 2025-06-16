@@ -531,7 +531,7 @@ body #mainContent .applications-table {
 
 /* Modal edycji aplikacji */
 #editModal {
-    display: none;
+    display: none !important;
     position: fixed;
     top: 0;
     left: 0;
@@ -540,11 +540,11 @@ body #mainContent .applications-table {
     background: rgba(0, 0, 0, 0.5);
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 9999;
 }
 
 #editModal.active {
-    display: flex;
+    display: flex !important;
 }
 
 #editModal .edit-tile {
@@ -1160,7 +1160,9 @@ body #mainContent .applications-table {
         margin: 20px auto;
     }
 
-    font-size: 1.3rem;
+    .hero-header h1 {
+        font-size: 1.3rem;
+    }
 }
 
 .salary-group {
@@ -1179,5 +1181,4 @@ body #mainContent .applications-table {
     visibility: visible;
     margin-bottom: 0.5rem;
     height: auto;
-}
 }
