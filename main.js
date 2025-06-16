@@ -413,6 +413,8 @@ async function openEditModal(appId) {
     }
     
     editModal.classList.add('active');
+    // Ensure modal is visible even if styles are overridden
+    editModal.style.display = 'flex';
     
     console.log('Edit modal classes after adding active:', editModal?.className);
     console.log('Edit modal computed display:', window.getComputedStyle(editModal).display);
