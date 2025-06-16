@@ -682,9 +682,40 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
 
         document.querySelectorAll('.edit-btn').forEach(btn => {
             console.log('Adding event listener to edit button:', btn.getAttribute('data-id'));
+            
+            // Force white text color on all mouse events
+            btn.addEventListener('mousedown', function(e) {
+                this.style.color = 'white';
+                this.style.setProperty('color', 'white', 'important');
+                const icon = this.querySelector('.fas');
+                if (icon) {
+                    icon.style.color = 'white';
+                    icon.style.setProperty('color', 'white', 'important');
+                }
+            });
+            
+            btn.addEventListener('mouseup', function(e) {
+                this.style.color = 'white';
+                this.style.setProperty('color', 'white', 'important');
+                const icon = this.querySelector('.fas');
+                if (icon) {
+                    icon.style.color = 'white';
+                    icon.style.setProperty('color', 'white', 'important');
+                }
+            });
+            
             btn.addEventListener('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
+                
+                // Ensure color stays white during click
+                this.style.color = 'white';
+                this.style.setProperty('color', 'white', 'important');
+                const icon = this.querySelector('.fas');
+                if (icon) {
+                    icon.style.color = 'white';
+                    icon.style.setProperty('color', 'white', 'important');
+                }
 
                 const appId = this.getAttribute('data-id');
                 console.log('=== EDIT BUTTON CLICKED ===');
