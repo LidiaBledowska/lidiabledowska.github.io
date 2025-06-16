@@ -46,6 +46,9 @@ function normalizeText(str) {
         .trim();
 }
 
+// Global array to keep track of images currently displayed in the edit modal
+let currentEditImages = [];
+
 
 
 function showImagesPreview(images) {
@@ -828,8 +831,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Global array to store current images in edit modal
-    let currentEditImages = [];
+    // Use global array to store current images in edit modal
 
     // Obsługa uploadu zdjęć - Base64 version
     let uploadedImages = [];
