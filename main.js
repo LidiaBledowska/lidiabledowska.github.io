@@ -1641,6 +1641,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initial load
     loadApplications(getFilters(), document.getElementById('showArchived')?.checked, 'desc');
 
+    const pendingEditId = localStorage.getItem('editAppId');
+    if (pendingEditId) {
+        setTimeout(() => {
+            openEditModal(pendingEditId);
+            localStorage.removeItem('editAppId');
+        }, 500);
+    }
+
     // Inicjalizacja kolorowych kart filtrów - z opóźnieniem, żeby być pewnym że DOM jest gotowy
     setTimeout(() => {
         ;
