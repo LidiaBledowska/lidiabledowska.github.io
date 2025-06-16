@@ -95,7 +95,6 @@ function showImagesPreview(images) {
             return;
         }
 
-        img.loading = 'lazy';
         img.style.maxWidth = '80px';
         img.style.maxHeight = '80px';
         img.style.borderRadius = '6px';
@@ -114,48 +113,43 @@ function showImagesPreview(images) {
 
         // Add click to preview larger image
         img.onclick = function () {
-            // Use the new image modal
-            if (window.openImageModal) {
-                window.openImageModal(imageUrl, imageName);
-            } else {
-                // Fallback to old method if modal is not available
-                if (imageUrl.startsWith('data:')) {
-                    const newWindow = window.open('', '_blank', 'noopener,noreferrer');
-                    if (newWindow) {
-                        newWindow.document.write(`
-                            <!DOCTYPE html>
-                            <html>
-                            <head>
-                                <title>${imageName}</title>
-                                <style>
-                                    body { 
-                                        margin: 0; 
-                                        padding: 20px; 
-                                        background: #000; 
-                                        display: flex; 
-                                        justify-content: center; 
-                                        align-items: center; 
-                                        min-height: 100vh;
-                                    }
-                                    img { 
-                                        max-width: 100%; 
-                                        max-height: 100vh; 
-                                        object-fit: contain;
-                                        box-shadow: 0 4px 20px rgba(255,255,255,0.1);
-                                    }
-                                </style>
-                            </head>
-                            <body>
-                                <img src="${imageUrl}" alt="${imageName}" />
-                            </body>
-                            </html>
-                        `);
-                        newWindow.document.close();
-                    }
-                } else {
-                    // For regular URLs, use the traditional method
-                    window.open(imageUrl, '_blank', 'noopener,noreferrer');
+            // For Base64 data, create a new window with the image
+            if (imageUrl.startsWith('data:')) {
+                const newWindow = window.open('', '_blank', 'noopener,noreferrer');
+                if (newWindow) {
+                    newWindow.document.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>${imageName}</title>
+                            <style>
+                                body { 
+                                    margin: 0; 
+                                    padding: 20px; 
+                                    background: #000; 
+                                    display: flex; 
+                                    justify-content: center; 
+                                    align-items: center; 
+                                    min-height: 100vh;
+                                }
+                                img { 
+                                    max-width: 100%; 
+                                    max-height: 100vh; 
+                                    object-fit: contain;
+                                    box-shadow: 0 4px 20px rgba(255,255,255,0.1);
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <img src="${imageUrl}" alt="${imageName}" />
+                        </body>
+                        </html>
+                    `);
+                    newWindow.document.close();
                 }
+            } else {
+                // For regular URLs, use the traditional method
+                window.open(imageUrl, '_blank', 'noopener,noreferrer');
             }
         };
 
@@ -182,17 +176,17 @@ function showImagesPreview(images) {
         deleteBtn.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
         deleteBtn.style.transition = 'all 0.2s ease';
 
-        deleteBtn.onmouseover = function() {
+        deleteBtn.onmouseover = function () {
             this.style.background = '#c82333';
             this.style.transform = 'scale(1.1)';
         };
 
-        deleteBtn.onmouseout = function() {
+        deleteBtn.onmouseout = function () {
             this.style.background = '#dc3545';
             this.style.transform = 'scale(1)';
         };
 
-        deleteBtn.onclick = function(e) {
+        deleteBtn.onclick = function (e) {
             e.stopPropagation(); // Prevent triggering image preview
             removeImageFromEdit(index);
         };
@@ -208,13 +202,13 @@ function removeImageFromEdit(index) {
     if (currentEditImages && currentEditImages.length > index) {
         currentEditImages.splice(index, 1);
         showImagesPreview(currentEditImages);
-        
+
         // Show feedback message
         const editMessage = document.getElementById('editFormMessage');
         if (editMessage) {
             editMessage.textContent = 'Zdjęcie usunięte (nie zapomnij zapisać zmian)';
             editMessage.style.color = 'orange';
-            
+
             // Clear message after 3 seconds
             setTimeout(() => {
                 if (editMessage.textContent.includes('usunięte')) {
@@ -252,20 +246,26 @@ function loadFavorites() {
         querySnapshot.forEach((doc) => {
             const app = doc.data();
             let wynagrodzenieText = "";
+<<<<<<< HEAD
             if (app.salaryType === 'range' && (app.wynagrodzenieOd || app.wynagrodzenieDo)) {
-                // Format as range
-                const od = app.wynagrodzenieOd || 0;
-                const doo = app.wynagrodzenieDo || 0;
-                wynagrodzenieText = `${od}-${doo} ${app.waluta || "PLN"}`;
+                // Formatowanie widełek
+                const od = app.wynagrodzenieOd || '';
+                const do_kwota = app.wynagrodzenieDo || '';
+                wynagrodzenieText = `${od}-${do_kwota} ${app.waluta || "PLN"}`;
                 if (app.wynRodzaj) {
                     wynagrodzenieText += ` ${app.wynRodzaj}`;
                 }
             } else if (app.wynagrodzenie) {
-                // Format as exact amount (legacy and new exact format)
+                // Formatowanie pojedynczej kwoty (legacy i nowe)
+=======
+            if (app.wynagrodzenieOd != null && app.wynagrodzenieDo != null) {
+                wynagrodzenieText = `${app.wynagrodzenieOd}-${app.wynagrodzenieDo} ${app.waluta || "PLN"}`;
+            } else if (app.wynagrodzenie) {
+>>>>>>> refs/remotes/rekrutracker/main
                 wynagrodzenieText = `${app.wynagrodzenie} ${app.waluta || "PLN"}`;
-                if (app.wynRodzaj) {
-                    wynagrodzenieText += ` ${app.wynRodzaj}`;
-                }
+            }
+            if (wynagrodzenieText && app.wynRodzaj) {
+                wynagrodzenieText += ` ${app.wynRodzaj}`;
             }
 
             html += `
@@ -330,11 +330,11 @@ async function openEditModal(appId) {
     document.getElementById('editFirma').value = app.firma;
     document.getElementById('editData').value = app.data;
     document.getElementById('editStatus').value = app.status || "";
-    
-    // Handle salary fields based on salary type
+
+    // Obsługa wynagrodzenia - sprawdź typ
     const salaryType = app.salaryType || 'exact';
     document.getElementById('editSalaryType').value = salaryType;
-    
+
     if (salaryType === 'exact') {
         document.getElementById('editWynagrodzenie').value = app.wynagrodzenie || "";
         document.getElementById('editWynagrodzenieOd').value = "";
@@ -344,12 +344,12 @@ async function openEditModal(appId) {
         document.getElementById('editWynagrodzenieOd').value = app.wynagrodzenieOd || "";
         document.getElementById('editWynagrodzenieDo').value = app.wynagrodzenieDo || "";
     }
-    
-    // Trigger the field toggle to show/hide appropriate fields
+
+    // Wywołaj funkcję przełączania pól
     if (window.toggleEditSalaryFields) {
         window.toggleEditSalaryFields();
     }
-    
+
     document.getElementById('editWaluta').value = app.waluta || "PLN";
     document.getElementById('editWynRodzaj').value = app.wynRodzaj || "BRUTTO";
     document.getElementById('editTryb').value = app.tryb || "STACJONARNY";
@@ -393,9 +393,10 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
     console.log('loadApplications called with filters:', filters);
     console.log('loadApplications called with showArchived:', showArchived);
     console.log('=================================');
-    
+
     const user = window.auth.currentUser;
-    if (!user) {;
+    if (!user) {
+        ;
         // Update counters to 0 when no user is logged in
         updateStatusCounters([]);
 
@@ -424,7 +425,8 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
         window.firebaseModules.where("userId", "==", user.uid)
     );
 
-    window.firebaseModules.getDocs(q).then((querySnapshot) => {;
+    window.firebaseModules.getDocs(q).then((querySnapshot) => {
+        ;
         const tbody = document.querySelector('.applications-table tbody');
         tbody.innerHTML = '';
         let count = 0;
@@ -444,10 +446,10 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
         console.log('Sorting applications, sortOrder:', sortOrder);
         console.log('Number of applications to sort:', applications.length);
         console.log('Applications before sort:', applications.map(a => ({ firma: a.firma, data: a.data, favorite: a.favorite })));
-        
+
         applications.sort((a, b) => {
             console.log(`Comparing: ${a.firma} (${a.data}, fav: ${a.favorite}) vs ${b.firma} (${b.data}, fav: ${b.favorite})`);
-            
+
             // First sort by favorites
             if (a.favorite && !b.favorite) {
                 console.log('  -> a is favorite, b is not: a comes first');
@@ -458,10 +460,20 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                 return 1;
             }
 
+<<<<<<< HEAD
+            // Then sort by date with fallback for invalid values
+            const timeA = a.data ? new Date(a.data).getTime() : 0;
+            const timeB = b.data ? new Date(b.data).getTime() : 0;
+
+            if (sortOrder === 'asc') {
+                return timeA - timeB; // oldest first
+            } else {
+                return timeB - timeA; // newest first
+=======
             // Then sort by date
             const dateA = new Date(a.data);
             const dateB = new Date(b.data);
-            
+
             // Debug date parsing
             console.log(`  -> Comparing dates: ${a.data} (${dateA.toISOString()}) vs ${b.data} (${dateB.toISOString()})`);
 
@@ -473,9 +485,10 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                 const result = dateB - dateA; // newest first
                 console.log(`  -> DESC sort result: ${result} (${result < 0 ? 'a first' : result > 0 ? 'b first' : 'equal'})`);
                 return result;
+>>>>>>> refs/remotes/rekrutracker/main
             }
         });
-        
+
         console.log('=== SORT COMPLETED ===');
         console.log('Applications after sort:', applications.map(a => ({ firma: a.firma, data: a.data, favorite: a.favorite })));
         console.log('Final sort order verification:');
@@ -550,20 +563,26 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
             }
 
             let wynagrodzenieCell = "";
+<<<<<<< HEAD
             if (app.salaryType === 'range' && (app.wynagrodzenieOd || app.wynagrodzenieDo)) {
-                // Format as range
-                const od = app.wynagrodzenieOd || 0;
-                const doo = app.wynagrodzenieDo || 0;
-                wynagrodzenieCell = `${od}-${doo} ${app.waluta || "PLN"}`;
+                // Formatowanie widełek
+                const od = app.wynagrodzenieOd || '';
+                const do_kwota = app.wynagrodzenieDo || '';
+                wynagrodzenieCell = `${od}-${do_kwota} ${app.waluta || "PLN"}`;
                 if (app.wynRodzaj) {
                     wynagrodzenieCell += " " + app.wynRodzaj;
                 }
             } else if (app.wynagrodzenie) {
-                // Format as exact amount (legacy and new exact format)
+                // Formatowanie pojedynczej kwoty (legacy i nowe)
+=======
+            if (app.wynagrodzenieOd != null && app.wynagrodzenieDo != null) {
+                wynagrodzenieCell = `${app.wynagrodzenieOd}-${app.wynagrodzenieDo} ${app.waluta || "PLN"}`;
+            } else if (app.wynagrodzenie) {
+>>>>>>> refs/remotes/rekrutracker/main
                 wynagrodzenieCell = app.wynagrodzenie + " " + (app.waluta || "PLN");
-                if (app.wynRodzaj) {
-                    wynagrodzenieCell += " " + app.wynRodzaj;
-                }
+            }
+            if (wynagrodzenieCell && app.wynRodzaj) {
+                wynagrodzenieCell += " " + app.wynRodzaj;
             }
 
             // Funkcje do konwersji wartości na czytelny tekst
@@ -705,53 +724,32 @@ function enhanceTableRowVisuals() {
 
 document.addEventListener('DOMContentLoaded', function () {
     // Wait for Firebase to be ready
-    function waitForFirebase(callback, attempt = 0) {
-        const MAX_ATTEMPTS = 50; // ~5s fallback
+    function waitForFirebase(callback) {
         if (window.firebaseModules && window.auth) {
             callback();
-        } else if (attempt < MAX_ATTEMPTS) {
-            setTimeout(() => waitForFirebase(callback, attempt + 1), 100);
         } else {
-            // Firebase failed to load, show landing page anyway
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            if (loadingOverlay) loadingOverlay.style.display = 'none';
-            const landingPage = document.getElementById('landingPage');
-            const mainContent = document.getElementById('mainContent');
-            if (landingPage) landingPage.style.display = 'block';
-            if (mainContent) mainContent.style.display = 'none';
+            setTimeout(() => waitForFirebase(callback), 100);
         }
     }
 
-    waitForFirebase(function () {
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        // Login/Logout functionality
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const userInfo = document.getElementById('userInfo');
-
-        if (loginBtn) {
-            loginBtn.addEventListener('click', function () {
-                window.location.href = 'login.html';
-            });
-        }
-
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', function () {
-                if (window.firebaseModules && window.firebaseModules.signOut && window.auth) {
-                    window.firebaseModules.signOut(window.auth).then(() => {
-                        window.location.reload();
-                    }).catch((error) => {
-                        console.error('Logout error:', error);
-                        // Still reload the page to clear the session
-                        window.location.reload();
-                    });
-                } else {
-                    // Fallback: just reload the page to clear any cached state
+    // Logout button functionality
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function () {
+            if (window.firebaseModules && window.firebaseModules.signOut && window.auth) {
+                window.firebaseModules.signOut(window.auth).then(() => {
                     window.location.reload();
-                }
-            });
-        }
-    });
+                }).catch((error) => {
+                    console.error('Logout error:', error);
+                    // Still reload the page to clear the session
+                    window.location.reload();
+                });
+            } else {
+                // Fallback: just reload the page to clear any cached state
+                window.location.reload();
+            }
+        });
+    }
 
     // Toggle filters functionality
     const toggleFiltersButton = document.getElementById('toggleFilters');
@@ -763,18 +761,6 @@ document.addEventListener('DOMContentLoaded', function () {
             filtersContainer.style.display = isHidden ? 'block' : 'none';
             toggleFiltersButton.innerHTML = isHidden ? '<i class="fas fa-filter"></i> Ukryj filtry' : '<i class="fas fa-filter"></i> Pokaż filtry';
         });
-    }
-
-    function getFilters() {
-        return {
-            stanowisko: document.getElementById('filterStanowisko')?.value || "",
-            firma: document.getElementById('filterFirma')?.value || "",
-            data: document.getElementById('filterData')?.value || "",
-            tryb: document.getElementById('filterTryb')?.value || "",
-            rodzaj: document.getElementById('filterRodzaj')?.value || "",
-            umowa: document.getElementById('filterUmowa')?.value || "",
-            status: window.filters?.status || ""
-        };
     }
 
     document.getElementById('closeEditModal').onclick = function () {
@@ -877,7 +863,7 @@ document.addEventListener('DOMContentLoaded', function () {
             uploadedImages.forEach(imageData => {
                 currentEditImages.push(imageData);
             });
-            
+
             // Update preview with all images
             showImagesPreview(currentEditImages);
 
@@ -944,20 +930,20 @@ document.addEventListener('DOMContentLoaded', function () {
         const firma = document.getElementById('editFirma').value;
         const data = document.getElementById('editData').value;
         const status = document.getElementById('editStatus').value;
-        
-        // Handle salary fields based on salary type
+
+        // Obsługa wynagrodzenia - sprawdź typ
         const salaryType = document.getElementById('editSalaryType').value;
         let wynagrodzenie = '';
         let wynagrodzenieOd = '';
         let wynagrodzenieDo = '';
-        
+
         if (salaryType === 'exact') {
             wynagrodzenie = document.getElementById('editWynagrodzenie').value;
         } else {
             wynagrodzenieOd = document.getElementById('editWynagrodzenieOd').value;
             wynagrodzenieDo = document.getElementById('editWynagrodzenieDo').value;
         }
-        
+
         const waluta = document.getElementById('editWaluta').value;
         const wynRodzaj = document.getElementById('editWynRodzaj').value;
         const tryb = document.getElementById('editTryb').value;
@@ -1003,7 +989,6 @@ document.addEventListener('DOMContentLoaded', function () {
             firma,
             data,
             status,
-            salaryType,
             waluta,
             wynRodzaj,
             tryb,
@@ -1014,25 +999,27 @@ document.addEventListener('DOMContentLoaded', function () {
             notatki,
             statusHistory,
             images,
-            favorite
+            favorite,
+            salaryType
         };
 
-        // Add salary fields based on type
+        // Dodaj odpowiednie pola wynagrodzenia w zależności od typu
         if (salaryType === 'exact' && wynagrodzenie) {
             updateData.wynagrodzenie = parseFloat(wynagrodzenie);
-            // Clear range fields if switching from range to exact
+            // Usuń stare pola widełek jeśli istnieją
             updateData.wynagrodzenieOd = null;
             updateData.wynagrodzenieDo = null;
         } else if (salaryType === 'range') {
-            updateData.wynagrodzenieOd = wynagrodzenieOd ? parseFloat(wynagrodzenieOd) : null;
-            updateData.wynagrodzenieDo = wynagrodzenieDo ? parseFloat(wynagrodzenieDo) : null;
-            // Clear exact field if switching from exact to range
+            // Usuń stare pole pojedynczej kwoty
             updateData.wynagrodzenie = null;
+            if (wynagrodzenieOd) updateData.wynagrodzenieOd = parseFloat(wynagrodzenieOd);
+            if (wynagrodzenieDo) updateData.wynagrodzenieDo = parseFloat(wynagrodzenieDo);
         }
 
         window.firebaseModules.updateDoc(window.firebaseModules.doc(db, "applications", appId), updateData).then(() => {
             document.getElementById('editFormMessage').textContent = "Zapisano zmiany!";
-            loadApplications(getFilters(), document.getElementById('showArchived')?.checked);
+            const currentSort = document.getElementById('sortOrder')?.value || 'desc';
+            loadApplications(getFilters(), document.getElementById('showArchived')?.checked, currentSort);
             setTimeout(() => {
                 document.getElementById('editModal').classList.remove('active');
                 document.getElementById('editFormMessage').textContent = '';
@@ -1065,7 +1052,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 archiwalna: true
             }).then(() => {
                 document.getElementById('editModal').classList.remove('active');
-                loadApplications(getFilters(), document.getElementById('showArchived')?.checked);
+                const currentSort = document.getElementById('sortOrder')?.value || 'desc';
+                loadApplications(getFilters(), document.getElementById('showArchived')?.checked, currentSort);
             });
         };
     }
@@ -1090,7 +1078,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (confirm("Czy na pewno chcesz usunąć tę aplikację?")) {
             window.firebaseModules.deleteDoc(docRef).then(() => {
                 document.getElementById('editModal').classList.remove('active');
-                loadApplications(getFilters(), document.getElementById('showArchived')?.checked);
+                const currentSort = document.getElementById('sortOrder')?.value || 'desc';
+                loadApplications(getFilters(), document.getElementById('showArchived')?.checked, currentSort);
             });
         }
     };
@@ -1118,7 +1107,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const sortOrderElement = document.getElementById('sortOrder');
     console.log('Checking sortOrder element at startup:', sortOrderElement);
     console.log('sortOrder element exists:', !!sortOrderElement);
-    
+
     if (sortOrderElement) {
         console.log('Setting up sortOrder event listener');
         sortOrderElement.addEventListener('change', function () {
@@ -1136,7 +1125,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function ensureSortListeners() {
         const sortOrderElement = document.getElementById('sortOrder');
         console.log('ensureSortListeners called - element found:', !!sortOrderElement);
-        
+
         if (sortOrderElement && !sortOrderElement.hasAttribute('data-listener-added')) {
             console.log('Fallback: Adding sortOrder change listener');
             sortOrderElement.addEventListener('change', function () {
@@ -1169,7 +1158,7 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('Sort container was hidden:', isHidden);
             sortContainer.style.display = isHidden ? 'block' : 'none';
             toggleSortButton.innerHTML = isHidden ? '<i class="fas fa-sort"></i> Ukryj sortowanie' : '<i class="fas fa-sort"></i> Sortuj według daty aplikowania';
-            
+
             // If showing the container, ensure sort listeners are attached
             if (isHidden) {
                 console.log('Container was shown, ensuring sort listeners...');
@@ -1337,11 +1326,11 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // Test function to verify sorting works
-    window.testSorting = function() {
+    window.testSorting = function () {
         console.log('=== MANUAL SORT TEST ===');
         const sortOrderElement = document.getElementById('sortOrder');
         const showArchived = document.getElementById('showArchived')?.checked || false;
-        
+
         if (sortOrderElement) {
             console.log('Current sort order:', sortOrderElement.value);
             console.log('Calling loadApplications with current filters...');
@@ -1353,7 +1342,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // Global function to toggle sort container manually
-    window.toggleSortContainer = function() {
+    window.toggleSortContainer = function () {
         const sortContainer = document.getElementById('sortContainer');
         if (sortContainer) {
             const isHidden = sortContainer.style.display === 'none';
@@ -1373,13 +1362,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const sortOrderElement = document.getElementById('sortOrder');
         const toggleSortElement = document.getElementById('toggleSort');
         const sortContainerElement = document.getElementById('sortContainer');
-        
+
         console.log('sortOrder element found:', !!sortOrderElement);
         console.log('sortOrder element value:', sortOrderElement?.value);
         console.log('toggleSort element found:', !!toggleSortElement);
         console.log('sortContainer element found:', !!sortContainerElement);
         console.log('sortContainer display style:', sortContainerElement?.style.display);
-        
+
         if (sortOrderElement) {
             console.log('sortOrder has event listeners:', sortOrderElement.hasAttribute('data-listener-added'));
         }
@@ -1398,7 +1387,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 200);
 
     // Inicjalizacja kolorowych kart filtrów - z opóźnieniem, żeby być pewnym że DOM jest gotowy
-    setTimeout(() => {;
+    setTimeout(() => {
+        ;
         initializeQuickFilters();;
     }, 100);
 });
@@ -1468,7 +1458,8 @@ function applyStatusFilter(filterValue) {
 }
 
 // Funkcja do inicjalizacji kolorowych kart filtrów statusów
-function initializeQuickFilters() {;
+function initializeQuickFilters() {
+    ;
 
     // Initialize global filters object
     if (!window.filters) {
@@ -1486,7 +1477,8 @@ function initializeQuickFilters() {;
 
             // Check if user is authenticated - if not, show info but still allow filter functionality
             const user = window.auth && window.auth.currentUser;
-            if (!user) {;
+            if (!user) {
+                ;
 
                 // Show brief info message (non-blocking)
                 const infoMessage = document.createElement('div');
@@ -1608,49 +1600,5 @@ function clearAllFilters() {
     const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
     loadApplications(getFilters(), showArchived?.checked || false, sortOrder);
 }
-
-// Image Modal functionality
-(function(){
-    function escListener(e) {
-        if (e.key === 'Escape') {
-            closeImageModal();
-        }
-    }
-
-    function initModal() {
-        const imageModalEl = document.getElementById('imageModal');
-        if (imageModalEl) {
-            imageModalEl.addEventListener('click', function (e) {
-                if (e.target === imageModalEl) {
-                    window.closeImageModal();
-                }
-            });
-        }
-    }
-
-    window.openImageModal = function(src, alt = '') {
-        const modal = document.getElementById('imageModal');
-        const img = document.getElementById('imageModalImg');
-        if (modal && img) {
-            img.src = src;
-            img.alt = alt;
-            modal.classList.add('active');
-            document.addEventListener('keydown', escListener);
-        }
-    };
-
-    window.closeImageModal = function() {
-        const modal = document.getElementById('imageModal');
-        if (modal) modal.classList.remove('active');
-        document.removeEventListener('keydown', escListener);
-    };
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initModal);
-    } else {
-        initModal();
-    }
-})();
-
 //# sourceMappingURL=app.js.map
 
