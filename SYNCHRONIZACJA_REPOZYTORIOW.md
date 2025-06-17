@@ -1,4 +1,4 @@
-# 📋 Instrukcja Synchronizacji Repozytoriów
+# 📋 Instrukcja Synchronizacji Repozytoriów -test
 
 ## ✅ Status zapisanych zmian:
 
