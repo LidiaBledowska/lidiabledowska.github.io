@@ -577,6 +577,64 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                                 break;
                             }
                         }
+                    } else if (key === 'dateFrom') {
+                        // Handle date range "from" filter
+                        if (filters[key]) {
+                            let compareDate;
+                            if (filters.dateFieldType === 'status' && app.statusHistory && app.statusHistory.length > 0) {
+                                // Use current status date (last in statusHistory)
+                                const lastStatus = app.statusHistory[app.statusHistory.length - 1];
+                                compareDate = lastStatus.date || app.data; // fallback to application date
+                            } else {
+                                // Use application date
+                                compareDate = app.data;
+                            }
+                            
+                            const appDate = new Date(compareDate);
+                            const filterDate = new Date(filters[key]);
+                            if (appDate < filterDate) {
+                                match = false;
+                                break;
+                            }
+                        }
+                    } else if (key === 'dateTo') {
+                        // Handle date range "to" filter
+                        if (filters[key]) {
+                            let compareDate;
+                            if (filters.dateFieldType === 'status' && app.statusHistory && app.statusHistory.length > 0) {
+                                // Use current status date (last in statusHistory)
+                                const lastStatus = app.statusHistory[app.statusHistory.length - 1];
+                                compareDate = lastStatus.date || app.data; // fallback to application date
+                            } else {
+                                // Use application date
+                                compareDate = app.data;
+                            }
+                            
+                            const appDate = new Date(compareDate);
+                            const filterDate = new Date(filters[key]);
+                            if (appDate > filterDate) {
+                                match = false;
+                                break;
+                            }
+                        }
+                    } else if (key === 'data') {
+                        // Handle exact date filter
+                        if (filters[key]) {
+                            let compareDate;
+                            if (filters.dateFieldType === 'status' && app.statusHistory && app.statusHistory.length > 0) {
+                                // Use current status date (last in statusHistory)
+                                const lastStatus = app.statusHistory[app.statusHistory.length - 1];
+                                compareDate = lastStatus.date || app.data; // fallback to application date
+                            } else {
+                                // Use application date
+                                compareDate = app.data;
+                            }
+                            
+                            if (compareDate !== filters[key]) {
+                                match = false;
+                                break;
+                            }
+                        }
                     } else if (filters[key] && app[key] != filters[key]) {
                         match = false;
                         break;
@@ -682,9 +740,9 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
 
         document.querySelectorAll('.edit-btn').forEach(btn => {
             console.log('Adding event listener to edit button:', btn.getAttribute('data-id'));
-            
+
             // Force white text color on all mouse events
-            btn.addEventListener('mousedown', function(e) {
+            btn.addEventListener('mousedown', function (e) {
                 this.style.color = 'white';
                 this.style.setProperty('color', 'white', 'important');
                 const icon = this.querySelector('.fas');
@@ -693,8 +751,8 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                     icon.style.setProperty('color', 'white', 'important');
                 }
             });
-            
-            btn.addEventListener('mouseup', function(e) {
+
+            btn.addEventListener('mouseup', function (e) {
                 this.style.color = 'white';
                 this.style.setProperty('color', 'white', 'important');
                 const icon = this.querySelector('.fas');
@@ -703,11 +761,11 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                     icon.style.setProperty('color', 'white', 'important');
                 }
             });
-            
+
             btn.addEventListener('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 // Ensure color stays white during click
                 this.style.color = 'white';
                 this.style.setProperty('color', 'white', 'important');
@@ -1228,7 +1286,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     [
-        'filterStanowisko', 'filterFirma', 'filterData', 'filterTryb', 'filterRodzaj', 'filterUmowa'
+        'filterStanowisko', 'filterFirma', 'filterData', 'filterDateFrom', 'filterDateTo', 'filterDateFieldType', 'filterTryb', 'filterRodzaj', 'filterUmowa'
     ].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -1750,6 +1808,9 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(() => {
         ;
         initializeQuickFilters();;
+        
+        // Initialize date filters
+        initializeDateFilters();
     }, 100);
 
     // Fallback to hide loading overlay after 10 seconds if Firebase doesn't load
@@ -2222,7 +2283,29 @@ function getFilters() {
     // Text filters
     const stanowisko = document.getElementById('filterStanowisko')?.value?.trim();
     const firma = document.getElementById('filterFirma')?.value?.trim();
-    const data = document.getElementById('filterData')?.value?.trim();
+    
+    // Date filters - handle different types
+    const dateType = document.getElementById('filterDateType')?.value;
+    const dateFieldType = document.getElementById('filterDateFieldType')?.value || 'application'; // default to application date
+    
+    if (dateType === 'exact') {
+        const data = document.getElementById('filterData')?.value?.trim();
+        if (data) {
+            filters.data = data;
+            filters.dateFieldType = dateFieldType;
+        }
+    } else if (dateType === 'range') {
+        const dateFrom = document.getElementById('filterDateFrom')?.value?.trim();
+        const dateTo = document.getElementById('filterDateTo')?.value?.trim();
+        if (dateFrom) {
+            filters.dateFrom = dateFrom;
+            filters.dateFieldType = dateFieldType;
+        }
+        if (dateTo) {
+            filters.dateTo = dateTo;
+            filters.dateFieldType = dateFieldType;
+        }
+    }
 
     // Select filters
     const tryb = document.getElementById('filterTryb')?.value;
@@ -2231,7 +2314,6 @@ function getFilters() {
 
     if (stanowisko) filters.stanowisko = stanowisko;
     if (firma) filters.firma = firma;
-    if (data) filters.data = data;
     if (tryb) filters.tryb = tryb;
     if (rodzaj) filters.rodzaj = rodzaj;
     if (umowa) filters.umowa = umowa;
@@ -2249,18 +2331,29 @@ function clearAllFilters() {
     console.log('=== CLEAR ALL FILTERS ===');
 
     // Clear text inputs
-    const textFilters = ['filterStanowisko', 'filterFirma', 'filterData'];
+    const textFilters = ['filterStanowisko', 'filterFirma', 'filterData', 'filterDateFrom', 'filterDateTo'];
     textFilters.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
 
-    // Clear select filters
-    const selectFilters = ['filterTryb', 'filterRodzaj', 'filterUmowa'];
+    // Clear select filters including date type and date field type
+    const selectFilters = ['filterTryb', 'filterRodzaj', 'filterUmowa', 'filterDateType', 'filterDateFieldType'];
     selectFilters.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
+
+    // Reset date filter visibility
+    const dateFilterFields = document.getElementById('dateFilterFields');
+    const dateFieldTypeContainer = document.getElementById('dateFieldTypeContainer');
+    const exactDateField = document.getElementById('exactDateField');
+    const rangeDateFields = document.getElementById('rangeDateFields');
+    
+    if (dateFilterFields) dateFilterFields.style.display = 'none';
+    if (dateFieldTypeContainer) dateFieldTypeContainer.style.display = 'none';
+    if (exactDateField) exactDateField.style.display = 'none';
+    if (rangeDateFields) rangeDateFields.style.display = 'none';
 
     // Clear global status filter
     if (window.filters) {
@@ -2280,133 +2373,93 @@ function clearAllFilters() {
     console.log('=== FILTERS CLEARED ===');
 }
 
-// Prosty test dla użytkownika - do uruchomienia w konsoli przeglądarki
-window.testujZamykanieModal = function () {
-    console.clear();
-    console.log('🧪 === TEST ZAMYKANIA MODALNEGO OKNA ===');
-    console.log('');
+// Date filter type switching functionality
+function initializeDateFilters() {
+    const filterDateType = document.getElementById('filterDateType');
+    const filterDateFieldType = document.getElementById('filterDateFieldType');
+    const dateFilterFields = document.getElementById('dateFilterFields');
+    const dateFieldTypeContainer = document.getElementById('dateFieldTypeContainer');
+    const exactDateField = document.getElementById('exactDateField');
+    const rangeDateFields = document.getElementById('rangeDateFields');
 
-    const editModal = document.getElementById('editModal');
-    const closeBtn = document.getElementById('closeEditModal');
-
-    console.log('🔍 Sprawdzanie elementów:');
-    console.log('  ✓ Modal istnieje:', !!editModal);
-    console.log('  ✓ Przycisk X istnieje:', !!closeBtn);
-
-    if (!editModal || !closeBtn) {
-        console.log('❌ BŁĄD: Nie można znaleźć wszystkich elementów!');
-        return;
-    }
-
-    console.log('');
-    console.log('🟢 KROK 1: Otwieranie modalnego okna...');
-
-    // Otwórz modal
-    editModal.classList.add('active');
-    editModal.style.display = 'flex';
-
-    // Dodaj treść testową
-    const titleElement = editModal.querySelector('h2');
-    if (titleElement) {
-        titleElement.innerHTML = '🧪 TEST ZAMYKANIA - Spróbuj mnie zamknąć!';
-    }
-
-    const messageEl = document.getElementById('editFormMessage');
-    if (messageEl) {
-        messageEl.innerHTML = `
-                <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px; margin: 1rem 0; text-align: center;">
-                    <h4 style="margin: 0 0 0.5rem 0; color: #1976d2;">🧪 TESTOWANIE ZAMYKANIA MODALNEGO OKNA</h4>
-                    <p style="margin: 0.5rem 0; color: #1976d2; font-weight: bold;">
-                        Wypróbuj te sposoby zamykania:
-                    </p>
-                    <ul style="text-align: left; color: #1976d2; margin: 0.5rem 0;">
-                        <li>Kliknij przycisk ✕ w prawym górnym rogu</li>
-                        <li>Naciśnij klawisz <strong>Escape</strong></li>
-                        <li>Kliknij na ciemne tło <strong>poza</strong> oknem</li>
-                    </ul>
-                    <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9em;">
-                        Po zamknięciu sprawdź konsolę - powinna pojawić się wiadomość o zamknięciu.
-                    </p>
-                </div>
-            `;
-    }
-
-    console.log('✅ Modal został otwarty!');
-    console.log('');
-    console.log('🎯 INSTRUKCJE:');
-    console.log('   1. Sprawdź czy widzisz niebieskie okno z instrukcjami');
-    console.log('   2. Wypróbuj zamykanie na 3 sposoby (patrz okno)');
-    console.log('   3. Po zamknięciu sprawdź konsolę');
-    console.log('');
-    console.log('⚠️  Jeśli modal się nie zamyka, oznacza to że mamy problem!');
-
-    // Dodaj nasłuchiwacz na zamknięcie
-    const originalOnclick = closeBtn.onclick;
-    closeBtn.onclick = function (e) {
-        console.log('');
-        console.log('🔴 PRZYCISK X ZOSTAŁ KLIKNIĘTY!');
-
-        if (originalOnclick) {
-            originalOnclick.call(this, e);
+    // Function to update date field labels based on selected type
+    function updateDateLabels() {
+        const fieldType = filterDateFieldType?.value || 'application';
+        const isStatusDate = fieldType === 'status';
+        
+        const exactDateLabel = document.getElementById('exactDateLabel');
+        const dateFromLabel = document.getElementById('dateFromLabel');
+        const dateToLabel = document.getElementById('dateToLabel');
+        
+        if (isStatusDate) {
+            if (exactDateLabel) exactDateLabel.textContent = 'Data aktualnego statusu';
+            if (dateFromLabel) dateFromLabel.textContent = 'Data statusu od';
+            if (dateToLabel) dateToLabel.textContent = 'Data statusu do';
+        } else {
+            if (exactDateLabel) exactDateLabel.textContent = 'Data aplikowania';
+            if (dateFromLabel) dateFromLabel.textContent = 'Data od';
+            if (dateToLabel) dateToLabel.textContent = 'Data do';
         }
+    }
 
-        setTimeout(() => {
-            const isStillOpen = editModal.classList.contains('active');
-            if (!isStillOpen) {
-                console.log('✅ SUKCES: Modal został zamknięty przyciskiem X!');
+    if (filterDateType && dateFilterFields && exactDateField && rangeDateFields) {
+        // Handle date type selection (exact/range/none)
+        filterDateType.addEventListener('change', function() {
+            const selectedType = this.value;
+            
+            // Clear all date fields when switching types
+            const filterData = document.getElementById('filterData');
+            const filterDateFrom = document.getElementById('filterDateFrom');
+            const filterDateTo = document.getElementById('filterDateTo');
+            
+            if (filterData) filterData.value = '';
+            if (filterDateFrom) filterDateFrom.value = '';
+            if (filterDateTo) filterDateTo.value = '';
+            
+            // Show/hide appropriate fields
+            if (selectedType === 'exact') {
+                dateFilterFields.style.display = 'flex';
+                dateFieldTypeContainer.style.display = 'block';
+                exactDateField.style.display = 'block';
+                rangeDateFields.style.display = 'none';
+                updateDateLabels();
+            } else if (selectedType === 'range') {
+                dateFilterFields.style.display = 'flex';
+                dateFieldTypeContainer.style.display = 'block';
+                exactDateField.style.display = 'none';
+                rangeDateFields.style.display = 'flex';
+                updateDateLabels();
             } else {
-                console.log('❌ PROBLEM: Modal nadal jest otwarty po kliknięciu X!');
+                dateFilterFields.style.display = 'none';
+                dateFieldTypeContainer.style.display = 'none';
+                exactDateField.style.display = 'none';
+                rangeDateFields.style.display = 'none';
             }
-        }, 100);
-    };
+            
+            // Trigger re-filtering
+            const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
+            loadApplications(getFilters(), document.getElementById('showArchived')?.checked, sortOrder);
+        });
 
-    // Nasłuchiwacz na Escape
-    const escapeHandler = function (e) {
-        if (e.key === 'Escape' && editModal.classList.contains('active')) {
-            console.log('');
-            console.log('⌨️  KLAWISZ ESCAPE ZOSTAŁ NACIŚNIĘTY!');
-            setTimeout(() => {
-                const isStillOpen = editModal.classList.contains('active');
-                if (!isStillOpen) {
-                    console.log('✅ SUKCES: Modal został zamknięty klawiszem Escape!');
-                } else {
-                    console.log('❌ PROBLEM: Modal nadal jest otwarty po naciśnięciu Escape!');
-                }
-                document.removeEventListener('keydown', escapeHandler);
-            }, 100);
+        // Handle date field type selection (application/status date)
+        if (filterDateFieldType) {
+            filterDateFieldType.addEventListener('change', function() {
+                updateDateLabels();
+                
+                // Clear date fields when switching field type
+                const filterData = document.getElementById('filterData');
+                const filterDateFrom = document.getElementById('filterDateFrom');
+                const filterDateTo = document.getElementById('filterDateTo');
+                
+                if (filterData) filterData.value = '';
+                if (filterDateFrom) filterDateFrom.value = '';
+                if (filterDateTo) filterDateTo.value = '';
+                
+                // Trigger re-filtering
+                const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
+                loadApplications(getFilters(), document.getElementById('showArchived')?.checked, sortOrder);
+            });
         }
-    };
-    document.addEventListener('keydown', escapeHandler);
-
-    // Nasłuchiwacz na kliknięcie w tło
-    const clickHandler = function (e) {
-        if (e.target === editModal) {
-            console.log('');
-            console.log('🖱️  KLIKNIĘTO W TŁO MODALNEGO OKNA!');
-            setTimeout(() => {
-                const isStillOpen = editModal.classList.contains('active');
-                if (!isStillOpen) {
-                    console.log('✅ SUKCES: Modal został zamknięty kliknięciem w tło!');
-                } else {
-                    console.log('❌ PROBLEM: Modal nadal jest otwarty po kliknięciu w tło!');
-                }
-                editModal.removeEventListener('click', clickHandler);
-            }, 100);
-        }
-    };
-    editModal.addEventListener('click', clickHandler);
-};
-
-// Funkcja pomocnicza do wymuszonego zamknięcia modalnego okna
-window.zamknijModal = function () {
-    console.log('🔧 Wymuszam zamknięcie modalnego okna...');
-    const editModal = document.getElementById('editModal');
-    if (editModal) {
-        editModal.classList.remove('active');
-        editModal.style.display = 'none';
-        console.log('✅ Modal został zamknięty wymuszenie.');
-    } else {
-        console.log('❌ Nie znaleziono modalnego okna.');
     }
-};
+}
 

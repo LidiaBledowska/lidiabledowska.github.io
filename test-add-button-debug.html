@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test przycisku "Dodaj aplikację"</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .test-btn {
+            background: #141414;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        .test-btn:hover {
+            background: #2d2d2d;
+        }
+
+        .console-output {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        .info {
+            color: blue;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="test-container">
+        <h1>🔍 Test przycisku "Dodaj aplikację"</h1>
+        <p>Ta strona pomoże zdiagnozować problem z przyciskiem dodawania aplikacji.</p>
+
+        <button class="test-btn" onclick="runMainPageTest()">🧪 Testuj stronę główną</button>
+        <button class="test-btn" onclick="runModalTest()">🔧 Testuj modal bezpośrednio</button>
+        <button class="test-btn" onclick="clearOutput()">🗑️ Wyczyść wyniki</button>
+
+        <div id="output" class="console-output">Kliknij przycisk testowy aby rozpocząć diagnozę...</div>
+
+        <h3>📋 Instrukcje:</h3>
+        <ol>
+            <li>Najpierw kliknij "Testuj stronę główną" aby sprawdzić główną stronę</li>
+            <li>Jeśli problem nadal występuje, kliknij "Testuj modal bezpośrednio"</li>
+            <li>Sprawdź wyniki w sekcji powyżej</li>
+        </ol>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            output.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearOutput() {
+            document.getElementById('output').innerHTML = 'Wyniki zostały wyczyszczone...\n';
+        }
+
+        async function runMainPageTest() {
+            log('🔍 Rozpoczynam test strony głównej...', 'info');
+
+            try {
+                // Otwórz stronę główną w nowym oknie
+                const testWindow = window.open('http://localhost:8081/index.html', '_blank');
+
+                log('✅ Otwarto stronę główną w nowym oknie', 'success');
+                log('📌 Sprawdź konsolę nowego okna (F12) aby zobaczyć automatyczną diagnozę', 'info');
+                log('📌 Automatyczna diagnoza uruchomi się po 2 sekundach', 'info');
+
+                // Sprawdź po 3 sekundach czy okno nadal istnieje
+                setTimeout(() => {
+                    if (testWindow && !testWindow.closed) {
+                        log('✅ Okno testowe nadal otwarte - sprawdź konsolę tego okna', 'success');
+                    } else {
+                        log('❌ Okno testowe zostało zamknięte', 'error');
+                    }
+                }, 3000);
+
+            } catch (error) {
+                log(`❌ Błąd podczas otwierania strony: ${error.message}`, 'error');
+            }
+        }
+
+        function runModalTest() {
+            log('🔧 Rozpoczynam test modalnego okna...', 'info');
+
+            // Tworzenie testowego modala
+            const modal = document.createElement('div');
+            modal.id = 'testModal';
+            modal.style.cssText = `
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1000;
+                align-items: center;
+                justify-content: center;
+            `;
+
+            modal.innerHTML = `
+                <div style="background: white; padding: 20px; border-radius: 10px; text-align: center; max-width: 400px;">
+                    <h3>🎯 Test Modal</h3>
+                    <p>Modal działa poprawnie!</p>
+                    <button onclick="closeTestModal()" style="background: #141414; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                        Zamknij
+                    </button>
+                </div>
+            `;
+
+            // Dodaj modal do body
+            document.body.appendChild(modal);
+
+            // Dodaj CSS dla klasy active
+            const style = document.createElement('style');
+            style.textContent = `
+                #testModal.active {
+                    display: flex !important;
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Funkcja zamykania
+            window.closeTestModal = function () {
+                modal.classList.remove('active');
+                log('✅ Modal zamknięty przez użytkownika', 'success');
+                setTimeout(() => {
+                    document.body.removeChild(modal);
+                    document.head.removeChild(style);
+                    log('🗑️ Testowy modal usunięty', 'info');
+                }, 500);
+            };
+
+            // Test funkcjonalności
+            log('📦 Tworzę testowy modal...', 'info');
+            log('🔧 Dodaję klasę .active...', 'info');
+
+            modal.classList.add('active');
+
+            setTimeout(() => {
+                const isVisible = window.getComputedStyle(modal).display === 'flex';
+                if (isVisible) {
+                    log('✅ SUKCES: Modal jest widoczny!', 'success');
+                    log('💡 Problem prawdopodobnie nie leży w CSS modalnego okna', 'success');
+                } else {
+                    log('❌ BŁĄD: Modal nie jest widoczny mimo klasy .active', 'error');
+                    log('💡 Problem może być w CSS lub JavaScript', 'error');
+                }
+
+                log('📝 Sprawdź czy widzisz testowy modal na ekranie', 'info');
+            }, 100);
+        }
+
+        // Auto-start
+        log('🚀 Strona testowa załadowana', 'success');
+        log('📡 Serwer działa na: http://localhost:8081', 'info');
+        log('🎯 Wybierz test aby rozpocząć diagnozę', 'info');
+    </script>
+</body>
+
+</html>

@@ -362,11 +362,55 @@
                                 </div>
                                 <div class="flex max-w-[480px] flex-wrap items-end gap-4 py-3">
                                     <label class="flex flex-col min-w-40 flex-1">
-                                        <p class="text-[#141414] text-base font-medium leading-normal pb-2">Data</p>
-                                        <input id="filterData" type="date" placeholder="Wybierz datę"
-                                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#141414] focus:outline-0 focus:ring-0 border border-[#e5e7eb] bg-white focus:border-[#141414] h-14 placeholder:text-neutral-500 p-[15px] text-base font-normal leading-normal"
-                                            value="" />
+                                        <p class="text-[#141414] text-base font-medium leading-normal pb-2">Filtr daty</p>
+                                        <select id="filterDateType"
+                                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#141414] focus:outline-0 focus:ring-0 border border-[#e5e7eb] bg-white focus:border-[#141414] h-14 bg-[image:--select-button-svg] placeholder:text-neutral-500 p-[15px] text-base font-normal leading-normal">
+                                            <option value="">Wszystkie daty</option>
+                                            <option value="exact">Pełna data</option>
+                                            <option value="range">Data od do</option>
+                                        </select>
                                     </label>
+                                    
+                                    <!-- Date field type selector -->
+                                    <div id="dateFieldTypeContainer" style="display: none;">
+                                        <label class="flex flex-col min-w-40 flex-1">
+                                            <p class="text-[#141414] text-base font-medium leading-normal pb-2">Typ daty</p>
+                                            <select id="filterDateFieldType"
+                                                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#141414] focus:outline-0 focus:ring-0 border border-[#e5e7eb] bg-white focus:border-[#141414] h-14 bg-[image:--select-button-svg] placeholder:text-neutral-500 p-[15px] text-base font-normal leading-normal">
+                                                <option value="application">Data aplikowania</option>
+                                                <option value="status">Data aktualnego statusu</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Date filter fields (hidden by default) -->
+                                <div id="dateFilterFields" class="flex max-w-[480px] flex-wrap items-end gap-4 py-3" style="display: none;">
+                                    <!-- Exact date field -->
+                                    <div id="exactDateField" style="display: none;">
+                                        <label class="flex flex-col min-w-40 flex-1">
+                                            <p id="exactDateLabel" class="text-[#141414] text-base font-medium leading-normal pb-2">Data aplikowania</p>
+                                            <input id="filterData" type="date" placeholder="Wybierz datę"
+                                                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#141414] focus:outline-0 focus:ring-0 border border-[#e5e7eb] bg-white focus:border-[#141414] h-14 placeholder:text-neutral-500 p-[15px] text-base font-normal leading-normal"
+                                                value="" />
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- Date range fields -->
+                                    <div id="rangeDateFields" style="display: none;">
+                                        <label class="flex flex-col min-w-40 flex-1">
+                                            <p id="dateFromLabel" class="text-[#141414] text-base font-medium leading-normal pb-2">Data od</p>
+                                            <input id="filterDateFrom" type="date" placeholder="Data od"
+                                                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#141414] focus:outline-0 focus:ring-0 border border-[#e5e7eb] bg-white focus:border-[#141414] h-14 placeholder:text-neutral-500 p-[15px] text-base font-normal leading-normal"
+                                                value="" />
+                                        </label>
+                                        <label class="flex flex-col min-w-40 flex-1">
+                                            <p id="dateToLabel" class="text-[#141414] text-base font-medium leading-normal pb-2">Data do</p>
+                                            <input id="filterDateTo" type="date" placeholder="Data do"
+                                                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#141414] focus:outline-0 focus:ring-0 border border-[#e5e7eb] bg-white focus:border-[#141414] h-14 placeholder:text-neutral-500 p-[15px] text-base font-normal leading-normal"
+                                                value="" />
+                                        </label>
+                                    </div>
 
                                 </div>
                                 <div class="flex max-w-[480px] flex-wrap items-end gap-4 py-3">
@@ -725,177 +769,179 @@
                 <button class="modal-close" onclick="closeEditModal()">&times;</button>
                 <div class="form-container">
                     <h2><i class="fas fa-plus-circle"></i> Edytuj aplikację</h2>
-                <form id="editApplicationForm">
-                    <input type="hidden" id="editAppId">
-                    <div class="form-group">
-                        <label for="editStanowisko"><i class="fas fa-briefcase"></i> Stanowisko</label>
-                        <input type="text" id="editStanowisko" name="stanowisko" required
-                            placeholder="Np. Frontend Developer" pattern="[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s]+"
-                            title="Dozwolone są tylko litery i spacje">
-                    </div>
-                    <div class="form-group">
-                        <label for="editFirma"><i class="fas fa-building"></i> Firma</label>
-                        <input type="text" id="editFirma" name="firma" required placeholder="Np. Tech Innovations"
-                            pattern="[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s]+" title="Dozwolone są tylko litery i spacje">
-                    </div>
-                    <div class="form-group">
-                        <label for="editData"><i class="fas fa-calendar-alt"></i> Data aplikowania</label>
-                        <input type="date" id="editData" name="data" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="editStatus"><i class="fas fa-tasks"></i> Status</label>
-                        <select id="editStatus" name="status" required>
-                            <option value="">Wybierz status...</option>
-                            <option value="Wysłano CV">Wysłano CV</option>
-                            <option value="Rozmowa telefoniczna">Rozmowa telefoniczna</option>
-                            <option value="Rozmowa online">Rozmowa online</option>
-                            <option value="Rozmowa stacjonarna">Rozmowa stacjonarna</option>
-                            <option value="Oferta">Oferta</option>
-                            <option value="Odrzucono">Odrzucono</option>
-                        </select>
-                    </div>
-
-                    <div class="salary-group">
-                        <!-- Wybór typu wynagrodzenia -->
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <label for="editSalaryType"><i class="fas fa-money-bill-wave"></i> Typ wynagrodzenia</label>
-                            <select id="editSalaryType" name="salaryType" onchange="toggleEditSalaryFields()">
-                                <option value="exact">Pełna kwota</option>
-                                <option value="range">Widełki (od-do)</option>
+                    <form id="editApplicationForm">
+                        <input type="hidden" id="editAppId">
+                        <div class="form-group">
+                            <label for="editStanowisko"><i class="fas fa-briefcase"></i> Stanowisko</label>
+                            <input type="text" id="editStanowisko" name="stanowisko" required
+                                placeholder="Np. Frontend Developer" pattern="[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s]+"
+                                title="Dozwolone są tylko litery i spacje">
+                        </div>
+                        <div class="form-group">
+                            <label for="editFirma"><i class="fas fa-building"></i> Firma</label>
+                            <input type="text" id="editFirma" name="firma" required placeholder="Np. Tech Innovations"
+                                pattern="[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s]+" title="Dozwolone są tylko litery i spacje">
+                        </div>
+                        <div class="form-group">
+                            <label for="editData"><i class="fas fa-calendar-alt"></i> Data aplikowania</label>
+                            <input type="date" id="editData" name="data" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editStatus"><i class="fas fa-tasks"></i> Status</label>
+                            <select id="editStatus" name="status" required>
+                                <option value="">Wybierz status...</option>
+                                <option value="Wysłano CV">Wysłano CV</option>
+                                <option value="Rozmowa telefoniczna">Rozmowa telefoniczna</option>
+                                <option value="Rozmowa online">Rozmowa online</option>
+                                <option value="Rozmowa stacjonarna">Rozmowa stacjonarna</option>
+                                <option value="Oferta">Oferta</option>
+                                <option value="Odrzucono">Odrzucono</option>
                             </select>
                         </div>
 
-                        <!-- Pola wynagrodzenia -->
-                        <div class="salary-main" id="editSalaryFields">
-                            <!-- Pojedyncza kwota -->
-                            <div class="form-group" id="editExactSalaryGroup">
-                                <label for="editWynagrodzenie">Wynagrodzenie</label>
-                                <input type="number" id="editWynagrodzenie" name="wynagrodzenie" min="0" step="any"
-                                    placeholder="np. 8000">
-                            </div>
-
-                            <!-- Widełki -->
-                            <div class="form-group" id="editRangeSalaryGroup" style="display: none;">
-                                <label for="editWynagrodzenieOd">Od</label>
-                                <input type="number" id="editWynagrodzenieOd" name="wynagrodzenieOd" min="0" step="any"
-                                    placeholder="np. 6000">
-                            </div>
-                            <div class="form-group" id="editRangeSalaryGroupTo" style="display: none;">
-                                <label for="editWynagrodzenieDo">Do</label>
-                                <input type="number" id="editWynagrodzenieDo" name="wynagrodzenieDo" min="0" step="any"
-                                    placeholder="np. 10000">
-                            </div>
-                        </div>
-
-                        <div class="salary-currency">
-                            <div class="form-group no-icon">
-                                <label for="editWaluta">Waluta</label>
-                                <select id="editWaluta" name="waluta">
-                                    <option value="PLN">PLN</option>
-                                    <option value="EUR">EUR</option>
-                                    <option value="USD">USD</option>
+                        <div class="salary-group">
+                            <!-- Wybór typu wynagrodzenia -->
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label for="editSalaryType"><i class="fas fa-money-bill-wave"></i> Typ
+                                    wynagrodzenia</label>
+                                <select id="editSalaryType" name="salaryType" onchange="toggleEditSalaryFields()">
+                                    <option value="exact">Pełna kwota</option>
+                                    <option value="range">Widełki (od-do)</option>
                                 </select>
                             </div>
-                        </div>
-                        <div class="salary-type">
-                            <div class="form-group no-icon">
-                                <label for="editWynRodzaj">Rodzaj</label>
-                                <select id="editWynRodzaj" name="wynRodzaj">
-                                    <option value="BRUTTO">BRUTTO</option>
-                                    <option value="NETTO">NETTO</option>
-                                </select>
+
+                            <!-- Pola wynagrodzenia -->
+                            <div class="salary-main" id="editSalaryFields">
+                                <!-- Pojedyncza kwota -->
+                                <div class="form-group" id="editExactSalaryGroup">
+                                    <label for="editWynagrodzenie">Wynagrodzenie</label>
+                                    <input type="number" id="editWynagrodzenie" name="wynagrodzenie" min="0" step="any"
+                                        placeholder="np. 8000">
+                                </div>
+
+                                <!-- Widełki -->
+                                <div class="form-group" id="editRangeSalaryGroup" style="display: none;">
+                                    <label for="editWynagrodzenieOd">Od</label>
+                                    <input type="number" id="editWynagrodzenieOd" name="wynagrodzenieOd" min="0"
+                                        step="any" placeholder="np. 6000">
+                                </div>
+                                <div class="form-group" id="editRangeSalaryGroupTo" style="display: none;">
+                                    <label for="editWynagrodzenieDo">Do</label>
+                                    <input type="number" id="editWynagrodzenieDo" name="wynagrodzenieDo" min="0"
+                                        step="any" placeholder="np. 10000">
+                                </div>
+                            </div>
+
+                            <div class="salary-currency">
+                                <div class="form-group no-icon">
+                                    <label for="editWaluta">Waluta</label>
+                                    <select id="editWaluta" name="waluta">
+                                        <option value="PLN">PLN</option>
+                                        <option value="EUR">EUR</option>
+                                        <option value="USD">USD</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="salary-type">
+                                <div class="form-group no-icon">
+                                    <label for="editWynRodzaj">Rodzaj</label>
+                                    <select id="editWynRodzaj" name="wynRodzaj">
+                                        <option value="BRUTTO">BRUTTO</option>
+                                        <option value="NETTO">NETTO</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label for="editTryb"><i class="fas fa-laptop-house"></i> Tryb pracy</label>
-                        <select id="editTryb" name="tryb" required>
-                            <option value="">Wybierz tryb...</option>
-                            <option value="STACJONARNY">Stacjonarny</option>
-                            <option value="HYBRYDOWY">Hybrydowy</option>
-                            <option value="ZDALNY">Zdalny</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="editRodzaj"><i class="fas fa-clock"></i> Rodzaj</label>
-                        <select id="editRodzaj" name="rodzaj" required>
-                            <option value="">Wybierz rodzaj...</option>
-                            <option value="PELNY_ETAT">Pełny etat</option>
-                            <option value="NIEPELNY_ETAT">Niepełny etat</option>
-                            <option value="STAZ">Staż</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="editUmowa"><i class="fas fa-file-contract"></i> Umowa</label>
-                        <select id="editUmowa" name="umowa" required>
-                            <option value="">Wybierz umowę...</option>
-                            <option value="UMOWA_O_PRACE">Umowa o pracę</option>
-                            <option value="UMOWA_B2B">Umowa B2B</option>
-                            <option value="UMOWA_ZLECENIE">Umowa zlecenie</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="editKontakt"><i class="fas fa-address-book"></i> Kontakt</label>
-                        <input type="text" id="editKontakt" name="kontakt" placeholder="np. imię, email, telefon">
-                    </div>
-                    <div class="form-group">
-                        <label for="editLink"><i class="fas fa-link"></i> Link do oferty</label>
-                        <input type="url" id="editLink" name="link" placeholder="https://...">
-                    </div>
-                    <div class="form-group">
-                        <label for="editNotatki"
-                            style="font-weight:600;font-size:1.1em;display:block;margin-bottom:0.3em;">
-                            <i class="fas fa-sticky-note"
-                                style="color:#4f8cff;margin-right:0.3em;position:static;"></i>Notatki
-                        </label>
-                        <textarea id="editNotatki" name="notatki" rows="3"
-                            placeholder="Dodaj własne notatki do tej aplikacji..."
-                            style="padding-left: 0.7rem;"></textarea>
-                    </div>
-
-                    <!-- Dodawanie zdjęć/screenów -->
-                    <div class="form-group">
-                        <label for="editImages" style="font-weight:600;display:block;margin-bottom:0.3em;">
-                            <i class="fas fa-image" style="color:#4f8cff;margin-right:0.3em;"></i>Załącz zdjęcia/screeny
-                        </label>
-                        <input type="file" id="editImages" accept="image/*" multiple
-                            style="width:100%;padding:0.7rem;border:2px dashed #e5e7eb;border-radius:12px;background:white;font-size:1em;color:#141414;box-sizing:border-box;cursor:pointer;transition:all 0.2s ease;"
-                            onmouseover="this.style.borderColor='#4f8cff'; this.style.backgroundColor='#f8faff';"
-                            onmouseout="this.style.borderColor='#e5e7eb'; this.style.backgroundColor='white';"
-                            onfocus="this.style.borderColor='#4f8cff'; this.style.boxShadow='0 0 0 3px rgba(79, 140, 255, 0.1)';"
-                            onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
-                        <div id="editImagesPreview" style="margin-top:0.5em;display:flex;gap:0.5em;flex-wrap:wrap;">
+                        <div class="form-group">
+                            <label for="editTryb"><i class="fas fa-laptop-house"></i> Tryb pracy</label>
+                            <select id="editTryb" name="tryb" required>
+                                <option value="">Wybierz tryb...</option>
+                                <option value="STACJONARNY">Stacjonarny</option>
+                                <option value="HYBRYDOWY">Hybrydowy</option>
+                                <option value="ZDALNY">Zdalny</option>
+                            </select>
                         </div>
-                    </div>
+                        <div class="form-group">
+                            <label for="editRodzaj"><i class="fas fa-clock"></i> Rodzaj</label>
+                            <select id="editRodzaj" name="rodzaj" required>
+                                <option value="">Wybierz rodzaj...</option>
+                                <option value="PELNY_ETAT">Pełny etat</option>
+                                <option value="NIEPELNY_ETAT">Niepełny etat</option>
+                                <option value="STAZ">Staż</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editUmowa"><i class="fas fa-file-contract"></i> Umowa</label>
+                            <select id="editUmowa" name="umowa" required>
+                                <option value="">Wybierz umowę...</option>
+                                <option value="UMOWA_O_PRACE">Umowa o pracę</option>
+                                <option value="UMOWA_B2B">Umowa B2B</option>
+                                <option value="UMOWA_ZLECENIE">Umowa zlecenie</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editKontakt"><i class="fas fa-address-book"></i> Kontakt</label>
+                            <input type="text" id="editKontakt" name="kontakt" placeholder="np. imię, email, telefon">
+                        </div>
+                        <div class="form-group">
+                            <label for="editLink"><i class="fas fa-link"></i> Link do oferty</label>
+                            <input type="url" id="editLink" name="link" placeholder="https://...">
+                        </div>
+                        <div class="form-group">
+                            <label for="editNotatki"
+                                style="font-weight:600;font-size:1.1em;display:block;margin-bottom:0.3em;">
+                                <i class="fas fa-sticky-note"
+                                    style="color:#4f8cff;margin-right:0.3em;position:static;"></i>Notatki
+                            </label>
+                            <textarea id="editNotatki" name="notatki" rows="3"
+                                placeholder="Dodaj własne notatki do tej aplikacji..."
+                                style="padding-left: 0.7rem;"></textarea>
+                        </div>
 
-                    <!-- Historia statusu -->
-                    <div id="statusHistoryBox"
-                        style="margin:1em 0; padding:1em; background:#f9fafb; border-radius:8px; border:1px solid #e5e7eb;">
-                        <strong style="color:#141414; display:flex; align-items:center; gap:0.5em;">
-                            <i class="fas fa-history" style="color:#6b7280;"></i>Historia statusu:
-                        </strong>
-                        <ul id="statusHistoryList"
-                            style="margin:0.5em 0 0 1.5em; padding:0; list-style-type:disc; color:#6b7280;"></ul>
-                    </div>
+                        <!-- Dodawanie zdjęć/screenów -->
+                        <div class="form-group">
+                            <label for="editImages" style="font-weight:600;display:block;margin-bottom:0.3em;">
+                                <i class="fas fa-image" style="color:#4f8cff;margin-right:0.3em;"></i>Załącz
+                                zdjęcia/screeny
+                            </label>
+                            <input type="file" id="editImages" accept="image/*" multiple
+                                style="width:100%;padding:0.7rem;border:2px dashed #e5e7eb;border-radius:12px;background:white;font-size:1em;color:#141414;box-sizing:border-box;cursor:pointer;transition:all 0.2s ease;"
+                                onmouseover="this.style.borderColor='#4f8cff'; this.style.backgroundColor='#f8faff';"
+                                onmouseout="this.style.borderColor='#e5e7eb'; this.style.backgroundColor='white';"
+                                onfocus="this.style.borderColor='#4f8cff'; this.style.boxShadow='0 0 0 3px rgba(79, 140, 255, 0.1)';"
+                                onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                            <div id="editImagesPreview" style="margin-top:0.5em;display:flex;gap:0.5em;flex-wrap:wrap;">
+                            </div>
+                        </div>
 
-                    <div class="favorite-checkbox">
-                        <input type="checkbox" id="editFavorite" name="favorite">
-                        <span>Dodaj do ulubionych</span>
-                        <i class="fas fa-star"></i>
-                    </div>
+                        <!-- Historia statusu -->
+                        <div id="statusHistoryBox"
+                            style="margin:1em 0; padding:1em; background:#f9fafb; border-radius:8px; border:1px solid #e5e7eb;">
+                            <strong style="color:#141414; display:flex; align-items:center; gap:0.5em;">
+                                <i class="fas fa-history" style="color:#6b7280;"></i>Historia statusu:
+                            </strong>
+                            <ul id="statusHistoryList"
+                                style="margin:0.5em 0 0 1.5em; padding:0; list-style-type:disc; color:#6b7280;"></ul>
+                        </div>
 
-                    <button type="submit" class="submit-btn"><i class="fas fa-save"></i> Zapisz zmiany</button>
-                    <button type="button" id="archiveAppBtn"
-                        style="width:100%;margin-top:1em;background:#6b7280;color:#fff;font-weight:600;border-radius:8px;padding:0.7em;border:none;">
-                        Archiwizuj aplikację
-                    </button>
-                    <button type="button" id="deleteAppBtn"
-                        style="width:100%;margin-top:1em;background:none;border:none;color:#dc2626;font-weight:600;cursor:pointer;">
-                        <i class="fas fa-trash"></i> Usuń aplikację
-                    </button>
-                </form>
-                <p id="editFormMessage" style="text-align:center; margin-top:1em; color:green;"></p>
+                        <div class="favorite-checkbox">
+                            <input type="checkbox" id="editFavorite" name="favorite">
+                            <span>Dodaj do ulubionych</span>
+                            <i class="fas fa-star"></i>
+                        </div>
+
+                        <button type="submit" class="submit-btn"><i class="fas fa-save"></i> Zapisz zmiany</button>
+                        <button type="button" id="archiveAppBtn"
+                            style="width:100%;margin-top:1em;background:#6b7280;color:#fff;font-weight:600;border-radius:8px;padding:0.7em;border:none;">
+                            Archiwizuj aplikację
+                        </button>
+                        <button type="button" id="deleteAppBtn"
+                            style="width:100%;margin-top:1em;background:none;border:none;color:#dc2626;font-weight:600;cursor:pointer;">
+                            <i class="fas fa-trash"></i> Usuń aplikację
+                        </button>
+                    </form>
+                    <p id="editFormMessage" style="text-align:center; margin-top:1em; color:green;"></p>
                 </div>
             </div>
         </div>
@@ -1050,7 +1096,7 @@
             }
 
             // Global function for closing edit modal
-            window.closeEditModal = function() {
+            window.closeEditModal = function () {
                 const editModal = document.getElementById('editModal');
                 const editFormMessage = document.getElementById('editFormMessage');
 
