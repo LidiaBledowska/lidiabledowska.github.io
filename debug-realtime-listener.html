@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Debug Realtime Listener</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .debug-log {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            padding: 2px 0;
+        }
+
+        .log-info {
+            color: #007bff;
+        }
+
+        .log-success {
+            color: #28a745;
+        }
+
+        .log-error {
+            color: #dc3545;
+        }
+
+        .log-warning {
+            color: #ffc107;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .applications-list {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .app-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔍 Debug Realtime Listener</h1>
+
+        <div id="auth-status" style="margin: 20px 0; padding: 10px; background: #f0f0f0; border-radius: 5px;">
+            Sprawdzanie autoryzacji...
+        </div>
+
+        <div>
+            <button onclick="startRealtimeListener()">🎯 Start Realtime Listener</button>
+            <button onclick="stopRealtimeListener()">⏹️ Stop Realtime Listener</button>
+            <button onclick="performOneTimeQuery()">📄 One-time Query</button>
+            <button onclick="clearDebugLog()">🧹 Clear Log</button>
+        </div>
+
+        <div class="debug-log" id="debugLog">
+            <div class="log-entry log-info">Debug rozpoczęty...</div>
+        </div>
+
+        <h3>📊 Aplikacje w czasie rzeczywistym:</h3>
+        <div class="applications-list" id="applicationsList">
+            <p>Brak danych...</p>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <a href="index.html" style="color: #007bff;">← Powrót do głównej strony</a> |
+            <a href="debug-add-application.html" style="color: #007bff;">Debug dodawania aplikacji →</a>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getFirestore, collection, query, where, onSnapshot, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD7ZLyDHFBNsQe9j03YPi0xmdLbqdk_K68",
+            authDomain: "rekrutracker-app.firebaseapp.com",
+            projectId: "rekrutracker-app",
+            storageBucket: "rekrutracker-app.firebasestorage.app",
+            messagingSenderId: "758407291898",
+            appId: "1:758407291898:web:a573e2cd3b416596d37a43",
+            measurementId: "G-HQW1YLG9Q1"
+        };
+
+        // Initialize Firebase
+        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentListener = null;
+        let applicationsData = [];
+
+        // Debug logging function
+        function debugLog(message, type = 'info') {
+            const logContainer = document.getElementById('debugLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(`[DEBUG] ${message}`);
+        }
+
+        window.clearDebugLog = function () {
+            document.getElementById('debugLog').innerHTML = '<div class="log-entry log-info">Debug log wyczyszczony...</div>';
+        };
+
+        function updateApplicationsList() {
+            const listContainer = document.getElementById('applicationsList');
+
+            if (applicationsData.length === 0) {
+                listContainer.innerHTML = '<p style="color: #6b7280;">Brak aplikacji lub brak połączenia</p>';
+                return;
+            }
+
+            const html = applicationsData.map(app => `
+                <div class="app-item">
+                    <strong>${app.stanowisko || 'Brak stanowiska'}</strong> - ${app.firma || 'Brak firmy'}<br>
+                    <small>Data: ${app.data || 'Brak daty'} | Status: ${app.status || 'Brak statusu'} | ID: ${app.id}</small>
+                </div>
+            `).join('');
+
+            listContainer.innerHTML = html;
+        }
+
+        window.startRealtimeListener = function () {
+            const user = auth.currentUser;
+            if (!user) {
+                debugLog('❌ Brak zalogowanego użytkownika', 'error');
+                return;
+            }
+
+            debugLog('🎯 Rozpoczęcie nasłuchiwania w czasie rzeczywistym...', 'info');
+            debugLog(`👤 Użytkownik: ${user.email} (${user.uid})`, 'info');
+
+            try {
+                const q = query(
+                    collection(db, "applications"),
+                    where("userId", "==", user.uid)
+                );
+
+                debugLog('📡 Konfiguracja zapytania zakończona', 'success');
+                debugLog('🔄 Ustawianie onSnapshot...', 'info');
+
+                currentListener = onSnapshot(q, (querySnapshot) => {
+                    debugLog(`📡 Otrzymano update: ${querySnapshot.size} aplikacji`, 'success');
+                    debugLog(`📡 Metadata - fromCache: ${querySnapshot.metadata.fromCache}, hasPendingWrites: ${querySnapshot.metadata.hasPendingWrites}`, 'info');
+
+                    applicationsData = [];
+                    querySnapshot.forEach((doc) => {
+                        const app = doc.data();
+                        app.id = doc.id;
+                        applicationsData.push(app);
+                        debugLog(`📄 Załadowano: ${app.stanowisko} - ${app.firma}`, 'info');
+                    });
+
+                    debugLog(`✅ Łącznie załadowano ${applicationsData.length} aplikacji`, 'success');
+                    updateApplicationsList();
+
+                }, (error) => {
+                    debugLog(`❌ Błąd realtime listener: ${error.message}`, 'error');
+                    debugLog(`❌ Error code: ${error.code}`, 'error');
+                    console.error('Realtime listener error:', error);
+                });
+
+                debugLog('✅ Realtime listener aktywny', 'success');
+
+            } catch (error) {
+                debugLog(`❌ Błąd podczas konfiguracji listener: ${error.message}`, 'error');
+                console.error('Setup error:', error);
+            }
+        };
+
+        window.stopRealtimeListener = function () {
+            if (currentListener) {
+                currentListener();
+                currentListener = null;
+                debugLog('⏹️ Realtime listener zatrzymany', 'warning');
+            } else {
+                debugLog('⚠️ Brak aktywnego listenera', 'warning');
+            }
+        };
+
+        window.performOneTimeQuery = function () {
+            const user = auth.currentUser;
+            if (!user) {
+                debugLog('❌ Brak zalogowanego użytkownika', 'error');
+                return;
+            }
+
+            debugLog('📄 Wykonywanie jednorazowego zapytania...', 'info');
+
+            const q = query(
+                collection(db, "applications"),
+                where("userId", "==", user.uid)
+            );
+
+            getDocs(q).then((querySnapshot) => {
+                debugLog(`📄 One-time query: ${querySnapshot.size} aplikacji`, 'success');
+
+                applicationsData = [];
+                querySnapshot.forEach((doc) => {
+                    const app = doc.data();
+                    app.id = doc.id;
+                    applicationsData.push(app);
+                    debugLog(`📄 One-time: ${app.stanowisko} - ${app.firma}`, 'info');
+                });
+
+                updateApplicationsList();
+
+            }).catch((error) => {
+                debugLog(`❌ Błąd one-time query: ${error.message}`, 'error');
+                console.error('One-time query error:', error);
+            });
+        };
+
+        // Authentication status
+        onAuthStateChanged(auth, function (user) {
+            const authStatus = document.getElementById('auth-status');
+            if (user) {
+                authStatus.innerHTML = `✅ Zalogowany jako: ${user.email}<br>UID: ${user.uid}`;
+                authStatus.style.background = '#d4edda';
+                debugLog(`✅ Użytkownik zalogowany: ${user.email}`, 'success');
+
+                // Automatycznie uruchom realtime listener
+                setTimeout(() => {
+                    startRealtimeListener();
+                }, 1000);
+
+            } else {
+                authStatus.innerHTML = '❌ Nie zalogowany - <a href="login.html">zaloguj się</a>';
+                authStatus.style.background = '#f8d7da';
+                debugLog('❌ Brak autoryzacji', 'error');
+            }
+        });
+
+        debugLog('✅ Debug script załadowany', 'success');
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Test Firebase - auth/api-key-not-valid</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #e74c3c;
+            text-align: center;
+        }
+
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        #log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .config {
+            background: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔧 Diagnoza błędu: auth/api-key-not-valid</h1>
+
+        <div class="status error">
+            <strong>❌ Błąd:</strong> Firebase: Error (auth/api-key-not-valid. Please pass a valid API key.)
+        </div>
+
+        <div class="config">
+            <strong>🔧 Testowana konfiguracja:</strong><br>
+            apiKey: "AIzaSyBQ3lWo31mLO2gF9cLG6KZzGLX3a3C7dGw"<br>
+            authDomain: "aplikacje-3068f.firebaseapp.com"<br>
+            projectId: "aplikacje-3068f"<br>
+            storageBucket: "aplikacje-3068f.appspot.com"<br>
+            messagingSenderId: "869193309880"<br>
+            appId: "1:869193309880:web:c3b31e6b4b18e7e2dccde1"
+        </div>
+
+        <div class="status info">
+            <strong>🎯 Cel:</strong> Określić dokładnie gdzie i dlaczego wystąpił błąd z API Key
+        </div>
+
+        <button onclick="testCurrentConfig()">🧪 Test aktualnej konfiguracji</button>
+        <button onclick="testGoogleLogin()">🔐 Test logowania Google</button>
+        <button onclick="testFirestoreAccess()">📊 Test dostępu do Firestore</button>
+        <button onclick="testAlternativeConfigs()">🔄 Test alternatywnych konfiguracji</button>
+        <button onclick="clearLog()">🗑️ Wyczyść log</button>
+
+        <div id="status-display" class="status info">Gotowy do testowania...</div>
+        <div id="log">Logi testów pojawią się tutaj...\n</div>
+    </div>
+
+    <script>
+        function log(message, type = 'INFO') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] [${type}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${type}] ${message}`);
+        }
+
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status-display');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        function clearLog() {
+            document.getElementById('log').textContent = 'Log wyczyszczony...\n';
+        }
+
+        async function testCurrentConfig() {
+            log('🔄 Rozpoczynam test aktualnej konfiguracji Firebase...');
+            updateStatus('Testowanie aktualnej konfiguracji...', 'info');
+
+            try {
+                // Import Firebase
+                log('📦 Importowanie Firebase modules...');
+                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+                const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+                const { getFirestore } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+                log('✅ Firebase modules zaimportowane pomyślnie');
+
+                // Aktualna konfiguracja
+                const firebaseConfig = {
+                    apiKey: "AIzaSyD7ZLyDHFBNsQe9j03YPi0xmdLbqdk_K68",
+                    authDomain: "rekrutracker-app.firebaseapp.com",
+                    projectId: "rekrutracker-app",
+                    storageBucket: "rekrutracker-app.firebasestorage.app",
+                    messagingSenderId: "758407291898",
+                    appId: "1:758407291898:web:a573e2cd3b416596d37a43",
+                    measurementId: "G-HQW1YLG9Q1"
+                };
+
+                log('🔧 Inicjalizowanie Firebase z aktualną konfiguracją...');
+                const app = initializeApp(firebaseConfig);
+
+                log('✅ Firebase app zainicjalizowany');
+                log(`📱 App name: ${app.name}`);
+                log(`🔑 Project ID: ${app.options.projectId}`);
+                log(`🌐 Auth domain: ${app.options.authDomain}`);
+                log(`🗝️ API Key (pierwsze 20 znaków): ${app.options.apiKey.substring(0, 20)}...`);
+
+                // Test auth
+                log('🔍 Inicjalizowanie Firebase Auth...');
+                const auth = getAuth(app);
+                log('✅ Firebase Auth zainicjalizowany');
+
+                // Test firestore
+                log('🔍 Inicjalizowanie Firestore...');
+                const db = getFirestore(app);
+                log('✅ Firestore zainicjalizowany');
+
+                updateStatus('✅ Aktualna konfiguracja działa poprawnie!', 'success');
+                log('🎉 Test aktualnej konfiguracji - SUKCES');
+
+            } catch (error) {
+                log(`❌ BŁĄD: ${error.message}`, 'ERROR');
+                log(`🔍 Error code: ${error.code || 'brak kodu błędu'}`, 'ERROR');
+                log(`📍 Stack trace: ${error.stack}`, 'ERROR');
+
+                if (error.message.includes('api-key-not-valid') || error.code === 'auth/api-key-not-valid') {
+                    updateStatus('❌ API Key jest nieprawidłowy!', 'error');
+                    log('💡 DIAGNOZA: API Key nie jest rozpoznawany przez Firebase', 'WARNING');
+                    log('💡 ROZWIĄZANIE: Musisz pobrać nową konfigurację z Firebase Console', 'WARNING');
+                } else {
+                    updateStatus(`❌ Błąd: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function testGoogleLogin() {
+            log('🔄 Test logowania Google...');
+            updateStatus('Testowanie logowania Google...', 'info');
+
+            try {
+                // Import modules
+                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+                const { getAuth, GoogleAuthProvider, signInWithPopup } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+
+                const firebaseConfig = {
+                    apiKey: "AIzaSyD7ZLyDHFBNsQe9j03YPi0xmdLbqdk_K68",
+                    authDomain: "rekrutracker-app.firebaseapp.com",
+                    projectId: "rekrutracker-app",
+                    storageBucket: "rekrutracker-app.firebasestorage.app",
+                    messagingSenderId: "758407291898",
+                    appId: "1:758407291898:web:a573e2cd3b416596d37a43",
+                    measurementId: "G-HQW1YLG9Q1"
+                };
+
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const provider = new GoogleAuthProvider();
+
+                log('✅ Google Provider utworzony');
+                log('📱 Próba otwarcia popup logowania...');
+
+                // Ten test prawdopodobnie się nie powiedzie z powodu nieprawidłowego API Key
+                const result = await signInWithPopup(auth, provider);
+
+                log(`✅ Logowanie Google udane! User: ${result.user.email}`);
+                updateStatus('✅ Logowanie Google działa!', 'success');
+
+            } catch (error) {
+                log(`❌ BŁĄD logowania Google: ${error.message}`, 'ERROR');
+                log(`🔍 Error code: ${error.code}`, 'ERROR');
+
+                if (error.code === 'auth/api-key-not-valid') {
+                    updateStatus('❌ Błąd API Key podczas logowania', 'error');
+                    log('💡 POTWIERDZONE: API Key nie działa z Google Auth', 'WARNING');
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    updateStatus('⚠️ Problem z autoryzacją domeny', 'warning');
+                    log('💡 To inny problem - domena nie jest autoryzowana', 'INFO');
+                } else {
+                    updateStatus(`❌ Błąd logowania: ${error.code}`, 'error');
+                }
+            }
+        }
+
+        async function testFirestoreAccess() {
+            log('🔄 Test dostępu do Firestore...');
+            updateStatus('Testowanie dostępu do Firestore...', 'info');
+
+            try {
+                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+                const { getFirestore, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+                const firebaseConfig = {
+                    apiKey: "AIzaSyD7ZLyDHFBNsQe9j03YPi0xmdLbqdk_K68",
+                    authDomain: "rekrutracker-app.firebaseapp.com",
+                    projectId: "rekrutracker-app",
+                    storageBucket: "rekrutracker-app.firebasestorage.app",
+                    messagingSenderId: "758407291898",
+                    appId: "1:758407291898:web:a573e2cd3b416596d37a43",
+                    measurementId: "G-HQW1YLG9Q1"
+                };
+
+                const app = initializeApp(firebaseConfig);
+                const db = getFirestore(app);
+
+                log('🔍 Próba dostępu do kolekcji aplikacje...');
+                const aplikacjeRef = collection(db, 'aplikacje');
+                const snapshot = await getDocs(aplikacjeRef);
+
+                log(`✅ Firestore działa! Dokumentów: ${snapshot.size}`);
+                updateStatus('✅ Firestore jest dostępny', 'success');
+
+            } catch (error) {
+                log(`❌ BŁĄD Firestore: ${error.message}`, 'ERROR');
+                log(`🔍 Error code: ${error.code}`, 'ERROR');
+
+                if (error.code === 'permission-denied') {
+                    updateStatus('⚠️ Brak uprawnień (normalne bez logowania)', 'warning');
+                    log('💡 To jest normalne - Firestore wymaga autentykacji', 'INFO');
+                } else if (error.message.includes('api-key-not-valid')) {
+                    updateStatus('❌ API Key nie działa z Firestore', 'error');
+                    log('💡 POTWIERDZONE: API Key jest nieprawidłowy dla Firestore', 'WARNING');
+                } else {
+                    updateStatus(`❌ Błąd Firestore: ${error.code}`, 'error');
+                }
+            }
+        }
+
+        async function testAlternativeConfigs() {
+            log('🔄 Test alternatywnych konfiguracji...');
+            updateStatus('Testowanie alternatywnych konfiguracji...', 'info');
+
+            // Lista możliwych alternatywnych konfiguracji
+            const alternativeConfigs = [
+                {
+                    name: "Backup Config 1",
+                    config: {
+                        apiKey: "AIzaSyBQ3lWo31mLO2gF9cLG6KZzGLX3a3C7dGw",
+                        authDomain: "aplikacje-3068f.firebaseapp.com",
+                        databaseURL: "https://aplikacje-3068f-default-rtdb.firebaseio.com",
+                        projectId: "aplikacje-3068f",
+                        storageBucket: "aplikacje-3068f.appspot.com",
+                        messagingSenderId: "869193309880",
+                        appId: "1:869193309880:web:c3b31e6b4b18e7e2dccde1"
+                    }
+                }
+            ];
+
+            log('💡 UWAGA: W przypadku błędu API Key, alternatywne konfiguracje nie pomogą');
+            log('💡 Problem leży w samym kluczu API, nie w strukturze konfiguracji');
+            log('💡 ROZWIĄZANIE: Pobierz nową konfigurację z Firebase Console');
+
+            updateStatus('⚠️ API Key wymaga aktualizacji z Firebase Console', 'warning');
+        }
+
+        // Auto-start test
+        setTimeout(() => {
+            log('🚀 Automatyczne uruchomienie testu...');
+            testCurrentConfig();
+        }, 1000);
+    </script>
+</body>
+
+</html>

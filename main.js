@@ -467,9 +467,23 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
         window.firebaseModules.where("userId", "==", user.uid)
     );
 
-    window.firebaseModules.getDocs(q).then((querySnapshot) => {
-        ;
+    // Use real-time listener instead of one-time getDocs for automatic updates
+    console.log('🔄 Setting up real-time listener for user:', user.uid);
+    console.log('🔄 Query:', q);
+    console.log('🔄 onSnapshot function available:', typeof window.firebaseModules.onSnapshot);
+
+    const unsubscribe = window.firebaseModules.onSnapshot(q, (querySnapshot) => {
+        console.log('📡 Real-time update received:', querySnapshot.size, 'applications');
+        console.log('📡 QuerySnapshot metadata:', querySnapshot.metadata);
+        console.log('📡 Is from cache:', querySnapshot.metadata.fromCache);
+        console.log('📡 Has pending writes:', querySnapshot.metadata.hasPendingWrites);
+
         const tbody = document.querySelector('.applications-table tbody');
+        if (!tbody) {
+            console.error('❌ Table body not found!');
+            return;
+        }
+
         tbody.innerHTML = '';
         let count = 0;
         let applications = [];
@@ -478,7 +492,10 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
             const app = doc.data();
             app.id = doc.id;
             applications.push(app);
-        });;
+            console.log('📄 Application loaded:', app.stanowisko, app.firma, app.data);
+        });
+
+        console.log('📊 Total applications loaded:', applications.length);;
 
         // Update status counters before filtering
         updateStatusCounters(applications);
@@ -562,6 +579,15 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                             match = false;
                             break;
                         }
+                    } else if (Array.isArray(filters[key])) {
+                        // Handle multi-select filters (arrays)
+                        const multiSelectFields = ['tryb', 'rodzaj', 'umowa'];
+                        if (multiSelectFields.includes(key) && filters[key].length > 0) {
+                            if (!filters[key].includes(app[key])) {
+                                match = false;
+                                break;
+                            }
+                        }
                     } else if (typeof app[key] === "string" && typeof filters[key] === "string") {
                         // For exact match fields like rodzaj, umowa, tryb - use strict equality
                         const exactMatchFields = ['rodzaj', 'umowa', 'tryb'];
@@ -589,7 +615,7 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                                 // Use application date
                                 compareDate = app.data;
                             }
-                            
+
                             const appDate = new Date(compareDate);
                             const filterDate = new Date(filters[key]);
                             if (appDate < filterDate) {
@@ -609,7 +635,7 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                                 // Use application date
                                 compareDate = app.data;
                             }
-                            
+
                             const appDate = new Date(compareDate);
                             const filterDate = new Date(filters[key]);
                             if (appDate > filterDate) {
@@ -629,7 +655,7 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                                 // Use application date
                                 compareDate = app.data;
                             }
-                            
+
                             if (compareDate !== filters[key]) {
                                 match = false;
                                 break;
@@ -807,7 +833,30 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
         setTimeout(() => {
             enhanceTableRowVisuals();
         }, 100);
+    }, (error) => {
+        console.error('Real-time listener error:', error);
+        // Fallback to one-time query if real-time fails
+        window.firebaseModules.getDocs(q).then((querySnapshot) => {
+            console.log('Fallback to one-time query, found:', querySnapshot.size, 'applications');
+            // Use the same processing logic as above...
+            const tbody = document.querySelector('.applications-table tbody');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #6b7280;">Błąd ładowania danych. Odśwież stronę.</td></tr>';
+            }
+        }).catch((fallbackError) => {
+            console.error('Fallback query also failed:', fallbackError);
+            const tbody = document.querySelector('.applications-table tbody');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #dc2626;">Błąd połączenia z bazą danych.</td></tr>';
+            }
+        });
     });
+
+    // Store the unsubscribe function globally for cleanup if needed
+    if (window.currentApplicationsListener) {
+        window.currentApplicationsListener();
+    }
+    window.currentApplicationsListener = unsubscribe;
 }
 
 function autoFixColors() {
@@ -856,14 +905,38 @@ function enhanceTableRowVisuals() {
 document.addEventListener('DOMContentLoaded', function () {
     console.log('=== DOMContentLoaded FIRED ===');
 
+    // Check for page visibility changes to refresh data when user returns
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden && window.auth && window.auth.currentUser) {
+            console.log('Page became visible, refreshing applications...');
+            const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
+            loadApplications(getFilters(), document.getElementById('showArchived')?.checked, sortOrder);
+        }
+    });
+
+    // Check if user returned from add-application page
+    if (document.referrer && document.referrer.includes('add-application.html')) {
+        console.log('User returned from add-application page, refreshing data...');
+        setTimeout(() => {
+            if (window.auth && window.auth.currentUser) {
+                const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
+                loadApplications(getFilters(), document.getElementById('showArchived')?.checked, sortOrder);
+            }
+        }, 500);
+    }
+
     // Wait for Firebase to be ready
     function waitForFirebase(callback) {
-        console.log('Waiting for Firebase...');
-        if (window.firebaseModules && window.auth) {
-            console.log('Firebase ready!');
+        console.log('⏳ Waiting for Firebase...');
+        console.log('   - window.firebaseModules:', !!window.firebaseModules);
+        console.log('   - window.auth:', !!window.auth);
+        console.log('   - onSnapshot available:', !!window.firebaseModules?.onSnapshot);
+
+        if (window.firebaseModules && window.auth && window.firebaseModules.onSnapshot) {
+            console.log('✅ Firebase ready!');
             callback();
         } else {
-            console.log('Firebase not ready yet, retrying...');
+            console.log('⏳ Firebase not ready yet, retrying in 100ms...');
             setTimeout(() => waitForFirebase(callback), 100);
         }
     }
@@ -940,6 +1013,33 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Setup login button handler
+    function setupLoginButtonHandler() {
+        const loginBtn = document.getElementById('loginBtn');
+        if (loginBtn) {
+            console.log('✅ Setting up login button handler');
+
+            // Remove any existing onclick handler first
+            loginBtn.onclick = null;
+
+            // Add the onclick handler
+            loginBtn.onclick = function (e) {
+                console.log('🔐 Login button clicked in header');
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Redirect to login page
+                window.location.href = 'login.html';
+            };
+
+            console.log('Login button handler set successfully');
+            return true;
+        } else {
+            console.warn('❌ loginBtn button not found in DOM');
+            return false;
+        }
+    }
+
     // Try to setup immediately
     if (!setupCloseModalHandler()) {
         // If failed, try again after a short delay
@@ -947,6 +1047,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // And try again after a longer delay as final fallback
         setTimeout(setupCloseModalHandler, 500);
+    }
+
+    // Setup login button handler
+    if (!setupLoginButtonHandler()) {
+        // If failed, try again after a short delay
+        setTimeout(setupLoginButtonHandler, 100);
+
+        // And try again after a longer delay as final fallback
+        setTimeout(setupLoginButtonHandler, 500);
     }
 
     // Enhanced Escape key listener for edit modal
@@ -1286,7 +1395,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     [
-        'filterStanowisko', 'filterFirma', 'filterData', 'filterDateFrom', 'filterDateTo', 'filterDateFieldType', 'filterTryb', 'filterRodzaj', 'filterUmowa'
+        'filterStanowisko', 'filterFirma', 'filterData', 'filterDateFrom', 'filterDateTo', 'filterDateFieldType'
     ].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -1387,7 +1496,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const mainMenuLink = document.getElementById('mainMenuLink');
 
     // Check if we're in the authenticated state by checking localStorage persistence
-    const isLikelyAuthenticated = localStorage.getItem('firebase:authUser:AIzaSyD7ZLyDHFBNsQe9j03YPi0xmdLbqdk_K68:[DEFAULT]') !== null;
+    const isLikelyAuthenticated = localStorage.getItem('firebase:authUser:AIzaSyBQ3lWo31mLO2gF9cLG6KZzGLX3a3C7dGw:[DEFAULT]') !== null;
 
     if (isLikelyAuthenticated) {
         // User likely authenticated, show main content immediately
@@ -1507,8 +1616,70 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Setup Google signin for landing page
                 if (googleSigninButtonMain && !googleSigninButtonMain.onclick) {
-                    googleSigninButtonMain.onclick = function () {
-                        window.location.href = 'login.html';
+                    googleSigninButtonMain.onclick = async function () {
+                        console.log('🔐 Google signin button clicked on main page');
+
+                        try {
+                            // Update button to show loading state
+                            const originalText = googleSigninButtonMain.innerHTML;
+                            googleSigninButtonMain.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logowanie...';
+                            googleSigninButtonMain.disabled = true;
+
+                            // Check if Firebase is properly initialized
+                            if (!window.auth) {
+                                throw new Error('Firebase auth not initialized');
+                            }
+
+                            // Try to import Firebase modules dynamically
+                            const { GoogleAuthProvider, signInWithPopup } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+
+                            const provider = new GoogleAuthProvider();
+                            const result = await signInWithPopup(window.auth, provider);
+
+                            console.log('✅ Successful sign in from main page:', result.user.email);
+
+                            // Show success message briefly
+                            googleSigninButtonMain.innerHTML = '<i class="fas fa-check"></i> Zalogowano!';
+
+                            // Firebase auth state change will handle UI updates automatically
+                            // No need to manually redirect as the auth state listener will handle it
+
+                        } catch (error) {
+                            console.error('❌ Sign in error from main page:', error);
+
+                            // Reset button state
+                            googleSigninButtonMain.innerHTML = originalText;
+                            googleSigninButtonMain.disabled = false;
+
+                            // Show user-friendly error message
+                            let errorMessage = 'Błąd logowania';
+                            if (error.code === 'auth/popup-closed-by-user') {
+                                errorMessage = 'Logowanie anulowane';
+                            } else if (error.code === 'auth/popup-blocked') {
+                                errorMessage = 'Popup zablokowany';
+                            } else if (error.code === 'auth/unauthorized-domain') {
+                                errorMessage = 'Domena nieautoryzowana';
+                            }
+
+                            // Show error in main user status
+                            if (mainUserStatus) {
+                                mainUserStatus.textContent = errorMessage;
+                                mainUserStatus.style.color = '#dc2626';
+
+                                // Clear error message after 3 seconds
+                                setTimeout(() => {
+                                    mainUserStatus.textContent = '';
+                                    mainUserStatus.style.color = '';
+                                }, 3000);
+                            }
+
+                            // If auth fails, offer fallback to login page after a delay
+                            setTimeout(() => {
+                                if (confirm('Logowanie przez Google nie powiodło się. Czy chcesz przejść do strony logowania?')) {
+                                    window.location.href = 'login.html';
+                                }
+                            }, 1000);
+                        }
                     };
                 }
 
@@ -1790,7 +1961,9 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // Initial load - wait for Firebase to be ready before loading data
+    console.log('🚀 Starting initial load...');
     waitForFirebase(() => {
+        console.log('🚀 Firebase ready, calling loadApplications...');
         loadApplications(
             getFilters(),
             document.getElementById('showArchived')?.checked,
@@ -1799,6 +1972,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const pendingEditId = localStorage.getItem('editAppId');
         if (pendingEditId) {
+            console.log('🔍 Found pending edit ID:', pendingEditId);
             openEditModal(pendingEditId);
             localStorage.removeItem('editAppId');
         }
@@ -1808,7 +1982,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(() => {
         ;
         initializeQuickFilters();;
-        
+
         // Initialize date filters
         initializeDateFilters();
     }, 100);
@@ -2013,290 +2187,110 @@ function initializeQuickFilters() {
     resetQuickFilters();
 }
 
-// Debug function to check all modal elements
-window.checkModalElements = function () {
-    console.log('=== CHECKING MODAL ELEMENTS ===');
+// Multi-select functionality
+window.toggleMultiSelect = function (filterId) {
+    const dropdown = document.getElementById(filterId + 'Dropdown');
+    const trigger = document.getElementById(filterId + 'Trigger');
 
-    const elements = [
-        'editModal',
-        'editApplicationForm',
-        'editAppId',
-        'editStanowisko',
-        'editFirma',
-        'editData',
-        'editStatus',
-        'editSalaryType',
-        'editWynagrodzenie',
-        'editWynagrodzenieOd',
-        'editWynagrodzenieDo',
-        'editWaluta',
-        'editWynRodzaj',
-        'editTryb',
-        'editRodzaj',
-        'editUmowa',
-        'editKontakt',
-        'editLink',
-        'editNotatki',
-        'editFavorite',
-        'editImages',
-        'editImagesPreview',
-        'statusHistoryBox',
-        'statusHistoryList',
-        'closeEditModal',
-        'editFormMessage'
-    ];
+    if (!dropdown || !trigger) return;
 
-    elements.forEach(id => {
-        const element = document.getElementById(id);
-        console.log(`${id}:`, element ? '✅ EXISTS' : '❌ MISSING');
-        if (!element) {
-            console.error(`CRITICAL: Missing element with ID: ${id}`);
+    // Close other dropdowns first
+    document.querySelectorAll('.multi-select-dropdown').forEach(d => {
+        if (d.id !== filterId + 'Dropdown') {
+            d.style.display = 'none';
+            const otherId = d.id.replace('Dropdown', '');
+            const otherTrigger = document.getElementById(otherId + 'Trigger');
+            if (otherTrigger) {
+                otherTrigger.classList.remove('active');
+            }
         }
     });
 
-    console.log('=== END MODAL ELEMENTS CHECK ===');
+    // Toggle current dropdown
+    const isVisible = dropdown.style.display === 'block';
+    dropdown.style.display = isVisible ? 'none' : 'block';
 
-    return elements.map(id => ({
-        id,
-        exists: !!document.getElementById(id)
-    }));
-};
-
-// Function to check if edit buttons exist and have correct event listeners
-window.checkEditButtons = function () {
-    console.log('=== CHECKING EDIT BUTTONS ===');
-
-    const mainEditButtons = document.querySelectorAll('.edit-btn');
-    const favEditButtons = document.querySelectorAll('.edit-btn-fav');
-
-    console.log('Main edit buttons found:', mainEditButtons.length);
-    console.log('Favorites edit buttons found:', favEditButtons.length);
-
-    mainEditButtons.forEach((btn, index) => {
-        const appId = btn.getAttribute('data-id');
-        const hasListener = btn.onclick !== null || btn._addEventListener;
-        console.log(`Main button ${index + 1}:`, {
-            appId,
-            hasListener,
-            element: btn
-        });
-    });
-
-    favEditButtons.forEach((btn, index) => {
-        const appId = btn.getAttribute('data-id');
-        const hasListener = btn.onclick !== null || btn._addEventListener;
-        console.log(`Fav button ${index + 1}:`, {
-            appId,
-            hasListener,
-            element: btn
-        });
-    });
-
-    console.log('=== END EDIT BUTTONS CHECK ===');
-
-    return {
-        mainButtons: mainEditButtons.length,
-        favButtons: favEditButtons.length
-    };
-};
-
-// Function to manually trigger edit button click for testing
-window.testEditButtonClick = function () {
-    console.log('=== TESTING EDIT BUTTON CLICK ===');
-
-    const editButtons = document.querySelectorAll('.edit-btn');
-    console.log('Found edit buttons:', editButtons.length);
-
-    if (editButtons.length === 0) {
-        console.log('No edit buttons found. Loading applications first...');
-
-        // Try to load applications first
-        const currentSort = document.getElementById('sortOrder')?.value || 'desc';
-        loadApplications({}, false, currentSort);
-
-        // Wait a bit then try again
-        setTimeout(() => {
-            const editButtonsAfterLoad = document.querySelectorAll('.edit-btn');
-            console.log('Edit buttons after loading:', editButtonsAfterLoad.length);
-
-            if (editButtonsAfterLoad.length > 0) {
-                const firstButton = editButtonsAfterLoad[0];
-                console.log('Clicking first edit button:', firstButton);
-                firstButton.click();
-            } else {
-                console.log('Still no edit buttons after loading applications');
-            }
-        }, 2000);
+    if (isVisible) {
+        trigger.classList.remove('active');
     } else {
-        const firstButton = editButtons[0];
-        console.log('Clicking first edit button:', firstButton);
-        firstButton.click();
+        trigger.classList.add('active');
+    }
+};
+
+window.updateMultiSelect = function (filterId) {
+    const dropdown = document.getElementById(filterId + 'Dropdown');
+    const trigger = document.getElementById(filterId + 'Trigger');
+    const textSpan = trigger?.querySelector('.multi-select-text');
+
+    if (!dropdown || !textSpan) return;
+
+    // Get all checked checkboxes
+    const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]:checked');
+    const selectedValues = Array.from(checkboxes).map(cb => cb.value);
+    const selectedLabels = Array.from(checkboxes).map(cb => cb.nextElementSibling?.textContent || cb.value);
+
+    // Update display text
+    if (selectedValues.length === 0) {
+        // Set default text based on filter type
+        if (filterId === 'filterTryb') {
+            textSpan.textContent = 'Wszystkie tryby';
+        } else if (filterId === 'filterRodzaj') {
+            textSpan.textContent = 'Wszystkie rodzaje';
+        } else if (filterId === 'filterUmowa') {
+            textSpan.textContent = 'Wszystkie umowy';
+        }
+    } else if (selectedValues.length === 1) {
+        textSpan.textContent = selectedLabels[0];
+    } else {
+        textSpan.textContent = `Wybrano: ${selectedValues.length}`;
     }
 
-    console.log('=== END TEST EDIT BUTTON CLICK ===');
-};
-
-// Function to check if user is logged in and applications are loaded
-window.checkApplicationsState = function () {
-    console.log('=== CHECKING APPLICATIONS STATE ===');
-
-    const user = window.auth?.currentUser;
-    console.log('User logged in:', !!user);
-    console.log('User ID:', user?.uid);
-
-    const tbody = document.querySelector('.applications-table tbody');
-    const rows = tbody ? tbody.querySelectorAll('tr') : [];
-    console.log('Table rows found:', rows.length);
-
-    const editButtons = document.querySelectorAll('.edit-btn');
-    console.log('Edit buttons found:', editButtons.length);
-
-    if (rows.length > 0) {
-        console.log('Sample row:', rows[0]);
-        const firstRowButton = rows[0].querySelector('.edit-btn');
-        console.log('First row edit button:', firstRowButton);
-        if (firstRowButton) {
-            console.log('First button data-id:', firstRowButton.getAttribute('data-id'));
+    // Add/remove count indicator
+    let countIndicator = trigger.querySelector('.multi-select-count');
+    if (selectedValues.length > 1) {
+        if (!countIndicator) {
+            countIndicator = document.createElement('span');
+            countIndicator.className = 'multi-select-count';
+            trigger.appendChild(countIndicator);
+        }
+        countIndicator.textContent = selectedValues.length;
+    } else {
+        if (countIndicator) {
+            countIndicator.remove();
         }
     }
 
-    console.log('=== END APPLICATIONS STATE CHECK ===');
-
-    return {
-        userLoggedIn: !!user,
-        rowsCount: rows.length,
-        editButtonsCount: editButtons.length
-    };
-};
-
-// Emergency function to diagnose disappeared applications
-window.emergencyDiagnosis = function () {
-    console.log('=== EMERGENCY DIAGNOSIS ===');
-
-    // Check user authentication
-    const user = window.auth?.currentUser;
-    console.log('🔐 User authentication:');
-    console.log('  Current user:', user);
-    console.log('  User ID:', user?.uid);
-    console.log('  User email:', user?.email);
-    console.log('  Auth ready:', !!window.auth);
-    console.log('  Firebase modules:', !!window.firebaseModules);
-
-    // Check Firebase connection
-    console.log('🔥 Firebase status:');
-    console.log('  Database object:', !!window.db);
-    console.log('  Firebase modules available:', Object.keys(window.firebaseModules || {}));
-
-    // Check DOM elements
-    console.log('📄 DOM elements:');
-    const tbody = document.querySelector('.applications-table tbody');
-    console.log('  Table tbody:', !!tbody);
-    console.log('  Table rows:', tbody?.children.length || 0);
-    console.log('  Loading overlay visible:', document.getElementById('loadingOverlay')?.style.display !== 'none');
-    console.log('  Main content visible:', document.getElementById('mainContent')?.style.display !== 'none');
-    console.log('  Landing page visible:', document.getElementById('landingPage')?.style.display !== 'none');
-
-    // Try to manually query Firebase
-    if (user && window.firebaseModules && window.db) {
-        console.log('🔍 Attempting manual Firebase query...');
-
-        const q = window.firebaseModules.query(
-            window.firebaseModules.collection(window.db, "applications"),
-            window.firebaseModules.where("userId", "==", user.uid),
-            window.firebaseModules.limit(5)
-        );
-
-        window.firebaseModules.getDocs(q).then((querySnapshot) => {
-            console.log('📊 Manual query results:');
-            console.log('  Documents found:', querySnapshot.size);
-
-            if (querySnapshot.empty) {
-                console.log('  ❌ No documents found for user:', user.uid);
-            } else {
-                console.log('  ✅ Documents exist:');
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    console.log(`    - ${doc.id}: ${data.stanowisko} at ${data.firma}`);
-                });
-            }
-        }).catch((error) => {
-            console.error('  ❌ Manual query failed:', error);
-        });
-    } else {
-        console.log('  ❌ Cannot perform manual query - missing prerequisites');
-    }
-
-    console.log('=== END EMERGENCY DIAGNOSIS ===');
-};
-
-// Function to reload applications with full debug
-window.forceReloadApplications = function () {
-    console.log('=== FORCE RELOAD APPLICATIONS ===');
-
-    // Clear table first
-    const tbody = document.querySelector('.applications-table tbody');
-    if (tbody) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 2rem; color: #6b7280;">Ładowanie aplikacji...</td></tr>';
-    }
-
-    // Get current filters and sort
-    const filters = getFilters();
-    const showArchived = document.getElementById('showArchived')?.checked || false;
+    // Trigger filtering
     const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
-
-    console.log('Loading with:', { filters, showArchived, sortOrder });
-
-    // Force reload
-    loadApplications(filters, showArchived, sortOrder);
-
-    console.log('=== END FORCE RELOAD ===');
+    loadApplications(getFilters(), document.getElementById('showArchived')?.checked, sortOrder);
 };
 
-// Function to check localStorage and reset if needed
-window.checkAndResetStorage = function () {
-    console.log('=== CHECKING STORAGE ===');
-
-    // Check Firebase auth persistence
-    const authKeys = Object.keys(localStorage).filter(key => key.includes('firebase'));
-    console.log('Firebase localStorage keys:', authKeys);
-
-    authKeys.forEach(key => {
-        try {
-            const value = localStorage.getItem(key);
-            console.log(`${key}:`, value ? 'EXISTS' : 'EMPTY');
-        } catch (e) {
-            console.log(`${key}:`, 'ERROR reading');
-        }
-    });
-
-    // Check session storage
-    const sessionKeys = Object.keys(sessionStorage).filter(key => key.includes('firebase'));
-    console.log('Firebase sessionStorage keys:', sessionKeys);
-
-    console.log('=== END STORAGE CHECK ===');
-};
-
-// Function to get current filters from form elements
+// Function to get all current filter values including multi-select filters
 function getFilters() {
     const filters = {};
 
     // Text filters
-    const stanowisko = document.getElementById('filterStanowisko')?.value?.trim();
-    const firma = document.getElementById('filterFirma')?.value?.trim();
-    
-    // Date filters - handle different types
+    const stanowisko = document.getElementById('filterStanowisko')?.value;
+    const firma = document.getElementById('filterFirma')?.value;
+    const status = window.filters?.status || '';
+
+    if (stanowisko) filters.stanowisko = stanowisko;
+    if (firma) filters.firma = firma;
+    if (status) filters.status = status;
+
+    // Date filters
     const dateType = document.getElementById('filterDateType')?.value;
-    const dateFieldType = document.getElementById('filterDateFieldType')?.value || 'application'; // default to application date
-    
+    const dateFieldType = document.getElementById('filterDateFieldType')?.value || 'application';
+
     if (dateType === 'exact') {
-        const data = document.getElementById('filterData')?.value?.trim();
+        const data = document.getElementById('filterData')?.value;
         if (data) {
             filters.data = data;
             filters.dateFieldType = dateFieldType;
         }
     } else if (dateType === 'range') {
-        const dateFrom = document.getElementById('filterDateFrom')?.value?.trim();
-        const dateTo = document.getElementById('filterDateTo')?.value?.trim();
+        const dateFrom = document.getElementById('filterDateFrom')?.value;
+        const dateTo = document.getElementById('filterDateTo')?.value;
         if (dateFrom) {
             filters.dateFrom = dateFrom;
             filters.dateFieldType = dateFieldType;
@@ -2307,159 +2301,244 @@ function getFilters() {
         }
     }
 
-    // Select filters
-    const tryb = document.getElementById('filterTryb')?.value;
-    const rodzaj = document.getElementById('filterRodzaj')?.value;
-    const umowa = document.getElementById('filterUmowa')?.value;
+    // Multi-select filters - collect arrays of selected values
+    const multiSelectFilters = ['filterTryb', 'filterRodzaj', 'filterUmowa'];
 
-    if (stanowisko) filters.stanowisko = stanowisko;
-    if (firma) filters.firma = firma;
-    if (tryb) filters.tryb = tryb;
-    if (rodzaj) filters.rodzaj = rodzaj;
-    if (umowa) filters.umowa = umowa;
+    multiSelectFilters.forEach(filterId => {
+        const dropdown = document.getElementById(filterId + 'Dropdown');
+        if (dropdown) {
+            const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]:checked');
+            const selectedValues = Array.from(checkboxes).map(cb => cb.value);
 
-    // Status filter from global window.filters object (set by quick filter cards)
-    if (window.filters && window.filters.status) {
-        filters.status = window.filters.status;
-    }
+            if (selectedValues.length > 0) {
+                // Store as array for multi-select filters
+                const fieldName = filterId.replace('filter', '').toLowerCase();
+                filters[fieldName] = selectedValues;
+            }
+        }
+    });
 
     return filters;
 }
 
 // Function to clear all filters
 function clearAllFilters() {
-    console.log('=== CLEAR ALL FILTERS ===');
+    // Clear text filters
+    if (document.getElementById('filterStanowisko')) {
+        document.getElementById('filterStanowisko').value = '';
+    }
+    if (document.getElementById('filterFirma')) {
+        document.getElementById('filterFirma').value = '';
+    }
 
-    // Clear text inputs
-    const textFilters = ['filterStanowisko', 'filterFirma', 'filterData', 'filterDateFrom', 'filterDateTo'];
-    textFilters.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-    });
+    // Clear date filters
+    if (document.getElementById('filterDateType')) {
+        document.getElementById('filterDateType').value = '';
+    }
+    if (document.getElementById('filterData')) {
+        document.getElementById('filterData').value = '';
+    }
+    if (document.getElementById('filterDateFrom')) {
+        document.getElementById('filterDateFrom').value = '';
+    }
+    if (document.getElementById('filterDateTo')) {
+        document.getElementById('filterDateTo').value = '';
+    }
+    if (document.getElementById('filterDateFieldType')) {
+        document.getElementById('filterDateFieldType').value = 'application';
+    }
 
-    // Clear select filters including date type and date field type
-    const selectFilters = ['filterTryb', 'filterRodzaj', 'filterUmowa', 'filterDateType', 'filterDateFieldType'];
-    selectFilters.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-    });
-
-    // Reset date filter visibility
-    const dateFilterFields = document.getElementById('dateFilterFields');
+    // Hide date filter containers
     const dateFieldTypeContainer = document.getElementById('dateFieldTypeContainer');
+    const dateFilterFields = document.getElementById('dateFilterFields');
     const exactDateField = document.getElementById('exactDateField');
     const rangeDateFields = document.getElementById('rangeDateFields');
-    
-    if (dateFilterFields) dateFilterFields.style.display = 'none';
+
     if (dateFieldTypeContainer) dateFieldTypeContainer.style.display = 'none';
+    if (dateFilterFields) dateFilterFields.style.display = 'none';
     if (exactDateField) exactDateField.style.display = 'none';
     if (rangeDateFields) rangeDateFields.style.display = 'none';
 
-    // Clear global status filter
-    if (window.filters) {
-        window.filters.status = '';
-    }
+    // Reset date labels
+    const exactDateLabel = document.getElementById('exactDateLabel');
+    const dateFromLabel = document.getElementById('dateFromLabel');
+    const dateToLabel = document.getElementById('dateToLabel');
 
-    // Reset quick filter cards
+    if (exactDateLabel) exactDateLabel.textContent = 'Data aplikowania';
+    if (dateFromLabel) dateFromLabel.textContent = 'Data od';
+    if (dateToLabel) dateToLabel.textContent = 'Data do';
+
+    // Clear multi-select filters
+    const multiSelectFilters = ['filterTryb', 'filterRodzaj', 'filterUmowa'];
+
+    multiSelectFilters.forEach(filterId => {
+        const dropdown = document.getElementById(filterId + 'Dropdown');
+        const trigger = document.getElementById(filterId + 'Trigger');
+        const textSpan = trigger?.querySelector('.multi-select-text');
+
+        if (dropdown) {
+            // Uncheck all checkboxes
+            const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = false);
+        }
+
+        if (textSpan) {
+            // Reset display text
+            if (filterId === 'filterTryb') {
+                textSpan.textContent = 'Wszystkie tryby';
+            } else if (filterId === 'filterRodzaj') {
+                textSpan.textContent = 'Wszystkie rodzaje';
+            } else if (filterId === 'filterUmowa') {
+                textSpan.textContent = 'Wszystkie umowy';
+            }
+        }
+
+        // Remove count indicator
+        const countIndicator = trigger?.querySelector('.multi-select-count');
+        if (countIndicator) {
+            countIndicator.remove();
+        }
+
+        // Close dropdown
+        if (dropdown) {
+            dropdown.style.display = 'none';
+        }
+        if (trigger) {
+            trigger.classList.remove('active');
+        }
+    });
+
+    // Clear status filter from quick filters
     if (window.resetQuickFilters) {
         window.resetQuickFilters();
     }
 
-    // Reload applications with no filters
-    const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
-    const showArchived = document.getElementById('showArchived')?.checked || false;
-    loadApplications({}, showArchived, sortOrder);
+    // Clear archived filter
+    if (document.getElementById('showArchived')) {
+        document.getElementById('showArchived').checked = false;
+    }
 
-    console.log('=== FILTERS CLEARED ===');
+    // Reload applications with cleared filters
+    const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
+    loadApplications({}, false, sortOrder);
 }
 
-// Date filter type switching functionality
+// Function to initialize date filters
 function initializeDateFilters() {
     const filterDateType = document.getElementById('filterDateType');
     const filterDateFieldType = document.getElementById('filterDateFieldType');
-    const dateFilterFields = document.getElementById('dateFilterFields');
     const dateFieldTypeContainer = document.getElementById('dateFieldTypeContainer');
+    const dateFilterFields = document.getElementById('dateFilterFields');
     const exactDateField = document.getElementById('exactDateField');
     const rangeDateFields = document.getElementById('rangeDateFields');
 
-    // Function to update date field labels based on selected type
+    // Labels for dynamic updates
+    const exactDateLabel = document.getElementById('exactDateLabel');
+    const dateFromLabel = document.getElementById('dateFromLabel');
+    const dateToLabel = document.getElementById('dateToLabel');
+
     function updateDateLabels() {
         const fieldType = filterDateFieldType?.value || 'application';
         const isStatusDate = fieldType === 'status';
-        
-        const exactDateLabel = document.getElementById('exactDateLabel');
-        const dateFromLabel = document.getElementById('dateFromLabel');
-        const dateToLabel = document.getElementById('dateToLabel');
-        
-        if (isStatusDate) {
-            if (exactDateLabel) exactDateLabel.textContent = 'Data aktualnego statusu';
-            if (dateFromLabel) dateFromLabel.textContent = 'Data statusu od';
-            if (dateToLabel) dateToLabel.textContent = 'Data statusu do';
-        } else {
-            if (exactDateLabel) exactDateLabel.textContent = 'Data aplikowania';
-            if (dateFromLabel) dateFromLabel.textContent = 'Data od';
-            if (dateToLabel) dateToLabel.textContent = 'Data do';
+
+        if (exactDateLabel) {
+            exactDateLabel.textContent = isStatusDate ? 'Data aktualnego statusu' : 'Data aplikowania';
+        }
+        if (dateFromLabel) {
+            dateFromLabel.textContent = isStatusDate ? 'Data statusu od' : 'Data od';
+        }
+        if (dateToLabel) {
+            dateToLabel.textContent = isStatusDate ? 'Data statusu do' : 'Data do';
         }
     }
 
-    if (filterDateType && dateFilterFields && exactDateField && rangeDateFields) {
-        // Handle date type selection (exact/range/none)
-        filterDateType.addEventListener('change', function() {
-            const selectedType = this.value;
-            
-            // Clear all date fields when switching types
-            const filterData = document.getElementById('filterData');
-            const filterDateFrom = document.getElementById('filterDateFrom');
-            const filterDateTo = document.getElementById('filterDateTo');
-            
-            if (filterData) filterData.value = '';
-            if (filterDateFrom) filterDateFrom.value = '';
-            if (filterDateTo) filterDateTo.value = '';
-            
-            // Show/hide appropriate fields
-            if (selectedType === 'exact') {
-                dateFilterFields.style.display = 'flex';
-                dateFieldTypeContainer.style.display = 'block';
-                exactDateField.style.display = 'block';
-                rangeDateFields.style.display = 'none';
-                updateDateLabels();
-            } else if (selectedType === 'range') {
-                dateFilterFields.style.display = 'flex';
-                dateFieldTypeContainer.style.display = 'block';
-                exactDateField.style.display = 'none';
-                rangeDateFields.style.display = 'flex';
-                updateDateLabels();
+    // Date type change handler
+    if (filterDateType) {
+        filterDateType.addEventListener('change', function () {
+            const dateType = this.value;
+
+            // Show/hide containers based on selection
+            if (dateType === '' || dateType === 'none') {
+                // No date filtering
+                if (dateFieldTypeContainer) dateFieldTypeContainer.style.display = 'none';
+                if (dateFilterFields) dateFilterFields.style.display = 'none';
+                if (exactDateField) exactDateField.style.display = 'none';
+                if (rangeDateFields) rangeDateFields.style.display = 'none';
             } else {
-                dateFilterFields.style.display = 'none';
-                dateFieldTypeContainer.style.display = 'none';
-                exactDateField.style.display = 'none';
-                rangeDateFields.style.display = 'none';
+                // Show date field type selector and fields
+                if (dateFieldTypeContainer) dateFieldTypeContainer.style.display = 'block';
+                if (dateFilterFields) dateFilterFields.style.display = 'flex';
+
+                if (dateType === 'exact') {
+                    // Exact date
+                    if (exactDateField) exactDateField.style.display = 'block';
+                    if (rangeDateFields) rangeDateFields.style.display = 'none';
+                } else if (dateType === 'range') {
+                    // Date range
+                    if (exactDateField) exactDateField.style.display = 'none';
+                    if (rangeDateFields) rangeDateFields.style.display = 'flex';
+                }
             }
-            
-            // Trigger re-filtering
+
+            // Clear date values when changing type
+            if (document.getElementById('filterData')) {
+                document.getElementById('filterData').value = '';
+            }
+            if (document.getElementById('filterDateFrom')) {
+                document.getElementById('filterDateFrom').value = '';
+            }
+            if (document.getElementById('filterDateTo')) {
+                document.getElementById('filterDateTo').value = '';
+            }
+
+            // Update labels
+            updateDateLabels();
+
+            // Trigger filtering
             const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
             loadApplications(getFilters(), document.getElementById('showArchived')?.checked, sortOrder);
         });
-
-        // Handle date field type selection (application/status date)
-        if (filterDateFieldType) {
-            filterDateFieldType.addEventListener('change', function() {
-                updateDateLabels();
-                
-                // Clear date fields when switching field type
-                const filterData = document.getElementById('filterData');
-                const filterDateFrom = document.getElementById('filterDateFrom');
-                const filterDateTo = document.getElementById('filterDateTo');
-                
-                if (filterData) filterData.value = '';
-                if (filterDateFrom) filterDateFrom.value = '';
-                if (filterDateTo) filterDateTo.value = '';
-                
-                // Trigger re-filtering
-                const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
-                loadApplications(getFilters(), document.getElementById('showArchived')?.checked, sortOrder);
-            });
-        }
     }
+
+    // Date field type change handler
+    if (filterDateFieldType) {
+        filterDateFieldType.addEventListener('change', function () {
+            // Clear date values when changing field type
+            if (document.getElementById('filterData')) {
+                document.getElementById('filterData').value = '';
+            }
+            if (document.getElementById('filterDateFrom')) {
+                document.getElementById('filterDateFrom').value = '';
+            }
+            if (document.getElementById('filterDateTo')) {
+                document.getElementById('filterDateTo').value = '';
+            }
+
+            // Update labels
+            updateDateLabels();
+
+            // Trigger filtering
+            const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
+            loadApplications(getFilters(), document.getElementById('showArchived')?.checked, sortOrder);
+        });
+    }
+
+    // Initialize labels on page load
+    updateDateLabels();
 }
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function (event) {
+    const isMultiSelectElement = event.target.closest('.multi-select-container');
+    if (!isMultiSelectElement) {
+        document.querySelectorAll('.multi-select-dropdown').forEach(dropdown => {
+            dropdown.style.display = 'none';
+            const filterId = dropdown.id.replace('Dropdown', '');
+            const trigger = document.getElementById(filterId + 'Trigger');
+            if (trigger) {
+                trigger.classList.remove('active');
+            }
+        });
+    }
+});
 

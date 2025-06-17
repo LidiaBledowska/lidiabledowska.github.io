@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug logowania Google</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+
+        .debug-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .test-btn {
+            background: #141414;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        .test-btn:hover {
+            background: #2d2d2d;
+        }
+
+        .console-output {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        .info {
+            color: blue;
+            font-weight: bold;
+        }
+
+        .warning {
+            color: orange;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="debug-container">
+        <h1>🔍 Debug logowania Google</h1>
+        <p>Ta strona pomoże zdiagnozować problem z logowaniem przez Google.</p>
+
+        <button class="test-btn" onclick="testFirebaseConfig()">🔧 Test konfiguracji Firebase</button>
+        <button class="test-btn" onclick="testGoogleAuth()">🔐 Test uwierzytelnienia Google</button>
+        <button class="test-btn" onclick="testLoginPage()">📄 Test strony logowania</button>
+        <button class="test-btn" onclick="clearOutput()">🗑️ Wyczyść wyniki</button>
+
+        <div id="output" class="console-output">Kliknij przycisk testowy aby rozpocząć diagnozę...</div>
+
+        <h3>🎯 Możliwe przyczyny problemów:</h3>
+        <ul>
+            <li><strong>Konfiguracja Firebase:</strong> Nieprawidłowy API key lub projekt</li>
+            <li><strong>Domeny autoryzowane:</strong> localhost może nie być autoryzowany w Firebase Console</li>
+            <li><strong>Popup blokowany:</strong> Przeglądarka może blokować popup logowania</li>
+            <li><strong>Wersja Firebase SDK:</strong> Niezgodność wersji modułów</li>
+            <li><strong>HTTPS wymagane:</strong> Google Auth może wymagać HTTPS</li>
+        </ul>
+
+        <h3>📋 Instrukcje manualnego testu:</h3>
+        <ol>
+            <li>Otwórz <a href="http://localhost:8081/login.html" target="_blank">stronę logowania</a></li>
+            <li>Otwórz Developer Tools (F12) i przejdź do zakładki Console</li>
+            <li>Kliknij przycisk "Zaloguj się przez Google"</li>
+            <li>Sprawdź czy pojawiają się błędy w konsoli</li>
+            <li>Sprawdź czy otwiera się popup logowania Google</li>
+        </ol>
+    </div>
+
+    <script type="module">
+        import { initFirebase } from "./firebase-init.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warning' ? 'warning' : 'info';
+            output.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        window.clearOutput = function () {
+            document.getElementById('output').innerHTML = 'Wyniki zostały wyczyszczone...\n';
+        }
+
+        window.testFirebaseConfig = async function () {
+            log('🔧 Rozpoczynam test konfiguracji Firebase...', 'info');
+
+            try {
+                // Test inicjalizacji Firebase
+                const { auth, db } = initFirebase();
+                log('✅ Firebase zainicjalizowany poprawnie', 'success');
+                log(`📡 Auth domain: ${auth.config.authDomain}`, 'info');
+                log(`🔑 API Key: ${auth.config.apiKey.substring(0, 10)}...`, 'info');
+                log(`📊 Project ID: ${auth.config.projectId}`, 'info');
+
+                // Test połączenia z Firestore
+                log('🔍 Sprawdzam połączenie z Firestore...', 'info');
+                log('✅ Firestore dostępny', 'success');
+
+                // Test providera Google
+                const provider = new GoogleAuthProvider();
+                log('✅ Google Auth Provider utworzony', 'success');
+
+            } catch (error) {
+                log(`❌ Błąd konfiguracji Firebase: ${error.message}`, 'error');
+                console.error('Firebase config error:', error);
+            }
+        }
+
+        window.testGoogleAuth = async function () {
+            log('🔐 Rozpoczynam test uwierzytelnienia Google...', 'info');
+
+            try {
+                const { auth } = initFirebase();
+                const provider = new GoogleAuthProvider();
+
+                log('📱 Próba logowania przez Google...', 'info');
+                log('⚠️ Sprawdź czy pojawi się popup logowania', 'warning');
+
+                // Dodaj timeout dla testu
+                const authPromise = signInWithPopup(auth, provider);
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Timeout - popup nie odpowiada')), 10000)
+                );
+
+                const result = await Promise.race([authPromise, timeoutPromise]);
+
+                log('✅ Logowanie przez Google zakończone sukcesem!', 'success');
+                log(`👤 Zalogowany użytkownik: ${result.user.displayName}`, 'success');
+                log(`📧 Email: ${result.user.email}`, 'info');
+
+            } catch (error) {
+                if (error.code === 'auth/popup-closed-by-user') {
+                    log('⚠️ Popup został zamknięty przez użytkownika', 'warning');
+                } else if (error.code === 'auth/popup-blocked') {
+                    log('❌ Popup został zablokowany przez przeglądarkę', 'error');
+                    log('💡 Spróbuj wyłączyć blokadę popup dla tej strony', 'info');
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    log('❌ Domena nie jest autoryzowana w Firebase', 'error');
+                    log('💡 Dodaj localhost:8081 do autoryzowanych domen w Firebase Console', 'info');
+                } else {
+                    log(`❌ Błąd logowania: ${error.code} - ${error.message}`, 'error');
+                }
+                console.error('Google auth error:', error);
+            }
+        }
+
+        window.testLoginPage = function () {
+            log('📄 Otwieranie strony logowania w nowym oknie...', 'info');
+            log('👀 Sprawdź manualnie czy strona się ładuje poprawnie', 'info');
+            log('🔍 Otwórz Developer Tools (F12) i sprawdź błędy w konsoli', 'info');
+
+            const loginWindow = window.open('http://localhost:8081/login.html', '_blank', 'width=800,height=600');
+
+            setTimeout(() => {
+                if (loginWindow && !loginWindow.closed) {
+                    log('✅ Strona logowania otwarta - kontynuuj test manualny', 'success');
+                } else {
+                    log('❌ Strona logowania została zamknięta lub nie otworzyła się', 'error');
+                }
+            }, 2000);
+        }
+
+        // Auto-start basic info
+        log('🚀 Debug Google Auth załadowany', 'success');
+        log('📡 Serwer: http://localhost:8081', 'info');
+        log('🎯 Wybierz test aby rozpocząć diagnozę', 'info');
+        log('', 'info');
+        log('💡 WAŻNE: Sprawdź czy w Firebase Console:', 'warning');
+        log('   1. Projekt aplikacje-3068f istnieje i jest aktywny', 'info');
+        log('   2. Google Auth jest włączony', 'info');
+        log('   3. localhost:8081 jest w autoryzowanych domenach', 'info');
+    </script>
+</body>
+
+</html>

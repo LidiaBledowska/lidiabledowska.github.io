@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Function Validation - RekruTracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .function-check {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #ddd;
+        }
+
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .warning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔧 Function Validation</h1>
+        <p>Checking if all critical functions are properly defined...</p>
+
+        <div id="results"></div>
+
+        <div style="margin-top: 20px;">
+            <button onclick="validateFunctions()"
+                style="background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                🔄 Re-run Validation
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function validateFunctions() {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+
+            const functionsToCheck = [
+                { name: 'toggleMultiSelect', location: 'window' },
+                { name: 'updateMultiSelect', location: 'window' },
+                { name: 'getFilters', location: 'window' },
+                { name: 'clearAllFilters', location: 'window' },
+                { name: 'loadApplications', location: 'window' },
+                { name: 'initializeDateFilters', location: 'window' },
+                { name: 'firebaseModules', location: 'window', type: 'object' },
+                { name: 'auth', location: 'window', type: 'object' },
+                { name: 'db', location: 'window', type: 'object' }
+            ];
+
+            let allGood = true;
+
+            functionsToCheck.forEach(func => {
+                const div = document.createElement('div');
+                div.className = 'function-check';
+
+                try {
+                    const obj = func.location === 'window' ? window : eval(func.location);
+                    const exists = typeof obj[func.name] !== 'undefined';
+
+                    if (exists) {
+                        const actualType = typeof obj[func.name];
+                        const expectedType = func.type || 'function';
+
+                        if (actualType === expectedType) {
+                            div.className += ' success';
+                            div.innerHTML = `✅ <strong>${func.name}</strong> - ${actualType} found`;
+                        } else {
+                            div.className += ' warning';
+                            div.innerHTML = `⚠️ <strong>${func.name}</strong> - found but wrong type (${actualType} instead of ${expectedType})`;
+                            allGood = false;
+                        }
+                    } else {
+                        div.className += ' error';
+                        div.innerHTML = `❌ <strong>${func.name}</strong> - not found`;
+                        allGood = false;
+                    }
+                } catch (error) {
+                    div.className += ' error';
+                    div.innerHTML = `❌ <strong>${func.name}</strong> - error checking: ${error.message}`;
+                    allGood = false;
+                }
+
+                results.appendChild(div);
+            });
+
+            // Overall status
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'function-check ' + (allGood ? 'success' : 'error');
+            statusDiv.innerHTML = allGood ?
+                '✅ <strong>All functions validated successfully!</strong>' :
+                '❌ <strong>Some functions are missing or incorrect</strong>';
+            results.appendChild(statusDiv);
+
+            // Additional checks
+            const additionalDiv = document.createElement('div');
+            additionalDiv.innerHTML = '<h3>Additional Checks:</h3>';
+
+            // Check if Firebase is initialized
+            try {
+                if (window.firebaseModules && window.firebaseModules.auth) {
+                    additionalDiv.innerHTML += '<p>✅ Firebase modules available</p>';
+                } else {
+                    additionalDiv.innerHTML += '<p>❌ Firebase modules not properly initialized</p>';
+                }
+            } catch (e) {
+                additionalDiv.innerHTML += '<p>❌ Error checking Firebase: ' + e.message + '</p>';
+            }
+
+            // Check DOM elements
+            const multiSelectElements = [
+                'filterTrybTrigger',
+                'filterTrybDropdown',
+                'filterRodzajTrigger',
+                'filterRodzajDropdown',
+                'filterUmowaTrigger',
+                'filterUmowaDropdown'
+            ];
+
+            let elementsFound = 0;
+            multiSelectElements.forEach(id => {
+                if (document.getElementById(id)) {
+                    elementsFound++;
+                }
+            });
+
+            additionalDiv.innerHTML += `<p>📋 Multi-select DOM elements: ${elementsFound}/${multiSelectElements.length} found</p>`;
+
+            results.appendChild(additionalDiv);
+        }
+
+        // Run validation on page load
+        window.addEventListener('load', () => {
+            setTimeout(validateFunctions, 1000); // Give time for scripts to load
+        });
+    </script>
+</body>
+
+</html>

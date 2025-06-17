@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Instrukcja naprawy Google Auth</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background: #f8f9fa;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #e74c3c;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .step h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-success {
+            background: #27ae60;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .screenshot-placeholder {
+            background: #ecf0f1;
+            border: 2px dashed #95a5a6;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            border-radius: 8px;
+            color: #7f8c8d;
+        }
+
+        .domain-list {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .domain-list li {
+            font-family: monospace;
+            background: white;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔧 Instrukcja naprawy logowania Google</h1>
+
+        <div class="warning">
+            <strong>⚠️ Problem:</strong> Logowanie przez Google nie działa z powodu braku autoryzacji domeny w Firebase
+            Console.
+        </div>
+
+        <h2>📋 Co musisz zrobić</h2>
+
+        <div class="step">
+            <h3>Krok 1: Otwórz Firebase Console</h3>
+            <p>Przejdź do <a href="https://console.firebase.google.com" target="_blank" class="btn">🔗 Firebase
+                    Console</a></p>
+            <p>Zaloguj się na konto Google, które ma dostęp do projektu <code>aplikacje-3068f</code></p>
+        </div>
+
+        <div class="step">
+            <h3>Krok 2: Wybierz projekt</h3>
+            <p>Na liście projektów znajdź i kliknij:</p>
+            <div class="code">aplikacje-3068f</div>
+        </div>
+
+        <div class="step">
+            <h3>Krok 3: Przejdź do Authentication</h3>
+            <p>W menu po lewej stronie kliknij:</p>
+            <div class="code">🔐 Authentication</div>
+        </div>
+
+        <div class="step">
+            <h3>Krok 4: Otwórz Settings</h3>
+            <p>W sekcji Authentication kliknij:</p>
+            <div class="code">⚙️ Settings</div>
+            <p>Następnie przejdź do zakładki:</p>
+            <div class="code">🌐 Authorized domains</div>
+        </div>
+
+        <div class="step">
+            <h3>Krok 5: Dodaj domeny</h3>
+            <p>Kliknij przycisk <strong>"Add domain"</strong> i dodaj następujące domeny (jedna po drugiej):</p>
+
+            <div class="domain-list">
+                <h4>Domeny do dodania:</h4>
+                <ul>
+                    <li>localhost</li>
+                    <li>127.0.0.1</li>
+                    <li>localhost:8080</li>
+                    <li>localhost:8081</li>
+                    <li>localhost:8082</li>
+                    <li>localhost:3000</li>
+                </ul>
+            </div>
+
+            <div class="warning">
+                <strong>Uwaga:</strong> Dodaj każdą domenę osobno, klikając "Add domain" dla każdej.
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Krok 6: Sprawdź Google Provider</h3>
+            <p>Wróć do głównej sekcji Authentication i kliknij:</p>
+            <div class="code">📝 Sign-in method</div>
+            <p>Upewnij się, że <strong>Google</strong> jest włączony (status: <span
+                    style="color: green;">Enabled</span>)</p>
+            <p>Jeśli nie jest włączony:</p>
+            <ol>
+                <li>Kliknij na "Google" w liście providerów</li>
+                <li>Kliknij przełącznik "Enable"</li>
+                <li>Podaj adres email projektu</li>
+                <li>Kliknij "Save"</li>
+            </ol>
+        </div>
+
+        <div class="success">
+            <h3>✅ Po wykonaniu kroków powyżej:</h3>
+            <p>Logowanie Google powinno działać na wszystkich portach localhost!</p>
+        </div>
+
+        <h2>🧪 Testowanie</h2>
+
+        <p>Po skonfigurowaniu Firebase, przetestuj logowanie:</p>
+
+        <a href="test-google-login-simple.html" class="btn btn-success">🧪 Test prostego logowania</a>
+        <a href="login.html" class="btn">🔐 Strona logowania</a>
+        <a href="index.html" class="btn">🏠 Strona główna</a>
+
+        <h2>❓ Rozwiązywanie problemów</h2>
+
+        <div class="step">
+            <h3>Błąd: "auth/unauthorized-domain"</h3>
+            <p><strong>Przyczyna:</strong> Domena nie została dodana do Firebase Console</p>
+            <p><strong>Rozwiązanie:</strong> Powtórz kroki 1-5 powyżej</p>
+        </div>
+
+        <div class="step">
+            <h3>Błąd: "auth/popup-blocked"</h3>
+            <p><strong>Przyczyna:</strong> Przeglądarka blokuje popup</p>
+            <p><strong>Rozwiązanie:</strong></p>
+            <ol>
+                <li>Sprawdź ikonę popup w pasku adresu</li>
+                <li>Kliknij "Zawsze zezwalaj" dla localhost</li>
+                <li>Odśwież stronę i spróbuj ponownie</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Błąd: "auth/popup-closed-by-user"</h3>
+            <p><strong>Przyczyna:</strong> Popup został zamknięty przed ukończeniem logowania</p>
+            <p><strong>Rozwiązanie:</strong> Nie zamykaj popup, poczekaj na przekierowanie</p>
+        </div>
+
+        <h2>📞 Kontakt</h2>
+
+        <p>Jeśli nadal masz problemy:</p>
+        <ol>
+            <li>Sprawdź konsolę przeglądarki (F12) pod kątem błędów</li>
+            <li>Upewnij się, że masz uprawnienia administratora do projektu Firebase</li>
+            <li>Spróbuj wyczyścić cache przeglądarki</li>
+        </ol>
+
+        <div class="code">
+            Obecna konfiguracja Firebase:
+            - Project ID: aplikacje-3068f
+            - Auth Domain: aplikacje-3068f.firebaseapp.com
+            - API Key: AIzaSyBQ3lWo31mLO2gF9cLG6KZzGLX3a3C7dGw
+        </div>
+
+        <div class="warning">
+            <strong>Bezpieczeństwo:</strong> Nigdy nie udostępniaj API Key publicznie w produkcji. W tym przypadku jest
+            to OK, ponieważ to klucz dla aplikacji frontendowej.
+        </div>
+    </div>
+</body>
+
+</html>

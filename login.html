@@ -151,11 +151,58 @@
         const signOutButton = document.getElementById('signout-button');
         const userStatusElement = document.getElementById('user-status');
 
-        // Przekierowanie po zalogowaniu
-        signInButton.onclick = () =>
-            signInWithPopup(auth, provider).then(() => {
-                window.location.href = "index.html";
-            });
+        // Przekierowanie po zalogowaniu z obsługą błędów
+        signInButton.onclick = async () => {
+            try {
+                console.log('🔐 Rozpoczynam logowanie przez Google...');
+                userStatusElement.textContent = 'Logowanie w toku...';
+                userStatusElement.style.color = '#2563eb';
+
+                const result = await signInWithPopup(auth, provider);
+                console.log('✅ Logowanie zakończone sukcesem:', result.user.email);
+                userStatusElement.textContent = 'Logowanie zakończone! Przekierowywanie...';
+                userStatusElement.style.color = '#16a34a';
+
+                // Krótkie opóźnienie przed przekierowaniem
+                setTimeout(() => {
+                    window.location.href = "index.html";
+                }, 1000);
+
+            } catch (error) {
+                console.error('❌ Błąd logowania:', error);
+
+                let errorMessage = 'Błąd logowania: ';
+
+                switch (error.code) {
+                    case 'auth/popup-closed-by-user':
+                        errorMessage += 'Okno logowania zostało zamknięte.';
+                        break;
+                    case 'auth/popup-blocked':
+                        errorMessage += 'Popup został zablokowany przez przeglądarkę. Sprawdź ustawienia blokady popup.';
+                        break;
+                    case 'auth/unauthorized-domain':
+                        errorMessage += 'Ta domena nie jest autoryzowana. Skontaktuj się z administratorem.';
+                        break;
+                    case 'auth/cancelled-popup-request':
+                        errorMessage += 'Poprzednie żądanie logowania zostało anulowane.';
+                        break;
+                    case 'auth/network-request-failed':
+                        errorMessage += 'Błąd połączenia sieciowego. Sprawdź połączenie internetowe.';
+                        break;
+                    default:
+                        errorMessage += error.message || 'Nieznany błąd.';
+                }
+
+                userStatusElement.textContent = errorMessage;
+                userStatusElement.style.color = '#dc2626';
+
+                // Reset po 5 sekundach
+                setTimeout(() => {
+                    userStatusElement.textContent = 'Nie jesteś zalogowany.';
+                    userStatusElement.style.color = '#141414';
+                }, 5000);
+            }
+        };
 
         signOutButton.onclick = () => signOut(auth);
 

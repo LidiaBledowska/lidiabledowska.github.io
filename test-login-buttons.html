@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test przycisków logowania</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .test-btn {
+            background: #141414;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        .test-btn:hover {
+            background: #2d2d2d;
+        }
+
+        .console-output {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        .info {
+            color: blue;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="test-container">
+        <h1>🔐 Test przycisków logowania</h1>
+        <p>Test sprawdza czy przyciski logowania i rejestracji działają poprawnie.</p>
+
+        <button class="test-btn" onclick="testMainPage()">🧪 Testuj stronę główną</button>
+        <button class="test-btn" onclick="testLoginPage()">🔑 Testuj stronę logowania</button>
+        <button class="test-btn" onclick="clearOutput()">🗑️ Wyczyść wyniki</button>
+
+        <div id="output" class="console-output">Kliknij przycisk testowy aby rozpocząć...</div>
+
+        <h3>📋 Instrukcje testowe:</h3>
+        <ol>
+            <li><strong>Test strony głównej:</strong> Sprawdzi czy przycisk "Zaloguj" w nagłówku działa</li>
+            <li><strong>Test strony logowania:</strong> Sprawdzi czy strona logowania się ładuje</li>
+            <li><strong>Test manualny:</strong> Otwórz <a href="http://localhost:8081" target="_blank">stronę główną</a>
+                i sprawdź przyciski</li>
+        </ol>
+
+        <h3>🎯 Oczekiwane zachowanie:</h3>
+        <ul>
+            <li>Przycisk "Zaloguj" w nagłówku powinien przekierowywać do login.html</li>
+            <li>Przycisk "Zarejestruj się za darmo" powinien pokazywać formularz logowania</li>
+            <li>Przycisk "Zaloguj się przez Google" w formularzu powinien działać</li>
+            <li>Po zalogowaniu przyciski powinny się zmienić na "Wyloguj"</li>
+        </ul>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            output.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearOutput() {
+            document.getElementById('output').innerHTML = 'Wyniki zostały wyczyszczone...\n';
+        }
+
+        async function testMainPage() {
+            log('🔍 Rozpoczynam test strony głównej...', 'info');
+
+            try {
+                // Otwórz stronę główną w nowym oknie
+                const testWindow = window.open('http://localhost:8081/index.html', '_blank', 'width=1200,height=800');
+
+                log('✅ Otwarto stronę główną w nowym oknie', 'success');
+                log('📌 Sprawdź manualnie:', 'info');
+                log('   1. Czy przycisk "Zaloguj" w prawym górnym rogu jest widoczny', 'info');
+                log('   2. Czy kliknięcie przekierowuje do login.html', 'info');
+                log('   3. Czy przycisk "Zarejestruj się za darmo" pokazuje formularz logowania', 'info');
+                log('   4. Czy przycisk Google w formularzu działa', 'info');
+
+                // Sprawdź po 3 sekundach czy okno nadal istnieje
+                setTimeout(() => {
+                    if (testWindow && !testWindow.closed) {
+                        log('✅ Okno testowe nadal otwarte - kontynuuj test manualny', 'success');
+                    } else {
+                        log('❌ Okno testowe zostało zamknięte', 'error');
+                    }
+                }, 3000);
+
+            } catch (error) {
+                log(`❌ Błąd podczas otwierania strony: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLoginPage() {
+            log('🔑 Rozpoczynam test strony logowania...', 'info');
+
+            try {
+                // Otwórz stronę logowania w nowym oknie
+                const loginWindow = window.open('http://localhost:8081/login.html', '_blank', 'width=800,height=600');
+
+                log('✅ Otwarto stronę logowania w nowym oknie', 'success');
+                log('📌 Sprawdź manualnie:', 'info');
+                log('   1. Czy strona logowania się ładuje poprawnie', 'info');
+                log('   2. Czy przycisk "Zaloguj się przez Google" jest widoczny', 'info');
+                log('   3. Czy kliknięcie przycisku próbuje zalogować przez Google', 'info');
+                log('   4. Czy po zalogowaniu następuje przekierowanie do index.html', 'info');
+
+                // Sprawdź po 3 sekundach czy okno nadal istnieje
+                setTimeout(() => {
+                    if (loginWindow && !loginWindow.closed) {
+                        log('✅ Okno logowania nadal otwarte - kontynuuj test manualny', 'success');
+                    } else {
+                        log('❌ Okno logowania zostało zamknięte', 'error');
+                    }
+                }, 3000);
+
+            } catch (error) {
+                log(`❌ Błąd podczas otwierania strony logowania: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-start
+        log('🚀 Strona testowa załadowana', 'success');
+        log('📡 Serwer działa na: http://localhost:8081', 'info');
+        log('🎯 Wybierz test aby rozpocząć', 'info');
+    </script>
+</body>
+
+</html>

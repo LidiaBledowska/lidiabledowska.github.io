@@ -362,7 +362,8 @@
                                 </div>
                                 <div class="flex max-w-[480px] flex-wrap items-end gap-4 py-3">
                                     <label class="flex flex-col min-w-40 flex-1">
-                                        <p class="text-[#141414] text-base font-medium leading-normal pb-2">Filtr daty</p>
+                                        <p class="text-[#141414] text-base font-medium leading-normal pb-2">Filtr daty
+                                        </p>
                                         <select id="filterDateType"
                                             class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#141414] focus:outline-0 focus:ring-0 border border-[#e5e7eb] bg-white focus:border-[#141414] h-14 bg-[image:--select-button-svg] placeholder:text-neutral-500 p-[15px] text-base font-normal leading-normal">
                                             <option value="">Wszystkie daty</option>
@@ -370,11 +371,12 @@
                                             <option value="range">Data od do</option>
                                         </select>
                                     </label>
-                                    
+
                                     <!-- Date field type selector -->
                                     <div id="dateFieldTypeContainer" style="display: none;">
                                         <label class="flex flex-col min-w-40 flex-1">
-                                            <p class="text-[#141414] text-base font-medium leading-normal pb-2">Typ daty</p>
+                                            <p class="text-[#141414] text-base font-medium leading-normal pb-2">Typ daty
+                                            </p>
                                             <select id="filterDateFieldType"
                                                 class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#141414] focus:outline-0 focus:ring-0 border border-[#e5e7eb] bg-white focus:border-[#141414] h-14 bg-[image:--select-button-svg] placeholder:text-neutral-500 p-[15px] text-base font-normal leading-normal">
                                                 <option value="application">Data aplikowania</option>
@@ -383,29 +385,36 @@
                                         </label>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Date filter fields (hidden by default) -->
-                                <div id="dateFilterFields" class="flex max-w-[480px] flex-wrap items-end gap-4 py-3" style="display: none;">
+                                <div id="dateFilterFields" class="flex max-w-[480px] flex-wrap items-end gap-4 py-3"
+                                    style="display: none;">
                                     <!-- Exact date field -->
                                     <div id="exactDateField" style="display: none;">
                                         <label class="flex flex-col min-w-40 flex-1">
-                                            <p id="exactDateLabel" class="text-[#141414] text-base font-medium leading-normal pb-2">Data aplikowania</p>
+                                            <p id="exactDateLabel"
+                                                class="text-[#141414] text-base font-medium leading-normal pb-2">Data
+                                                aplikowania</p>
                                             <input id="filterData" type="date" placeholder="Wybierz datę"
                                                 class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#141414] focus:outline-0 focus:ring-0 border border-[#e5e7eb] bg-white focus:border-[#141414] h-14 placeholder:text-neutral-500 p-[15px] text-base font-normal leading-normal"
                                                 value="" />
                                         </label>
                                     </div>
-                                    
+
                                     <!-- Date range fields -->
                                     <div id="rangeDateFields" style="display: none;">
                                         <label class="flex flex-col min-w-40 flex-1">
-                                            <p id="dateFromLabel" class="text-[#141414] text-base font-medium leading-normal pb-2">Data od</p>
+                                            <p id="dateFromLabel"
+                                                class="text-[#141414] text-base font-medium leading-normal pb-2">Data od
+                                            </p>
                                             <input id="filterDateFrom" type="date" placeholder="Data od"
                                                 class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#141414] focus:outline-0 focus:ring-0 border border-[#e5e7eb] bg-white focus:border-[#141414] h-14 placeholder:text-neutral-500 p-[15px] text-base font-normal leading-normal"
                                                 value="" />
                                         </label>
                                         <label class="flex flex-col min-w-40 flex-1">
-                                            <p id="dateToLabel" class="text-[#141414] text-base font-medium leading-normal pb-2">Data do</p>
+                                            <p id="dateToLabel"
+                                                class="text-[#141414] text-base font-medium leading-normal pb-2">Data do
+                                            </p>
                                             <input id="filterDateTo" type="date" placeholder="Data do"
                                                 class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#141414] focus:outline-0 focus:ring-0 border border-[#e5e7eb] bg-white focus:border-[#141414] h-14 placeholder:text-neutral-500 p-[15px] text-base font-normal leading-normal"
                                                 value="" />
@@ -414,39 +423,97 @@
 
                                 </div>
                                 <div class="flex max-w-[480px] flex-wrap items-end gap-4 py-3">
-                                    <label class="flex flex-col min-w-40 flex-1">
+                                    <!-- Multi-select Tryb pracy -->
+                                    <div class="flex flex-col min-w-40 flex-1">
                                         <p class="text-[#141414] text-base font-medium leading-normal pb-2">Tryb pracy
                                         </p>
-                                        <select id="filterTryb"
-                                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#141414] focus:outline-0 focus:ring-0 border border-[#e5e7eb] bg-white focus:border-[#141414] h-14 bg-[image:--select-button-svg] placeholder:text-neutral-500 p-[15px] text-base font-normal leading-normal">
-                                            <option value="">Wszystkie tryby</option>
-                                            <option value="STACJONARNY">Stacjonarny</option>
-                                            <option value="HYBRYDOWY">Hybrydowy</option>
-                                            <option value="ZDALNY">Zdalny</option>
-                                        </select>
-                                    </label>
-                                    <label class="flex flex-col min-w-40 flex-1">
+                                        <div class="multi-select-container">
+                                            <div class="multi-select-trigger" onclick="toggleMultiSelect('filterTryb')"
+                                                id="filterTrybTrigger">
+                                                <span class="multi-select-text">Wszystkie tryby</span>
+                                                <i class="fas fa-chevron-down multi-select-arrow"></i>
+                                            </div>
+                                            <div class="multi-select-dropdown" id="filterTrybDropdown"
+                                                style="display: none;">
+                                                <label class="multi-select-option">
+                                                    <input type="checkbox" value="STACJONARNY"
+                                                        onchange="updateMultiSelect('filterTryb')">
+                                                    <span>Stacjonarny</span>
+                                                </label>
+                                                <label class="multi-select-option">
+                                                    <input type="checkbox" value="HYBRYDOWY"
+                                                        onchange="updateMultiSelect('filterTryb')">
+                                                    <span>Hybrydowy</span>
+                                                </label>
+                                                <label class="multi-select-option">
+                                                    <input type="checkbox" value="ZDALNY"
+                                                        onchange="updateMultiSelect('filterTryb')">
+                                                    <span>Zdalny</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Multi-select Rodzaj -->
+                                    <div class="flex flex-col min-w-40 flex-1">
                                         <p class="text-[#141414] text-base font-medium leading-normal pb-2">Rodzaj</p>
-                                        <select id="filterRodzaj"
-                                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#141414] focus:outline-0 focus:ring-0 border border-[#e5e7eb] bg-white focus:border-[#141414] h-14 bg-[image:--select-button-svg] placeholder:text-neutral-500 p-[15px] text-base font-normal leading-normal">
-                                            <option value="">Wszystkie rodzaje</option>
-                                            <option value="PELNY_ETAT">Pełny etat</option>
-                                            <option value="NIEPELNY_ETAT">Niepełny etat</option>
-                                            <option value="STAZ">Staż</option>
-                                        </select>
-                                    </label>
+                                        <div class="multi-select-container">
+                                            <div class="multi-select-trigger"
+                                                onclick="toggleMultiSelect('filterRodzaj')" id="filterRodzajTrigger">
+                                                <span class="multi-select-text">Wszystkie rodzaje</span>
+                                                <i class="fas fa-chevron-down multi-select-arrow"></i>
+                                            </div>
+                                            <div class="multi-select-dropdown" id="filterRodzajDropdown"
+                                                style="display: none;">
+                                                <label class="multi-select-option">
+                                                    <input type="checkbox" value="PELNY_ETAT"
+                                                        onchange="updateMultiSelect('filterRodzaj')">
+                                                    <span>Pełny etat</span>
+                                                </label>
+                                                <label class="multi-select-option">
+                                                    <input type="checkbox" value="NIEPELNY_ETAT"
+                                                        onchange="updateMultiSelect('filterRodzaj')">
+                                                    <span>Niepełny etat</span>
+                                                </label>
+                                                <label class="multi-select-option">
+                                                    <input type="checkbox" value="STAZ"
+                                                        onchange="updateMultiSelect('filterRodzaj')">
+                                                    <span>Staż</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="flex max-w-[480px] flex-wrap items-end gap-4 py-3">
-                                    <label class="flex flex-col min-w-40 flex-1">
+                                    <!-- Multi-select Umowa -->
+                                    <div class="flex flex-col min-w-40 flex-1">
                                         <p class="text-[#141414] text-base font-medium leading-normal pb-2">Umowa</p>
-                                        <select id="filterUmowa"
-                                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#141414] focus:outline-0 focus:ring-0 border border-[#e5e7eb] bg-white focus:border-[#141414] h-14 bg-[image:--select-button-svg] placeholder:text-neutral-500 p-[15px] text-base font-normal leading-normal">
-                                            <option value="">Wszystkie umowy</option>
-                                            <option value="UMOWA_O_PRACE">Umowa o pracę</option>
-                                            <option value="UMOWA_B2B">Umowa B2B</option>
-                                            <option value="UMOWA_ZLECENIE">Umowa zlecenie</option>
-                                        </select>
-                                    </label>
+                                        <div class="multi-select-container">
+                                            <div class="multi-select-trigger" onclick="toggleMultiSelect('filterUmowa')"
+                                                id="filterUmowaTrigger">
+                                                <span class="multi-select-text">Wszystkie umowy</span>
+                                                <i class="fas fa-chevron-down multi-select-arrow"></i>
+                                            </div>
+                                            <div class="multi-select-dropdown" id="filterUmowaDropdown"
+                                                style="display: none;">
+                                                <label class="multi-select-option">
+                                                    <input type="checkbox" value="UMOWA_O_PRACE"
+                                                        onchange="updateMultiSelect('filterUmowa')">
+                                                    <span>Umowa o pracę</span>
+                                                </label>
+                                                <label class="multi-select-option">
+                                                    <input type="checkbox" value="UMOWA_B2B"
+                                                        onchange="updateMultiSelect('filterUmowa')">
+                                                    <span>Umowa B2B</span>
+                                                </label>
+                                                <label class="multi-select-option">
+                                                    <input type="checkbox" value="UMOWA_ZLECENIE"
+                                                        onchange="updateMultiSelect('filterUmowa')">
+                                                    <span>Umowa zlecenie</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div class="flex items-center gap-2 pt-6">
                                         <input type="checkbox" id="showArchived" class="w-4 h-4">
                                         <label for="showArchived"

@@ -315,12 +315,12 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
     const favorite = document.getElementById('favorite').checked;
 
     // Validation for salary fields
-    if (salaryType === 'exact' && (!wynagrodzenie || wynagrodzenie.trim() === '')) {
+    if (salaryMode === 'single' && (!wynagrodzenie || wynagrodzenie.trim() === '')) {
         document.getElementById('form-message').textContent = "Pole wynagrodzenie jest wymagane!";
         document.getElementById('form-message').style.color = "red";
         document.getElementById('wynagrodzenie').focus();
         return;
-    } else if (salaryType === 'range' && (!wynagrodzenieOd || !wynagrodzenieDo)) {
+    } else if (salaryMode === 'range' && (!wynagrodzenieOd || !wynagrodzenieDo)) {
         document.getElementById('form-message').textContent = "Wypełnij oba pola widełek (od i do)!";
         document.getElementById('form-message').style.color = "red";
         if (!wynagrodzenieOd) document.getElementById('wynagrodzenieOd').focus();

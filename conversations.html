@@ -549,7 +549,8 @@
             const { db, auth, collection, getDocs, query, where } = window.firebaseModules;
             const user = auth.currentUser;
 
-            if (!user) {;
+            if (!user) {
+                ;
                 return;
             };
 
@@ -653,7 +654,8 @@
         }
 
         // Filter applications by status for Messages tab
-        function updateMessagesTab() {;
+        function updateMessagesTab() {
+            ;
             const sentApplications = applicationsData.filter(app =>
                 app.status && app.status.toLowerCase().includes('wysłano cv')
             );;
@@ -732,7 +734,8 @@
         }
 
         // Filter applications for Interviews tab
-        function updateInterviewsTab() {;
+        function updateInterviewsTab() {
+            ;
             const interviewApplications = applicationsData.filter(app =>
                 app.status && app.status.toLowerCase().includes('rozmowa')
             );;
@@ -824,7 +827,8 @@
             `;
 
             // Add click event to show details
-            item.addEventListener('click', function () {;
+            item.addEventListener('click', function () {
+                ;
                 showConversationDetails(application);
             });
 
@@ -859,7 +863,8 @@
         }
 
         // Tab switching functionality
-        function switchTab(tabName, buttonElement) {;
+        function switchTab(tabName, buttonElement) {
+            ;
 
             // Remove active class from all buttons
             document.querySelectorAll('.tab-button').forEach(btn => {
@@ -902,7 +907,8 @@
         }
 
         // Initialize tabs when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function () {;
+        document.addEventListener('DOMContentLoaded', function () {
+            ;
 
             // Add click event listeners to all tab buttons
             document.querySelectorAll('.tab-button').forEach(button => {
@@ -933,14 +939,16 @@
         };
 
         // Export functionality
-        function exportMessages() {;
+        function exportMessages() {
+            ;
             const messagesData = applicationsData.filter(app =>
                 app.status && app.status.toLowerCase().includes('wysłano cv')
             );
             exportToCSV(messagesData, 'messages_export');
         }
 
-        function exportFollowups() {;
+        function exportFollowups() {
+            ;
             const followupData = applicationsData.filter(app => {
                 const daysSince = getDaysSinceApplication(app.applicationDate || app.data);
                 return app.status && app.status.toLowerCase().includes('wysłano cv') && daysSince > 7;
@@ -1118,11 +1126,13 @@
         }
 
         // Refresh functions for each tab
-        function refreshMessages() {;
+        function refreshMessages() {
+            ;
             loadApplicationsData();
         }
 
-        function refreshData() {;
+        function refreshData() {
+            ;
             loadApplicationsData();
         }
 
