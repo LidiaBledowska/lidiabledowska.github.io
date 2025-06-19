@@ -771,6 +771,15 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                 }
             };
 
+            const getTrybText = (tryb) => {
+                switch (tryb) {
+                    case 'STACJONARNY': return 'Stacjonarny';
+                    case 'HYBRYDOWY': return 'Hybrydowy';
+                    case 'ZDALNY': return 'Zdalny';
+                    default: return tryb || '';
+                }
+            };
+
             const tr = document.createElement('tr');
             tr.className = 'border-t border-t-[#e5e7eb] bg-white hover:bg-gray-50';
 
@@ -799,7 +808,7 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
         </button>
     </td>
     <td class="px-4 py-2 text-gray-600 text-sm font-normal leading-normal min-w-[120px]" data-label="Wynagrodzenie">${window.sanitizeHTML(wynagrodzenieCell)}</td>
-    <td class="px-4 py-2 text-gray-600 text-sm font-normal leading-normal min-w-[100px]" data-label="Tryb">${window.sanitizeHTML(app.tryb || '')}</td>
+    <td class="px-4 py-2 text-gray-600 text-sm font-normal leading-normal min-w-[100px]" data-label="Tryb">${getTrybText(app.tryb)}</td>
     <td class="px-4 py-2 text-gray-600 text-sm font-normal leading-normal min-w-[100px]" data-label="Rodzaj">${getRodzajText(app.rodzaj)}</td>
     <td class="px-4 py-2 text-gray-600 text-sm font-normal leading-normal min-w-[100px]" data-label="Umowa">${getUmowaText(app.umowa)}</td>
     <td class="px-4 py-2 text-center min-w-[100px]">
