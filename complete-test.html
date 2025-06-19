@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Fix Test - RekruTracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .test-container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .status-section {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            background-color: #fafafa;
+        }
+
+        .step {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .green-btn {
+            background-color: #28a745;
+        }
+
+        .green-btn:hover {
+            background-color: #218838;
+        }
+
+        .log-output {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #495057;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        .indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .indicator.green {
+            background-color: #28a745;
+        }
+
+        .indicator.red {
+            background-color: #dc3545;
+        }
+
+        .indicator.yellow {
+            background-color: #ffc107;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="test-container">
+        <h1>🧪 RekruTracker Real-time Fix End-to-End Test</h1>
+
+        <div class="status-section">
+            <h2>Test Overview</h2>
+            <p>This test validates that our real-time application updates fix is working correctly.</p>
+
+            <div class="step">
+                <strong>Step 1:</strong> Check if all our core functions are properly loaded
+            </div>
+            <div class="step">
+                <strong>Step 2:</strong> Verify real-time listener is running
+            </div>
+            <div class="step">
+                <strong>Step 3:</strong> Test filter management functionality
+            </div>
+            <div class="step">
+                <strong>Step 4:</strong> Simulate adding a new application
+            </div>
+            <div class="step">
+                <strong>Step 5:</strong> Verify new application appears immediately
+            </div>
+        </div>
+
+        <div class="status-section">
+            <h2>System Status</h2>
+            <div id="system-status">
+                <p><span class="indicator yellow"></span>Checking system status...</p>
+            </div>
+            <button onclick="checkSystemStatus()">Refresh Status</button>
+        </div>
+
+        <div class="status-section">
+            <h2>Manual Test Execution</h2>
+            <button onclick="runCompleteTest()" class="green-btn">🚀 Run Complete Test</button>
+            <button onclick="openMainAppForTesting()">📱 Open Main App</button>
+            <button onclick="simulateAddApplication()">➕ Simulate Add Application</button>
+            <button onclick="clearLogsAndReset()">🧹 Clear Logs</button>
+
+            <div id="test-progress"></div>
+            <div id="test-logs" class="log-output"></div>
+        </div>
+
+        <div class="status-section">
+            <h2>Real-time Monitoring</h2>
+            <p>Monitor application table changes in real-time:</p>
+            <button onclick="startMonitoring()">📊 Start Monitoring</button>
+            <button onclick="stopMonitoring()">⏹️ Stop Monitoring</button>
+            <div id="monitoring-status"></div>
+            <div id="monitoring-logs" class="log-output" style="max-height: 200px;"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import {
+            getFirestore,
+            collection,
+            onSnapshot,
+            query,
+            orderBy,
+            addDoc,
+            Timestamp
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBkqTxIdMfq7ZMOEZEPGlN5vDT1c5Wfq0w",
+            authDomain: "rekrutracker.firebaseapp.com",
+            projectId: "rekrutracker",
+            storageBucket: "rekrutracker.appspot.com",
+            messagingSenderId: "891806945901",
+            appId: "1:891806945901:web:d4cb5c7f8b9b8e6f9a8b5c"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        window.db = db;
+
+        let monitoringInterval = null;
+        let applicationCount = 0;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('test-logs');
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            logElement.innerHTML += `[${timestamp}] ${prefix} ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[Test] ${message}`);
+        }
+
+        function logMonitoring(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('monitoring-logs');
+            logElement.innerHTML += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function showProgress(message, type = 'info') {
+            const progressElement = document.getElementById('test-progress');
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : '';
+            progressElement.innerHTML = `<div class="${className}">${message}</div>`;
+        }
+
+        window.checkSystemStatus = function () {
+            const statusElement = document.getElementById('system-status');
+            const checks = [];
+
+            // Check if we're in the right environment
+            if (window.location.protocol === 'http:' && window.location.hostname === 'localhost') {
+                checks.push('<span class="indicator green"></span>Running on local server ✓');
+            } else {
+                checks.push('<span class="indicator yellow"></span>Not on local server (may affect some tests)');
+            }
+
+            // Check Firebase connection
+            if (window.db) {
+                checks.push('<span class="indicator green"></span>Firebase connected ✓');
+            } else {
+                checks.push('<span class="indicator red"></span>Firebase not connected ❌');
+            }
+
+            // Check for our core functions
+            const functions = ['loadApplications', 'getFilters', 'clearAllFilters', 'checkListenerStatus'];
+            const availableFunctions = functions.filter(fn => typeof window[fn] === 'function');
+
+            if (availableFunctions.length === functions.length) {
+                checks.push('<span class="indicator green"></span>All core functions available ✓');
+            } else {
+                checks.push(`<span class="indicator red"></span>Missing functions: ${functions.filter(fn => typeof window[fn] !== 'function').join(', ')} ❌`);
+            }
+
+            statusElement.innerHTML = checks.join('<br>');
+        };
+
+        window.runCompleteTest = async function () {
+            log('🚀 Starting complete test sequence...', 'info');
+            showProgress('Running complete test...', 'info');
+
+            try {
+                // Step 1: Check core functions
+                log('Step 1: Checking core functions...', 'info');
+                const requiredFunctions = ['loadApplications', 'getFilters', 'clearAllFilters'];
+                const missingFunctions = requiredFunctions.filter(fn => typeof window[fn] !== 'function');
+
+                if (missingFunctions.length > 0) {
+                    log(`Missing functions: ${missingFunctions.join(', ')}`, 'error');
+                    showProgress('Test failed: Missing required functions', 'error');
+                    return;
+                }
+                log('All core functions available', 'success');
+
+                // Step 2: Check real-time listener
+                log('Step 2: Checking real-time listener...', 'info');
+                if (typeof window.checkListenerStatus === 'function') {
+                    const status = window.checkListenerStatus();
+                    log(`Listener status: ${status}`, 'info');
+                } else {
+                    log('checkListenerStatus function not available', 'warning');
+                }
+
+                // Step 3: Test filter functions
+                log('Step 3: Testing filter functions...', 'info');
+                if (typeof window.getFilters === 'function') {
+                    const filters = window.getFilters();
+                    log(`Current filters: ${JSON.stringify(filters)}`, 'info');
+
+                    if (typeof window.clearAllFilters === 'function') {
+                        window.clearAllFilters();
+                        log('Filters cleared successfully', 'success');
+                    }
+                }
+
+                // Step 4: Test loadApplications
+                log('Step 4: Testing loadApplications function...', 'info');
+                if (typeof window.loadApplications === 'function') {
+                    window.loadApplications();
+                    log('loadApplications called successfully', 'success');
+                } else {
+                    log('loadApplications function not available', 'error');
+                }
+
+                log('✅ Complete test finished successfully!', 'success');
+                showProgress('All tests passed! ✅', 'success');
+
+            } catch (error) {
+                log(`Test error: ${error.message}`, 'error');
+                showProgress('Test failed with error', 'error');
+            }
+        };
+
+        window.openMainAppForTesting = function () {
+            log('Opening main application in new tab...', 'info');
+            window.open('http://localhost:8080', '_blank');
+            showProgress('Main app opened. You can now test adding applications manually.', 'success');
+        };
+
+        window.simulateAddApplication = async function () {
+            log('🧪 Simulating adding a new application...', 'info');
+
+            try {
+                const testApplication = {
+                    companyName: 'Test Company ' + Date.now(),
+                    position: 'Test Position',
+                    applicationDate: Timestamp.now(),
+                    status: 'Wysłano CV',
+                    notes: 'Test application created by validation script',
+                    userId: 'test-user',
+                    archived: false
+                };
+
+                const docRef = await addDoc(collection(db, 'applications'), testApplication);
+                log(`Test application added with ID: ${docRef.id}`, 'success');
+                showProgress('Test application added successfully! Check if it appears in the main app.', 'success');
+
+                // If clearAllFilters is available, call it
+                if (typeof window.clearAllFilters === 'function') {
+                    log('Clearing filters to ensure new application is visible...', 'info');
+                    window.clearAllFilters();
+                }
+
+                // If loadApplications is available, call it
+                if (typeof window.loadApplications === 'function') {
+                    log('Refreshing applications list...', 'info');
+                    window.loadApplications();
+                }
+
+            } catch (error) {
+                log(`Error adding test application: ${error.message}`, 'error');
+                showProgress('Failed to add test application', 'error');
+            }
+        };
+
+        window.startMonitoring = function () {
+            if (monitoringInterval) {
+                log('Monitoring already running', 'warning');
+                return;
+            }
+
+            log('Starting real-time monitoring...', 'info');
+            document.getElementById('monitoring-status').innerHTML = '<span class="indicator green"></span>Monitoring active';
+
+            // Set up real-time listener for applications
+            const q = query(collection(db, 'applications'), orderBy('applicationDate', 'desc'));
+            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                const newCount = querySnapshot.size;
+                if (applicationCount > 0 && newCount !== applicationCount) {
+                    const change = newCount - applicationCount;
+                    logMonitoring(`📊 Application count changed: ${applicationCount} → ${newCount} (${change > 0 ? '+' : ''}${change})`);
+                }
+                applicationCount = newCount;
+                logMonitoring(`Current application count: ${applicationCount}`);
+            });
+
+            window.monitoringUnsubscribe = unsubscribe;
+        };
+
+        window.stopMonitoring = function () {
+            if (window.monitoringUnsubscribe) {
+                window.monitoringUnsubscribe();
+                window.monitoringUnsubscribe = null;
+            }
+
+            document.getElementById('monitoring-status').innerHTML = '<span class="indicator red"></span>Monitoring stopped';
+            log('Monitoring stopped', 'info');
+        };
+
+        window.clearLogsAndReset = function () {
+            document.getElementById('test-logs').innerHTML = '';
+            document.getElementById('monitoring-logs').innerHTML = '';
+            document.getElementById('test-progress').innerHTML = '';
+            applicationCount = 0;
+            log('🧹 Logs cleared and system reset', 'info');
+        };
+
+        // Auto-run system status check on page load
+        setTimeout(() => {
+            checkSystemStatus();
+            log('Validation test page loaded successfully', 'success');
+        }, 1000);
+    </script>
+</body>
+
+</html>

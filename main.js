@@ -41,7 +41,7 @@ window.getFilters = getFilters;
 window.clearAllFilters = clearAllFilters;
 
 // Global function for refreshing applications with current filters
-window.refreshApplications = function() {
+window.refreshApplications = function () {
     console.log('🔄 Manual refresh triggered');
     const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
     const showArchived = document.getElementById('showArchived')?.checked || false;
@@ -49,7 +49,7 @@ window.refreshApplications = function() {
 };
 
 // Debug function for real-time listener status
-window.checkListenerStatus = function() {
+window.checkListenerStatus = function () {
     console.log('=== REAL-TIME LISTENER STATUS ===');
     console.log('Current listener exists:', !!window.currentApplicationsListener);
     console.log('User authenticated:', !!window.auth?.currentUser);
@@ -445,7 +445,7 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
         }, 100);
         return;
     }
-    
+
     isLoadingApplications = true;
 
     const user = window.auth.currentUser;
@@ -593,11 +593,11 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
             let match = true;
             console.log(`🔍 Checking filters for: ${app.stanowisko} at ${app.firma}`);
             console.log(`📋 Current filters:`, filters);
-            
+
             for (const key in filters) {
                 if (filters[key]) {
                     console.log(`🔎 Checking filter "${key}": "${filters[key]}" against app value: "${app[key]}"`);
-                    
+
                     // Special handling for "Rozmowy" status filter
                     if (key === 'status' && filters[key] === 'Rozmowy') {
                         const interviewStatuses = ['Rozmowa telefoniczna', 'Rozmowa online', 'Rozmowa stacjonarna'];
@@ -726,7 +726,7 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                     }
                 }
             }
-            
+
             if (!match) {
                 console.log(`❌ Application "${app.stanowisko}" at "${app.firma}" FILTERED OUT`);
                 return;
@@ -920,7 +920,7 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
     // Store the unsubscribe function globally for cleanup if needed
     console.log('💾 Storing new real-time listener unsubscribe function');
     window.currentApplicationsListener = unsubscribe;
-    
+
     // Reset loading flag
     isLoadingApplications = false;
     console.log('✅ loadApplications completed, flag reset');

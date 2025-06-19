@@ -411,7 +411,7 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
             // We're in the same window but in a modal
             console.log('Closing same-window modal and triggering refresh...');
             window.closeAddAppModal();
-            
+
             // Clear filters to ensure new application is visible
             if (window.clearAllFilters) {
                 console.log('Clearing all filters to show new application...');
@@ -429,7 +429,7 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
                 modal.classList.remove('active');
                 modal.style.display = 'none';
             }
-            
+
             // Clear filters to ensure new application is visible
             if (window.clearAllFilters) {
                 console.log('Clearing all filters to show new application...');
