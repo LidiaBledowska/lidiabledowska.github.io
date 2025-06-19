@@ -384,17 +384,65 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
         if (notatki) applicationData.notatki = notatki;
         if (base64Images.length > 0) applicationData.images = base64Images;;;;
 
-        await addDoc(collection(db, "applications"), applicationData);;
+        await addDoc(collection(db, "applications"), applicationData);
+        console.log('✅ Application successfully added to Firestore');
 
         document.getElementById('form-message').textContent = "Aplikacja została dodana pomyślnie!";
         document.getElementById('form-message').style.color = "green";
         this.reset();
         clearAllImages(); // Clear image arrays and preview
 
-        // Przekieruj po 2 sekundach
-        setTimeout(() => {
-            window.location.href = "index.html";
-        }, 2000);
+        // Check if we're in a modal context vs standalone page
+        if (window.parent && window.parent !== window) {
+            // We're in a modal iframe - close modal and trigger refresh
+            console.log('Closing modal iframe and triggering refresh...');
+            if (window.parent.closeAddAppModal) {
+                window.parent.closeAddAppModal();
+            }
+            if (window.parent.refreshApplications) {
+                // Use the parent's refresh function
+                setTimeout(() => {
+                    window.parent.refreshApplications();
+                }, 100);
+            }
+        } else if (window.closeAddAppModal) {
+            // We're in the same window but in a modal
+            console.log('Closing same-window modal and triggering refresh...');
+            window.closeAddAppModal();
+            
+            // Clear filters to ensure new application is visible
+            if (window.clearAllFilters) {
+                console.log('Clearing all filters to show new application...');
+                window.clearAllFilters();
+            } else if (window.refreshApplications) {
+                setTimeout(() => {
+                    window.refreshApplications();
+                }, 100);
+            }
+        } else if (document.getElementById('addAppModal')) {
+            // Modal exists but no close function - try to close manually
+            console.log('Modal exists, closing manually and triggering refresh...');
+            const modal = document.getElementById('addAppModal');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            }
+            
+            // Clear filters to ensure new application is visible
+            if (window.clearAllFilters) {
+                console.log('Clearing all filters to show new application...');
+                window.clearAllFilters();
+            } else if (window.refreshApplications) {
+                setTimeout(() => {
+                    window.refreshApplications();
+                }, 100);
+            }
+        } else {
+            // Standalone page - redirect after delay
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 2000);
+        }
     } catch (error) {
         console.error("Błąd podczas dodawania aplikacji:", error);
         console.error("Error details:", {

@@ -1162,6 +1162,10 @@
                 document.getElementById('addAppModal').classList.remove('active');
             }
 
+            // Make these functions globally available
+            window.openAddAppModal = openAddAppModal;
+            window.closeAddAppModal = closeAddAppModal;
+
             // Global function for closing edit modal
             window.closeEditModal = function () {
                 const editModal = document.getElementById('editModal');

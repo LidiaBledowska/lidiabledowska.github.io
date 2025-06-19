@@ -35,6 +35,34 @@ function getStatusColors(status) {
 }
 
 
+// Make loadApplications globally available
+window.loadApplications = loadApplications;
+window.getFilters = getFilters;
+window.clearAllFilters = clearAllFilters;
+
+// Global function for refreshing applications with current filters
+window.refreshApplications = function() {
+    console.log('🔄 Manual refresh triggered');
+    const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
+    const showArchived = document.getElementById('showArchived')?.checked || false;
+    loadApplications(getFilters(), showArchived, sortOrder);
+};
+
+// Debug function for real-time listener status
+window.checkListenerStatus = function() {
+    console.log('=== REAL-TIME LISTENER STATUS ===');
+    console.log('Current listener exists:', !!window.currentApplicationsListener);
+    console.log('User authenticated:', !!window.auth?.currentUser);
+    console.log('Firebase modules available:', !!window.firebaseModules);
+    console.log('onSnapshot function available:', typeof window.firebaseModules?.onSnapshot);
+    console.log('=================================');
+    return {
+        hasListener: !!window.currentApplicationsListener,
+        isAuthenticated: !!window.auth?.currentUser,
+        hasFirebase: !!window.firebaseModules
+    };
+};
+
 // Helper to normalize strings for reliable comparisons
 function normalizeText(str) {
     return (str || '')
@@ -427,12 +455,30 @@ async function openEditModal(appId) {
     console.log('=== openEditModal completed ===');
 }
 
+// Debounce mechanism to prevent multiple simultaneous calls to loadApplications
+let isLoadingApplications = false;
+let pendingLoadApplicationsCall = null;
+
 function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc') {
     console.log('=== LOAD APPLICATIONS CALLED ===');
     console.log('loadApplications called with sortOrder:', sortOrder);
     console.log('loadApplications called with filters:', filters);
     console.log('loadApplications called with showArchived:', showArchived);
+    console.log('Currently loading:', isLoadingApplications);
+    console.log('Call stack:', new Error().stack);
     console.log('=================================');
+
+    // Prevent multiple simultaneous calls
+    if (isLoadingApplications) {
+        console.log('⏳ loadApplications already running, queuing this call...');
+        clearTimeout(pendingLoadApplicationsCall);
+        pendingLoadApplicationsCall = setTimeout(() => {
+            loadApplications(filters, showArchived, sortOrder);
+        }, 100);
+        return;
+    }
+    
+    isLoadingApplications = true;
 
     const user = window.auth.currentUser;
     console.log('User in loadApplications:', user);
@@ -459,8 +505,16 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                 </tr>
             `;
         }
+        isLoadingApplications = false; // Reset flag for no-user case
         return;
     };
+
+    // Clean up previous listener if it exists
+    if (window.currentApplicationsListener) {
+        console.log('🧹 Cleaning up previous real-time listener');
+        window.currentApplicationsListener();
+        window.currentApplicationsListener = null;
+    }
 
     let q = window.firebaseModules.query(
         window.firebaseModules.collection(db, "applications"),
@@ -477,6 +531,23 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
         console.log('📡 QuerySnapshot metadata:', querySnapshot.metadata);
         console.log('📡 Is from cache:', querySnapshot.metadata.fromCache);
         console.log('📡 Has pending writes:', querySnapshot.metadata.hasPendingWrites);
+
+        // Log individual documents for debugging
+        querySnapshot.docChanges().forEach((change) => {
+            if (change.type === "added") {
+                console.log("🆕 New application: ", change.doc.data());
+                // Show a brief notification for new applications (not from cache)
+                if (!querySnapshot.metadata.fromCache) {
+                    console.log("✨ This is a real-time addition, not from cache!");
+                }
+            }
+            if (change.type === "modified") {
+                console.log("✏️ Modified application: ", change.doc.data());
+            }
+            if (change.type === "removed") {
+                console.log("🗑️ Removed application: ", change.doc.data());
+            }
+        });
 
         const tbody = document.querySelector('.applications-table tbody');
         if (!tbody) {
@@ -546,38 +617,58 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
         console.log('=====================');
 
         applications.forEach((app) => {
-            if (!showArchived && app.archiwalna === true) return;
+            if (!showArchived && app.archiwalna === true) {
+                console.log(`⏭️ Skipping archived application: ${app.stanowisko} at ${app.firma}`);
+                return;
+            }
 
             let match = true;
+            console.log(`🔍 Checking filters for: ${app.stanowisko} at ${app.firma}`);
+            console.log(`📋 Current filters:`, filters);
+            
             for (const key in filters) {
                 if (filters[key]) {
+                    console.log(`🔎 Checking filter "${key}": "${filters[key]}" against app value: "${app[key]}"`);
+                    
                     // Special handling for "Rozmowy" status filter
                     if (key === 'status' && filters[key] === 'Rozmowy') {
                         const interviewStatuses = ['Rozmowa telefoniczna', 'Rozmowa online', 'Rozmowa stacjonarna'];
                         if (!interviewStatuses.includes(app.status)) {
+                            console.log(`❌ Filter failed: "${app.status}" not in interview statuses`);
                             match = false;
                             break;
+                        } else {
+                            console.log(`✅ Filter passed: "${app.status}" is interview status`);
                         }
                     }
                     // Special handling for "Odrzucono" status filter
                     else if (key === 'status' && filters[key] === 'Odrzucono') {
                         const rejectedVariants = ['odrzucono', 'odrzucony', 'odrzucona', 'odrzucone'];
                         if (!app.status || !rejectedVariants.some(v => app.status.toLowerCase().includes(v))) {
+                            console.log(`❌ Filter failed: "${app.status}" not rejected status`);
                             match = false;
                             break;
+                        } else {
+                            console.log(`✅ Filter passed: "${app.status}" is rejected status`);
                         }
                     }
                     // Special handling for "Wysłano CV" and "Oferty" status filters
                     else if (key === 'status' && filters[key] === 'Wysłano CV') {
                         if (normalizeText(app.status) !== 'wyslano cv') {
+                            console.log(`❌ Filter failed: "${app.status}" normalized to "${normalizeText(app.status)}" != "wyslano cv"`);
                             match = false;
                             break;
+                        } else {
+                            console.log(`✅ Filter passed: "${app.status}" matches "Wysłano CV"`);
                         }
                     }
                     else if (key === 'status' && filters[key] === 'Oferty') {
                         if (!app.status || !normalizeText(app.status).includes('oferta')) {
+                            console.log(`❌ Filter failed: "${app.status}" doesn't contain "oferta"`);
                             match = false;
                             break;
+                        } else {
+                            console.log(`✅ Filter passed: "${app.status}" contains "oferta"`);
                         }
                     } else if (Array.isArray(filters[key])) {
                         // Handle multi-select filters (arrays)
@@ -667,7 +758,13 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                     }
                 }
             }
-            if (!match) return;
+            
+            if (!match) {
+                console.log(`❌ Application "${app.stanowisko}" at "${app.firma}" FILTERED OUT`);
+                return;
+            } else {
+                console.log(`✅ Application "${app.stanowisko}" at "${app.firma}" PASSED all filters`);
+            }
 
             count++;
 
@@ -853,10 +950,12 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
     });
 
     // Store the unsubscribe function globally for cleanup if needed
-    if (window.currentApplicationsListener) {
-        window.currentApplicationsListener();
-    }
+    console.log('💾 Storing new real-time listener unsubscribe function');
     window.currentApplicationsListener = unsubscribe;
+    
+    // Reset loading flag
+    isLoadingApplications = false;
+    console.log('✅ loadApplications completed, flag reset');
 }
 
 function autoFixColors() {
