@@ -18,4 +18,4 @@ Polish job application tracker with real-time updates.
 - Application status management
 
 ## Login
-Use the **Zaloguj** button in the top-right corner to reveal the Google sign-in form.
+Click the **Zaloguj** button in the top-right corner to start the Google sign-in popup immediately.
