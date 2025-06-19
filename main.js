@@ -1089,6 +1089,63 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Reusable Google sign-in helper
+    async function signInWithGoogle(button, statusElement) {
+        if (!window.auth) {
+            console.error('Firebase auth not initialized');
+            return;
+        }
+
+        const originalText = button ? button.innerHTML : '';
+
+        if (button) {
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logowanie...';
+            button.disabled = true;
+        }
+
+        try {
+            const { GoogleAuthProvider, signInWithPopup } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+            const provider = new GoogleAuthProvider();
+            const result = await signInWithPopup(window.auth, provider);
+            console.log('✅ Successful sign in:', result.user.email);
+
+            if (button) {
+                button.innerHTML = '<i class="fas fa-check"></i> Zalogowano!';
+            }
+        } catch (error) {
+            console.error('❌ Sign in error:', error);
+
+            if (button) {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+
+            let errorMessage = 'Błąd logowania';
+            if (error.code === 'auth/popup-closed-by-user') {
+                errorMessage = 'Logowanie anulowane';
+            } else if (error.code === 'auth/popup-blocked') {
+                errorMessage = 'Popup zablokowany';
+            } else if (error.code === 'auth/unauthorized-domain') {
+                errorMessage = 'Domena nieautoryzowana';
+            }
+
+            if (statusElement) {
+                statusElement.textContent = errorMessage;
+                statusElement.style.color = '#dc2626';
+                setTimeout(() => {
+                    statusElement.textContent = '';
+                    statusElement.style.color = '';
+                }, 3000);
+            }
+
+            setTimeout(() => {
+                if (confirm('Logowanie przez Google nie powiodło się. Czy chcesz przejść do strony logowania?')) {
+                    window.location.href = 'login.html';
+                }
+            }, 1000);
+        }
+    }
+
     // Setup login button handler
     function setupLoginButtonHandler() {
         const loginBtn = document.getElementById('loginBtn');
@@ -1098,17 +1155,13 @@ document.addEventListener('DOMContentLoaded', function () {
             // Remove any existing onclick handler first
             loginBtn.onclick = null;
 
-            // Add the onclick handler
+            // Add the onclick handler - trigger Google sign in directly
             loginBtn.onclick = function (e) {
                 console.log('🔐 Login button clicked in header');
                 e.preventDefault();
                 e.stopPropagation();
 
-                // Show inline login form instead of redirecting
-                const loginForm = document.getElementById('loginForm');
-                const registerButton = document.getElementById('registerButton');
-                if (loginForm) loginForm.style.display = 'block';
-                if (registerButton) registerButton.style.display = 'none';
+                signInWithGoogle(loginBtn);
             };
 
             console.log('Login button handler set successfully');
@@ -1695,70 +1748,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Setup Google signin for landing page
                 if (googleSigninButtonMain && !googleSigninButtonMain.onclick) {
-                    googleSigninButtonMain.onclick = async function () {
-                        console.log('🔐 Google signin button clicked on main page');
-
-                        try {
-                            // Update button to show loading state
-                            const originalText = googleSigninButtonMain.innerHTML;
-                            googleSigninButtonMain.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logowanie...';
-                            googleSigninButtonMain.disabled = true;
-
-                            // Check if Firebase is properly initialized
-                            if (!window.auth) {
-                                throw new Error('Firebase auth not initialized');
-                            }
-
-                            // Try to import Firebase modules dynamically
-                            const { GoogleAuthProvider, signInWithPopup } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
-
-                            const provider = new GoogleAuthProvider();
-                            const result = await signInWithPopup(window.auth, provider);
-
-                            console.log('✅ Successful sign in from main page:', result.user.email);
-
-                            // Show success message briefly
-                            googleSigninButtonMain.innerHTML = '<i class="fas fa-check"></i> Zalogowano!';
-
-                            // Firebase auth state change will handle UI updates automatically
-                            // No need to manually redirect as the auth state listener will handle it
-
-                        } catch (error) {
-                            console.error('❌ Sign in error from main page:', error);
-
-                            // Reset button state
-                            googleSigninButtonMain.innerHTML = originalText;
-                            googleSigninButtonMain.disabled = false;
-
-                            // Show user-friendly error message
-                            let errorMessage = 'Błąd logowania';
-                            if (error.code === 'auth/popup-closed-by-user') {
-                                errorMessage = 'Logowanie anulowane';
-                            } else if (error.code === 'auth/popup-blocked') {
-                                errorMessage = 'Popup zablokowany';
-                            } else if (error.code === 'auth/unauthorized-domain') {
-                                errorMessage = 'Domena nieautoryzowana';
-                            }
-
-                            // Show error in main user status
-                            if (mainUserStatus) {
-                                mainUserStatus.textContent = errorMessage;
-                                mainUserStatus.style.color = '#dc2626';
-
-                                // Clear error message after 3 seconds
-                                setTimeout(() => {
-                                    mainUserStatus.textContent = '';
-                                    mainUserStatus.style.color = '';
-                                }, 3000);
-                            }
-
-                            // If auth fails, offer fallback to login page after a delay
-                            setTimeout(() => {
-                                if (confirm('Logowanie przez Google nie powiodło się. Czy chcesz przejść do strony logowania?')) {
-                                    window.location.href = 'login.html';
-                                }
-                            }, 1000);
-                        }
+                    googleSigninButtonMain.onclick = function () {
+                        signInWithGoogle(googleSigninButtonMain, mainUserStatus);
                     };
                 }
 
