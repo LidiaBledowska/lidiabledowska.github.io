@@ -40,10 +40,10 @@ function sanitizeHTML(str) {
 
 // Salary fields toggle function
 function toggleSalaryFields() {
-    const salaryType = document.getElementById('salaryType').value;
-    const exactSalaryGroup = document.getElementById('exactSalaryGroup');
-    const rangeSalaryGroup = document.getElementById('rangeSalaryGroup');
-    const rangeSalaryGroupTo = document.getElementById('rangeSalaryGroupTo');
+    const salaryType = document.getElementById('addSalaryType').value;
+    const exactSalaryGroup = document.getElementById('addExactSalaryGroup');
+    const rangeSalaryGroup = document.getElementById('addRangeSalaryGroup');
+    const rangeSalaryGroupTo = document.getElementById('addRangeSalaryGroupTo');
 
     if (salaryType === 'exact') {
         exactSalaryGroup.style.display = 'block';
@@ -51,15 +51,15 @@ function toggleSalaryFields() {
         rangeSalaryGroupTo.style.display = 'none';
 
         // Clear range fields
-        document.getElementById('wynagrodzenieOd').value = '';
-        document.getElementById('wynagrodzenieDo').value = '';
+        document.getElementById('addWynagrodzenieOd').value = '';
+        document.getElementById('addWynagrodzenieDo').value = '';
     } else {
         exactSalaryGroup.style.display = 'none';
         rangeSalaryGroup.style.display = 'block';
         rangeSalaryGroupTo.style.display = 'block';
 
         // Clear exact amount field
-        document.getElementById('wynagrodzenie').value = '';
+        document.getElementById('addWynagrodzenie').value = '';
     }
 }
 
@@ -116,7 +116,7 @@ let selectedFiles = [];
 let previewUrls = [];
 
 // Podgląd zdjęć przed wysłaniem
-document.getElementById('images').addEventListener('change', function (e) {
+document.getElementById('addImages').addEventListener('change', function (e) {
     const newFiles = Array.from(e.target.files);
 
     // Add new files to the selected files array
@@ -138,9 +138,9 @@ document.getElementById('images').addEventListener('change', function (e) {
 });
 
 function updateImagePreview() {
-    const preview = document.getElementById('imagesPreview');
-    const imageCount = document.getElementById('imageCount');
-    const imageCountNumber = document.getElementById('imageCountNumber');
+    const preview = document.getElementById('addImagesPreview');
+    const imageCount = document.getElementById('addImageCount');
+    const imageCountNumber = document.getElementById('addImageCountNumber');
 
     preview.innerHTML = '';
 
@@ -210,25 +210,27 @@ function validateLettersOnly(input) {
     input.value = input.value.replace(regex, '');
 }
 
-document.getElementById('stanowisko').addEventListener('input', function () {
+document.getElementById('addStanowisko').addEventListener('input', function () {
     validateLettersOnly(this);
 });
 
-document.getElementById('firma').addEventListener('input', function () {
+document.getElementById('addFirma').addEventListener('input', function () {
     validateLettersOnly(this);
 });
 
-document.getElementById('salaryMode').addEventListener('change', function () {
+document.getElementById('addSalaryType').addEventListener('change', function () {
     const mode = this.value;
-    const single = document.getElementById('salarySingle');
-    const range = document.getElementById('salaryRange');
-    single.style.display = mode === 'single' ? 'block' : 'none';
+    const single = document.getElementById('addExactSalaryGroup');
+    const range = document.getElementById('addRangeSalaryGroup');
+    const rangeTo = document.getElementById('addRangeSalaryGroupTo');
+    single.style.display = mode === 'exact' ? 'block' : 'none';
     range.style.display = mode === 'range' ? 'block' : 'none';
-    document.getElementById('wynagrodzenie').required = mode === 'single';
-    document.getElementById('wynagrodzenieOd').required = mode === 'range';
-    document.getElementById('wynagrodzenieDo').required = mode === 'range';
+    rangeTo.style.display = mode === 'range' ? 'block' : 'none';
+    document.getElementById('addWynagrodzenie').required = mode === 'exact';
+    document.getElementById('addWynagrodzenieOd').required = mode === 'range';
+    document.getElementById('addWynagrodzenieDo').required = mode === 'range';
 });
-document.getElementById('salaryMode').dispatchEvent(new Event('change'));
+document.getElementById('addSalaryType').dispatchEvent(new Event('change'));
 
 // Upload images using Base64 encoding
 async function uploadImages() {
@@ -296,35 +298,35 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
     document.getElementById('form-message').textContent = "Przetwarzanie...";
     document.getElementById('form-message').style.color = "blue";
 
-    const stanowisko = document.getElementById('stanowisko').value;
-    const firma = document.getElementById('firma').value;
-    const data = document.getElementById('data').value;
-    const status = document.getElementById('status').value;
-    const salaryMode = document.getElementById('salaryMode').value;
-    const wynagrodzenie = document.getElementById('wynagrodzenie').value;
-    const wynagrodzenieOd = document.getElementById('wynagrodzenieOd').value;
-    const wynagrodzenieDo = document.getElementById('wynagrodzenieDo').value;
-    const waluta = document.getElementById('waluta').value;
-    const wynRodzaj = document.getElementById('wynRodzaj').value;
-    const tryb = document.getElementById('tryb').value;
-    const rodzaj = document.getElementById('rodzaj').value;
-    const umowa = document.getElementById('umowa').value;
-    const kontakt = document.getElementById('kontakt').value;
-    const link = document.getElementById('link').value;
-    const notatki = document.getElementById('notatki').value;
-    const favorite = document.getElementById('favorite').checked;
+    const stanowisko = document.getElementById('addStanowisko').value;
+    const firma = document.getElementById('addFirma').value;
+    const data = document.getElementById('addData').value;
+    const status = document.getElementById('addStatus').value;
+    const salaryMode = document.getElementById('addSalaryType').value;
+    const wynagrodzenie = document.getElementById('addWynagrodzenie').value;
+    const wynagrodzenieOd = document.getElementById('addWynagrodzenieOd').value;
+    const wynagrodzenieDo = document.getElementById('addWynagrodzenieDo').value;
+    const waluta = document.getElementById('addWaluta').value;
+    const wynRodzaj = document.getElementById('addWynRodzaj').value;
+    const tryb = document.getElementById('addTryb').value;
+    const rodzaj = document.getElementById('addRodzaj').value;
+    const umowa = document.getElementById('addUmowa').value;
+    const kontakt = document.getElementById('addKontakt').value;
+    const link = document.getElementById('addLink').value;
+    const notatki = document.getElementById('addNotatki').value;
+    const favorite = document.getElementById('addFavorite').checked;
 
     // Validation for salary fields
-    if (salaryMode === 'single' && (!wynagrodzenie || wynagrodzenie.trim() === '')) {
+    if (salaryMode === 'exact' && (!wynagrodzenie || wynagrodzenie.trim() === '')) {
         document.getElementById('form-message').textContent = "Pole wynagrodzenie jest wymagane!";
         document.getElementById('form-message').style.color = "red";
-        document.getElementById('wynagrodzenie').focus();
+        document.getElementById('addWynagrodzenie').focus();
         return;
     } else if (salaryMode === 'range' && (!wynagrodzenieOd || !wynagrodzenieDo)) {
         document.getElementById('form-message').textContent = "Wypełnij oba pola widełek (od i do)!";
         document.getElementById('form-message').style.color = "red";
-        if (!wynagrodzenieOd) document.getElementById('wynagrodzenieOd').focus();
-        else document.getElementById('wynagrodzenieDo').focus();
+        if (!wynagrodzenieOd) document.getElementById('addWynagrodzenieOd').focus();
+        else document.getElementById('addWynagrodzenieDo').focus();
         return;
     }
 
@@ -373,7 +375,7 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
         };
 
         // Dodaj opcjonalne pola tylko jeśli są wypełnione
-        if (salaryMode === 'single' && wynagrodzenie) {
+        if (salaryMode === 'exact' && wynagrodzenie) {
             applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
         } else if (salaryMode === 'range') {
             if (wynagrodzenieOd) applicationData.wynagrodzenieOd = parseFloat(wynagrodzenieOd);
@@ -488,7 +490,7 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
                     };
 
                     // Add optional fields
-                    if (salaryMode === 'single' && wynagrodzenie) {
+                    if (salaryMode === 'exact' && wynagrodzenie) {
                         applicationData.wynagrodzenie = parseFloat(wynagrodzenie);
                     } else if (salaryMode === 'range') {
                         if (wynagrodzenieOd) applicationData.wynagrodzenieOd = parseFloat(wynagrodzenieOd);
