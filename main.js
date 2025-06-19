@@ -2036,15 +2036,21 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('=== END UI BLOCKERS CHECK ===');
     };
 
-    // Initial load - wait for Firebase to be ready before loading data
+    // Initial load - wait for Firebase to be ready
     console.log('🚀 Starting initial load...');
     waitForFirebase(() => {
-        console.log('🚀 Firebase ready, calling loadApplications...');
-        loadApplications(
-            getFilters(),
-            document.getElementById('showArchived')?.checked,
-            'desc'
-        );
+        console.log('🚀 Firebase ready');
+        // Only load user data if someone is authenticated
+        if (window.auth && window.auth.currentUser) {
+            console.log('👤 User detected, loading applications...');
+            loadApplications(
+                getFilters(),
+                document.getElementById('showArchived')?.checked,
+                'desc'
+            );
+        } else {
+            console.log('👤 No user logged in - showing preview table');
+        }
 
         const pendingEditId = localStorage.getItem('editAppId');
         if (pendingEditId) {
