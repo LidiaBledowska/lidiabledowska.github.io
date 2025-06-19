@@ -1104,8 +1104,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 e.preventDefault();
                 e.stopPropagation();
 
-                // Redirect to login page
-                window.location.href = 'login.html';
+                // Show inline login form instead of redirecting
+                const loginForm = document.getElementById('loginForm');
+                const registerButton = document.getElementById('registerButton');
+                if (loginForm) loginForm.style.display = 'block';
+                if (registerButton) registerButton.style.display = 'none';
             };
 
             console.log('Login button handler set successfully');
