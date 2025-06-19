@@ -17,3 +17,5 @@ Polish job application tracker with real-time updates.
 - File attachments and image previews
 - Application status management
 
+## Login
+Use the **Zaloguj** button in the top-right corner to reveal the Google sign-in form.
