@@ -142,44 +142,12 @@ function showImagesPreview(images) {
             this.alt = 'Błąd ładowania';
         };
 
-        // Add click to preview larger image
+        // Add click to preview larger image in modal
         img.onclick = function () {
-            // For Base64 data, create a new window with the image
-            if (imageUrl.startsWith('data:')) {
-                const newWindow = window.open('', '_blank', 'noopener,noreferrer');
-                if (newWindow) {
-                    newWindow.document.write(`
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <title>${imageName}</title>
-                            <style>
-                                body { 
-                                    margin: 0; 
-                                    padding: 20px; 
-                                    background: #000; 
-                                    display: flex; 
-                                    justify-content: center; 
-                                    align-items: center; 
-                                    min-height: 100vh;
-                                }
-                                img { 
-                                    max-width: 100%; 
-                                    max-height: 100vh; 
-                                    object-fit: contain;
-                                    box-shadow: 0 4px 20px rgba(255,255,255,0.1);
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <img src="${imageUrl}" alt="${imageName}" />
-                        </body>
-                        </html>
-                    `);
-                    newWindow.document.close();
-                }
+            if (typeof window.openImageModal === 'function') {
+                window.openImageModal(imageUrl, imageName);
             } else {
-                // For regular URLs, use the traditional method
+                // Fallback: open in a new tab if modal script is missing
                 window.open(imageUrl, '_blank', 'noopener,noreferrer');
             }
         };
