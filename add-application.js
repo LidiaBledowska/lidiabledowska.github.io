@@ -1,17 +1,20 @@
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 import { firebaseConfig } from './src/firebase-config.js';
 
 // Initialize Firebase
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
 const auth = getAuth(app);
+const storage = getStorage(app);
 
 // Make Firebase services available globally without overwriting
 // existing helpers registered on the main page
 window.db = db;
 window.auth = auth;
+window.storage = storage;
 window.firebaseModules = window.firebaseModules || {};
 Object.assign(window.firebaseModules, {
     collection,
@@ -20,7 +23,11 @@ Object.assign(window.firebaseModules, {
     onAuthStateChanged,
     app,
     db,
-    auth
+    auth,
+    storage,
+    ref,
+    uploadBytes,
+    getDownloadURL
 });
 
 function sanitizeHTML(str) {
@@ -56,36 +63,6 @@ function toggleSalaryFields() {
 
 // Make the function globally available
 window.toggleSalaryFields = toggleSalaryFields;
-
-// Base64 image conversion utility with basic compression
-function convertFileToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            const img = new Image();
-            img.onload = () => {
-                const MAX_DIMENSION = 1280;
-                let { width, height } = img;
-                if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
-                    const scale = Math.min(MAX_DIMENSION / width, MAX_DIMENSION / height);
-                    width = Math.round(width * scale);
-                    height = Math.round(height * scale);
-                }
-                const canvas = document.createElement('canvas');
-                canvas.width = width;
-                canvas.height = height;
-                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', 0.85));
-            };
-            img.onerror = error => reject(error);
-            img.src = reader.result;
-        };
-        reader.onerror = error => reject(error);
-        reader.readAsDataURL(file);
-    });
-};
-
-
 // Check authentication status on page load
 onAuthStateChanged(auth, function (user) {
     const authStatus = document.getElementById('auth-status');
@@ -223,53 +200,35 @@ document.getElementById('addSalaryType').addEventListener('change', function () 
 });
 document.getElementById('addSalaryType').dispatchEvent(new Event('change'));
 
-// Upload images using Base64 encoding
+// Upload images to Firebase Storage and return download URLs
 async function uploadImages() {
     if (selectedFiles.length === 0) {
-        ;
         return [];
-    };
+    }
+
+    const user = auth.currentUser;
+    if (!user) {
+        throw new Error('Użytkownik niezalogowany');
+    }
 
     try {
-        const base64Promises = selectedFiles.map(async (file, index) => {
-            ;
-
-            // Validate file
+        const uploadPromises = selectedFiles.map(async (file) => {
             if (!file.type.startsWith('image/')) {
                 console.warn(`Skipping non-image file: ${file.name}`);
                 return null;
             }
 
-            // Check file size (max 1MB for Base64 to avoid Firestore limits)
-            if (file.size > 1024 * 1024) {
-                console.warn(`File too large (${(file.size / 1024 / 1024).toFixed(2)}MB): ${file.name}`);
-                alert(`Plik ${file.name} jest za duży. Maksymalny rozmiar to 1MB dla Base64.`);
-                return null;
-            }
+            const fileRef = ref(storage, `applications/${user.uid}/${Date.now()}_${file.name}`);
+            await uploadBytes(fileRef, file);
+            return await getDownloadURL(fileRef);
+        });
 
-            try {
-                ;
-                const base64String = await convertFileToBase64(file);;
-                return {
-                    name: file.name,
-                    type: file.type,
-                    size: file.size,
-                    data: base64String
-                };
-
-            } catch (fileError) {
-                appLogger.error(`Error converting file ${file.name}:`, fileError);
-                alert(`Błąd podczas konwersji pliku ${file.name}: ${fileError.message}`);
-                return null;
-            }
-        });;
-        const base64Files = await Promise.all(base64Promises);
-        const validFiles = base64Files.filter(file => file !== null);;
-        return validFiles;
+        const urls = await Promise.all(uploadPromises);
+        return urls.filter(url => url !== null);
 
     } catch (error) {
-        appLogger.error('General conversion error:', error);
-        throw new Error(`Błąd podczas konwersji zdjęć: ${error.message}`);
+        appLogger.error('Image upload error:', error);
+        throw new Error(`Błąd podczas przesyłania zdjęć: ${error.message}`);
     }
 }
 
@@ -331,14 +290,13 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
             appLogger.error('Failed to get auth token:', tokenError);
         }
 
-        // Konwertuj zdjęcia do Base64 jeśli są
-        let base64Images = [];
+        // Wyślij zdjęcia do Firebase Storage
+        let imageUrls = [];
         if (selectedFiles.length > 0) {
-            ;
-            document.getElementById('form-message').textContent = `Konwersja ${selectedFiles.length} zdjęć...`;
+            document.getElementById('form-message').textContent = `Przesyłanie ${selectedFiles.length} zdjęć...`;
             document.getElementById('form-message').style.color = "blue";
 
-            base64Images = await uploadImages();;
+            imageUrls = await uploadImages();
 
             document.getElementById('form-message').textContent = "Zapisywanie aplikacji...";
         }
@@ -375,7 +333,7 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
         if (kontakt) applicationData.kontakt = kontakt;
         if (link) applicationData.link = link;
         if (notatki) applicationData.notatki = notatki;
-        if (base64Images.length > 0) applicationData.images = base64Images;;;;
+        if (imageUrls.length > 0) applicationData.images = imageUrls;
 
         await addDoc(collection(db, "applications"), applicationData);
         appLogger.log('✅ Application successfully added to Firestore');

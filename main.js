@@ -109,15 +109,13 @@ function showImagesPreview(images) {
         let imageUrl = '';
         let imageName = `Zdjęcie ${index + 1}`;
 
-        // Handle both old Firebase Storage URLs and new Base64 objects
+        // Prefer URL strings stored in Firestore; fall back to legacy Base64 objects
         if (typeof imageItem === 'string') {
-            // Old format: direct URL string
             imageUrl = imageItem;
             img.src = imageItem;
-        } else if (imageItem && imageItem.data) {
-            // New format: Base64 object with data property
-            imageUrl = imageItem.data;
-            img.src = imageItem.data;
+        } else if (imageItem && (imageItem.url || imageItem.data)) {
+            imageUrl = imageItem.url || imageItem.data;
+            img.src = imageUrl;
             if (imageItem.name) {
                 imageName = imageItem.name;
             }
