@@ -258,7 +258,7 @@ async function uploadImages() {
                 };
 
             } catch (fileError) {
-                console.error(`Error converting file ${file.name}:`, fileError);
+                appLogger.error(`Error converting file ${file.name}:`, fileError);
                 alert(`Błąd podczas konwersji pliku ${file.name}: ${fileError.message}`);
                 return null;
             }
@@ -268,7 +268,7 @@ async function uploadImages() {
         return validFiles;
 
     } catch (error) {
-        console.error('General conversion error:', error);
+        appLogger.error('General conversion error:', error);
         throw new Error(`Błąd podczas konwersji zdjęć: ${error.message}`);
     }
 }
@@ -328,7 +328,7 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
         try {
             const token = await user.getIdToken();;
         } catch (tokenError) {
-            console.error('Failed to get auth token:', tokenError);
+            appLogger.error('Failed to get auth token:', tokenError);
         }
 
         // Konwertuj zdjęcia do Base64 jeśli są
@@ -378,7 +378,7 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
         if (base64Images.length > 0) applicationData.images = base64Images;;;;
 
         await addDoc(collection(db, "applications"), applicationData);
-        console.log('✅ Application successfully added to Firestore');
+        appLogger.log('✅ Application successfully added to Firestore');
 
         document.getElementById('form-message').textContent = "Aplikacja została dodana pomyślnie!";
         document.getElementById('form-message').style.color = "green";
@@ -388,7 +388,7 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
         // Check if we're in a modal context vs standalone page
         if (window.parent && window.parent !== window) {
             // We're in a modal iframe - close modal and trigger refresh
-            console.log('Closing modal iframe and triggering refresh...');
+            appLogger.log('Closing modal iframe and triggering refresh...');
             if (window.parent.closeAddAppModal) {
                 window.parent.closeAddAppModal();
             }
@@ -400,12 +400,12 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
             }
         } else if (window.closeAddAppModal) {
             // We're in the same window but in a modal
-            console.log('Closing same-window modal and triggering refresh...');
+            appLogger.log('Closing same-window modal and triggering refresh...');
             window.closeAddAppModal();
 
             // Clear filters to ensure new application is visible
             if (window.clearAllFilters) {
-                console.log('Clearing all filters to show new application...');
+                appLogger.log('Clearing all filters to show new application...');
                 window.clearAllFilters();
             } else if (window.refreshApplications) {
                 setTimeout(() => {
@@ -414,7 +414,7 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
             }
         } else if (document.getElementById('addAppModal')) {
             // Modal exists but no close function - try to close manually
-            console.log('Modal exists, closing manually and triggering refresh...');
+            appLogger.log('Modal exists, closing manually and triggering refresh...');
             const modal = document.getElementById('addAppModal');
             if (modal) {
                 modal.classList.remove('active');
@@ -423,7 +423,7 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
 
             // Clear filters to ensure new application is visible
             if (window.clearAllFilters) {
-                console.log('Clearing all filters to show new application...');
+                appLogger.log('Clearing all filters to show new application...');
                 window.clearAllFilters();
             } else if (window.refreshApplications) {
                 setTimeout(() => {
@@ -437,8 +437,8 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
             }, 2000);
         }
     } catch (error) {
-        console.error("Błąd podczas dodawania aplikacji:", error);
-        console.error("Error details:", {
+        appLogger.error("Błąd podczas dodawania aplikacji:", error);
+        appLogger.error("Error details:", {
             code: error.code,
             message: error.message,
             stack: error.stack,
@@ -504,7 +504,7 @@ document.getElementById('addApplicationForm').addEventListener('submit', async f
                     return;
 
                 } catch (saveError) {
-                    console.error("Error saving without images:", saveError);
+                    appLogger.error("Error saving without images:", saveError);
                 }
             }
         }

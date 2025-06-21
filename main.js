@@ -42,7 +42,7 @@ window.clearAllFilters = clearAllFilters;
 
 // Global function for refreshing applications with current filters
 window.refreshApplications = function () {
-    console.log('🔄 Manual refresh triggered');
+    appLogger.log('🔄 Manual refresh triggered');
     const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
     const showArchived = document.getElementById('showArchived')?.checked || false;
     loadApplications(getFilters(), showArchived, sortOrder);
@@ -50,12 +50,12 @@ window.refreshApplications = function () {
 
 // Debug function for real-time listener status
 window.checkListenerStatus = function () {
-    console.log('=== REAL-TIME LISTENER STATUS ===');
-    console.log('Current listener exists:', !!window.currentApplicationsListener);
-    console.log('User authenticated:', !!window.auth?.currentUser);
-    console.log('Firebase modules available:', !!window.firebaseModules);
-    console.log('onSnapshot function available:', typeof window.firebaseModules?.onSnapshot);
-    console.log('=================================');
+    appLogger.log('=== REAL-TIME LISTENER STATUS ===');
+    appLogger.log('Current listener exists:', !!window.currentApplicationsListener);
+    appLogger.log('User authenticated:', !!window.auth?.currentUser);
+    appLogger.log('Firebase modules available:', !!window.firebaseModules);
+    appLogger.log('onSnapshot function available:', typeof window.firebaseModules?.onSnapshot);
+    appLogger.log('=================================');
     return {
         hasListener: !!window.currentApplicationsListener,
         isAuthenticated: !!window.auth?.currentUser,
@@ -83,7 +83,7 @@ function showImagesPreview(images) {
     const preview = document.getElementById('editImagesPreview');
 
     if (!preview) {
-        console.error('editImagesPreview element not found!');
+        appLogger.error('editImagesPreview element not found!');
         return;
     }
 
@@ -136,7 +136,7 @@ function showImagesPreview(images) {
 
         // Add error handling for broken images
         img.onerror = function () {
-            console.error(`Failed to load image: ${imageUrl}`);
+            appLogger.error(`Failed to load image: ${imageUrl}`);
             this.style.border = '2px solid #dc2626';
             this.title = `Błąd ładowania: ${imageName}`;
             this.alt = 'Błąd ładowania';
@@ -286,38 +286,38 @@ function loadFavorites() {
                 e.stopPropagation();
 
                 const appId = this.getAttribute('data-id');
-                console.log('=== FAVORITES EDIT BUTTON CLICKED ===');
-                console.log('Button element:', this);
-                console.log('App ID from data-id:', appId);
+                appLogger.log('=== FAVORITES EDIT BUTTON CLICKED ===');
+                appLogger.log('Button element:', this);
+                appLogger.log('App ID from data-id:', appId);
 
                 if (!appId) {
-                    console.error('ERROR: No app ID found on favorites button!');
+                    appLogger.error('ERROR: No app ID found on favorites button!');
                     alert('Błąd: Brak ID aplikacji na przycisku ulubionych!');
                     return;
                 }
 
-                console.log('Calling openEditModal from favorites with ID:', appId);
+                appLogger.log('Calling openEditModal from favorites with ID:', appId);
                 try {
                     openEditModal(appId);
                 } catch (error) {
-                    console.error('ERROR calling openEditModal from favorites:', error);
+                    appLogger.error('ERROR calling openEditModal from favorites:', error);
                     alert('Błąd podczas otwierania formularza edycji z ulubionych: ' + error.message);
                 }
-                console.log('=== FAVORITES EDIT BUTTON CLICK HANDLED ===');
+                appLogger.log('=== FAVORITES EDIT BUTTON CLICK HANDLED ===');
             });
         });
     });
 }
 
 async function openEditModal(appId) {
-    console.log('=== openEditModal called ===');
-    console.log('App ID:', appId);
-    console.log('Current user:', window.auth?.currentUser);
-    console.log('Firebase modules available:', !!window.firebaseModules);
+    appLogger.log('=== openEditModal called ===');
+    appLogger.log('App ID:', appId);
+    appLogger.log('Current user:', window.auth?.currentUser);
+    appLogger.log('Firebase modules available:', !!window.firebaseModules);
 
     const user = window.auth.currentUser;
     if (!user) {
-        console.log('User not authenticated - showing alert');
+        appLogger.log('User not authenticated - showing alert');
         alert("Musisz być zalogowany!");
         return;
     }
@@ -397,30 +397,30 @@ async function openEditModal(appId) {
     document.getElementById('editApplicationForm').dataset.prevStatus = app.status || "";
     document.getElementById('editApplicationForm').dataset.statusHistory = JSON.stringify(app.statusHistory || []);
 
-    console.log('About to show edit modal...');
+    appLogger.log('About to show edit modal...');
     const editModal = document.getElementById('editModal');
-    console.log('Edit modal element:', editModal);
-    console.log('Edit modal current classes:', editModal?.className);
+    appLogger.log('Edit modal element:', editModal);
+    appLogger.log('Edit modal current classes:', editModal?.className);
 
     if (!editModal) {
-        console.error('CRITICAL ERROR: Edit modal not found in DOM!');
+        appLogger.error('CRITICAL ERROR: Edit modal not found in DOM!');
         alert('Błąd: Modal edycji nie został znaleziony!');
         return;
     }
 
     // Show the modal
-    console.log('Opening modal...');
+    appLogger.log('Opening modal...');
     editModal.classList.add('active');
     editModal.style.display = 'flex';
     editModal.style.visibility = 'visible';
 
-    console.log('Edit modal classes after adding active:', editModal?.className);
-    console.log('Edit modal computed display:', window.getComputedStyle(editModal).display);
+    appLogger.log('Edit modal classes after adding active:', editModal?.className);
+    appLogger.log('Edit modal computed display:', window.getComputedStyle(editModal).display);
 
     // Force scroll to top of modal when opened
     editModal.scrollTop = 0;
 
-    console.log('=== openEditModal completed ===');
+    appLogger.log('=== openEditModal completed ===');
 }
 
 // Debounce mechanism to prevent multiple simultaneous calls to loadApplications
@@ -428,17 +428,17 @@ let isLoadingApplications = false;
 let pendingLoadApplicationsCall = null;
 
 function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc') {
-    console.log('=== LOAD APPLICATIONS CALLED ===');
-    console.log('loadApplications called with sortOrder:', sortOrder);
-    console.log('loadApplications called with filters:', filters);
-    console.log('loadApplications called with showArchived:', showArchived);
-    console.log('Currently loading:', isLoadingApplications);
-    console.log('Call stack:', new Error().stack);
-    console.log('=================================');
+    appLogger.log('=== LOAD APPLICATIONS CALLED ===');
+    appLogger.log('loadApplications called with sortOrder:', sortOrder);
+    appLogger.log('loadApplications called with filters:', filters);
+    appLogger.log('loadApplications called with showArchived:', showArchived);
+    appLogger.log('Currently loading:', isLoadingApplications);
+    appLogger.log('Call stack:', new Error().stack);
+    appLogger.log('=================================');
 
     // Prevent multiple simultaneous calls
     if (isLoadingApplications) {
-        console.log('⏳ loadApplications already running, queuing this call...');
+        appLogger.log('⏳ loadApplications already running, queuing this call...');
         clearTimeout(pendingLoadApplicationsCall);
         pendingLoadApplicationsCall = setTimeout(() => {
             loadApplications(filters, showArchived, sortOrder);
@@ -449,9 +449,9 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
     isLoadingApplications = true;
 
     const user = window.auth.currentUser;
-    console.log('User in loadApplications:', user);
+    appLogger.log('User in loadApplications:', user);
     if (!user) {
-        console.log('No user - showing login prompt');
+        appLogger.log('No user - showing login prompt');
         ;
         // Update counters to 0 when no user is logged in
         updateStatusCounters([]);
@@ -479,7 +479,7 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
 
     // Clean up previous listener if it exists
     if (window.currentApplicationsListener) {
-        console.log('🧹 Cleaning up previous real-time listener');
+        appLogger.log('🧹 Cleaning up previous real-time listener');
         window.currentApplicationsListener();
         window.currentApplicationsListener = null;
     }
@@ -490,36 +490,36 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
     );
 
     // Use real-time listener instead of one-time getDocs for automatic updates
-    console.log('🔄 Setting up real-time listener for user:', user.uid);
-    console.log('🔄 Query:', q);
-    console.log('🔄 onSnapshot function available:', typeof window.firebaseModules.onSnapshot);
+    appLogger.log('🔄 Setting up real-time listener for user:', user.uid);
+    appLogger.log('🔄 Query:', q);
+    appLogger.log('🔄 onSnapshot function available:', typeof window.firebaseModules.onSnapshot);
 
     const unsubscribe = window.firebaseModules.onSnapshot(q, (querySnapshot) => {
-        console.log('📡 Real-time update received:', querySnapshot.size, 'applications');
-        console.log('📡 QuerySnapshot metadata:', querySnapshot.metadata);
-        console.log('📡 Is from cache:', querySnapshot.metadata.fromCache);
-        console.log('📡 Has pending writes:', querySnapshot.metadata.hasPendingWrites);
+        appLogger.log('📡 Real-time update received:', querySnapshot.size, 'applications');
+        appLogger.log('📡 QuerySnapshot metadata:', querySnapshot.metadata);
+        appLogger.log('📡 Is from cache:', querySnapshot.metadata.fromCache);
+        appLogger.log('📡 Has pending writes:', querySnapshot.metadata.hasPendingWrites);
 
         // Log individual documents for debugging
         querySnapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
-                console.log("🆕 New application: ", change.doc.data());
+                appLogger.log("🆕 New application: ", change.doc.data());
                 // Show a brief notification for new applications (not from cache)
                 if (!querySnapshot.metadata.fromCache) {
-                    console.log("✨ This is a real-time addition, not from cache!");
+                    appLogger.log("✨ This is a real-time addition, not from cache!");
                 }
             }
             if (change.type === "modified") {
-                console.log("✏️ Modified application: ", change.doc.data());
+                appLogger.log("✏️ Modified application: ", change.doc.data());
             }
             if (change.type === "removed") {
-                console.log("🗑️ Removed application: ", change.doc.data());
+                appLogger.log("🗑️ Removed application: ", change.doc.data());
             }
         });
 
         const tbody = document.querySelector('.applications-table tbody');
         if (!tbody) {
-            console.error('❌ Table body not found!');
+            appLogger.error('❌ Table body not found!');
             return;
         }
 
@@ -531,30 +531,30 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
             const app = doc.data();
             app.id = doc.id;
             applications.push(app);
-            console.log('📄 Application loaded:', app.stanowisko, app.firma, app.data);
+            appLogger.log('📄 Application loaded:', app.stanowisko, app.firma, app.data);
         });
 
-        console.log('📊 Total applications loaded:', applications.length);;
+        appLogger.log('📊 Total applications loaded:', applications.length);;
 
         // Update status counters before filtering
         updateStatusCounters(applications);
 
         // Sort applications based on sortOrder
-        console.log('=== SORTING SECTION ===');
-        console.log('Sorting applications, sortOrder:', sortOrder);
-        console.log('Number of applications to sort:', applications.length);
-        console.log('Applications before sort:', applications.map(a => ({ firma: a.firma, data: a.data, favorite: a.favorite })));
+        appLogger.log('=== SORTING SECTION ===');
+        appLogger.log('Sorting applications, sortOrder:', sortOrder);
+        appLogger.log('Number of applications to sort:', applications.length);
+        appLogger.log('Applications before sort:', applications.map(a => ({ firma: a.firma, data: a.data, favorite: a.favorite })));
 
         applications.sort((a, b) => {
-            console.log(`Comparing: ${a.firma} (${a.data}, fav: ${a.favorite}) vs ${b.firma} (${b.data}, fav: ${b.favorite})`);
+            appLogger.log(`Comparing: ${a.firma} (${a.data}, fav: ${a.favorite}) vs ${b.firma} (${b.data}, fav: ${b.favorite})`);
 
             // First sort by favorites
             if (a.favorite && !b.favorite) {
-                console.log('  -> a is favorite, b is not: a comes first');
+                appLogger.log('  -> a is favorite, b is not: a comes first');
                 return -1;
             }
             if (!a.favorite && b.favorite) {
-                console.log('  -> b is favorite, a is not: b comes first');
+                appLogger.log('  -> b is favorite, a is not: b comes first');
                 return 1;
             }
 
@@ -563,80 +563,80 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
             const dateB = new Date(b.data);
 
             // Debug date parsing
-            console.log(`  -> Comparing dates: ${a.data} (${dateA.toISOString()}) vs ${b.data} (${dateB.toISOString()})`);
+            appLogger.log(`  -> Comparing dates: ${a.data} (${dateA.toISOString()}) vs ${b.data} (${dateB.toISOString()})`);
 
             if (sortOrder === 'asc') {
                 const result = dateA - dateB; // oldest first
-                console.log(`  -> ASC sort result: ${result} (${result < 0 ? 'a first' : result > 0 ? 'b first' : 'equal'})`);
+                appLogger.log(`  -> ASC sort result: ${result} (${result < 0 ? 'a first' : result > 0 ? 'b first' : 'equal'})`);
                 return result;
             } else {
                 const result = dateB - dateA; // newest first
-                console.log(`  -> DESC sort result: ${result} (${result < 0 ? 'a first' : result > 0 ? 'b first' : 'equal'})`);
+                appLogger.log(`  -> DESC sort result: ${result} (${result < 0 ? 'a first' : result > 0 ? 'b first' : 'equal'})`);
                 return result;
             }
         });
 
-        console.log('=== SORT COMPLETED ===');
-        console.log('Applications after sort:', applications.map(a => ({ firma: a.firma, data: a.data, favorite: a.favorite })));
-        console.log('Final sort order verification:');
+        appLogger.log('=== SORT COMPLETED ===');
+        appLogger.log('Applications after sort:', applications.map(a => ({ firma: a.firma, data: a.data, favorite: a.favorite })));
+        appLogger.log('Final sort order verification:');
         applications.forEach((app, index) => {
-            console.log(`  ${index + 1}. ${app.favorite ? '⭐' : ''} ${app.firma} - ${app.data}`);
+            appLogger.log(`  ${index + 1}. ${app.favorite ? '⭐' : ''} ${app.firma} - ${app.data}`);
         });
-        console.log('=====================');
+        appLogger.log('=====================');
 
         applications.forEach((app) => {
             if (!showArchived && app.archiwalna === true) {
-                console.log(`⏭️ Skipping archived application: ${app.stanowisko} at ${app.firma}`);
+                appLogger.log(`⏭️ Skipping archived application: ${app.stanowisko} at ${app.firma}`);
                 return;
             }
 
             let match = true;
-            console.log(`🔍 Checking filters for: ${app.stanowisko} at ${app.firma}`);
-            console.log(`📋 Current filters:`, filters);
+            appLogger.log(`🔍 Checking filters for: ${app.stanowisko} at ${app.firma}`);
+            appLogger.log(`📋 Current filters:`, filters);
 
             for (const key in filters) {
                 if (filters[key]) {
-                    console.log(`🔎 Checking filter "${key}": "${filters[key]}" against app value: "${app[key]}"`);
+                    appLogger.log(`🔎 Checking filter "${key}": "${filters[key]}" against app value: "${app[key]}"`);
 
                     // Special handling for "Rozmowy" status filter
                     if (key === 'status' && filters[key] === 'Rozmowy') {
                         const interviewStatuses = ['Rozmowa telefoniczna', 'Rozmowa online', 'Rozmowa stacjonarna'];
                         if (!interviewStatuses.includes(app.status)) {
-                            console.log(`❌ Filter failed: "${app.status}" not in interview statuses`);
+                            appLogger.log(`❌ Filter failed: "${app.status}" not in interview statuses`);
                             match = false;
                             break;
                         } else {
-                            console.log(`✅ Filter passed: "${app.status}" is interview status`);
+                            appLogger.log(`✅ Filter passed: "${app.status}" is interview status`);
                         }
                     }
                     // Special handling for "Odrzucono" status filter
                     else if (key === 'status' && filters[key] === 'Odrzucono') {
                         const rejectedVariants = ['odrzucono', 'odrzucony', 'odrzucona', 'odrzucone'];
                         if (!app.status || !rejectedVariants.some(v => app.status.toLowerCase().includes(v))) {
-                            console.log(`❌ Filter failed: "${app.status}" not rejected status`);
+                            appLogger.log(`❌ Filter failed: "${app.status}" not rejected status`);
                             match = false;
                             break;
                         } else {
-                            console.log(`✅ Filter passed: "${app.status}" is rejected status`);
+                            appLogger.log(`✅ Filter passed: "${app.status}" is rejected status`);
                         }
                     }
                     // Special handling for "Wysłano CV" and "Oferty" status filters
                     else if (key === 'status' && filters[key] === 'Wysłano CV') {
                         if (normalizeText(app.status) !== 'wyslano cv') {
-                            console.log(`❌ Filter failed: "${app.status}" normalized to "${normalizeText(app.status)}" != "wyslano cv"`);
+                            appLogger.log(`❌ Filter failed: "${app.status}" normalized to "${normalizeText(app.status)}" != "wyslano cv"`);
                             match = false;
                             break;
                         } else {
-                            console.log(`✅ Filter passed: "${app.status}" matches "Wysłano CV"`);
+                            appLogger.log(`✅ Filter passed: "${app.status}" matches "Wysłano CV"`);
                         }
                     }
                     else if (key === 'status' && filters[key] === 'Oferty') {
                         if (!app.status || !normalizeText(app.status).includes('oferta')) {
-                            console.log(`❌ Filter failed: "${app.status}" doesn't contain "oferta"`);
+                            appLogger.log(`❌ Filter failed: "${app.status}" doesn't contain "oferta"`);
                             match = false;
                             break;
                         } else {
-                            console.log(`✅ Filter passed: "${app.status}" contains "oferta"`);
+                            appLogger.log(`✅ Filter passed: "${app.status}" contains "oferta"`);
                         }
                     } else if (Array.isArray(filters[key])) {
                         // Handle multi-select filters (arrays)
@@ -728,10 +728,10 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
             }
 
             if (!match) {
-                console.log(`❌ Application "${app.stanowisko}" at "${app.firma}" FILTERED OUT`);
+                appLogger.log(`❌ Application "${app.stanowisko}" at "${app.firma}" FILTERED OUT`);
                 return;
             } else {
-                console.log(`✅ Application "${app.stanowisko}" at "${app.firma}" PASSED all filters`);
+                appLogger.log(`✅ Application "${app.stanowisko}" at "${app.firma}" PASSED all filters`);
             }
 
             count++;
@@ -839,7 +839,7 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
         }
 
         document.querySelectorAll('.edit-btn').forEach(btn => {
-            console.log('Adding event listener to edit button:', btn.getAttribute('data-id'));
+            appLogger.log('Adding event listener to edit button:', btn.getAttribute('data-id'));
 
             // Force white text color on all mouse events
             btn.addEventListener('mousedown', function (e) {
@@ -876,27 +876,27 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
                 }
 
                 const appId = this.getAttribute('data-id');
-                console.log('=== EDIT BUTTON CLICKED ===');
-                console.log('Button element:', this);
-                console.log('App ID from data-id:', appId);
-                console.log('Button innerHTML:', this.innerHTML);
-                console.log('Event target:', e.target);
-                console.log('Current target:', e.currentTarget);
+                appLogger.log('=== EDIT BUTTON CLICKED ===');
+                appLogger.log('Button element:', this);
+                appLogger.log('App ID from data-id:', appId);
+                appLogger.log('Button innerHTML:', this.innerHTML);
+                appLogger.log('Event target:', e.target);
+                appLogger.log('Current target:', e.currentTarget);
 
                 if (!appId) {
-                    console.error('ERROR: No app ID found on button!');
+                    appLogger.error('ERROR: No app ID found on button!');
                     alert('Błąd: Brak ID aplikacji na przycisku!');
                     return;
                 }
 
-                console.log('Calling openEditModal with ID:', appId);
+                appLogger.log('Calling openEditModal with ID:', appId);
                 try {
                     openEditModal(appId);
                 } catch (error) {
-                    console.error('ERROR calling openEditModal:', error);
+                    appLogger.error('ERROR calling openEditModal:', error);
                     alert('Błąd podczas otwierania formularza edycji: ' + error.message);
                 }
-                console.log('=== EDIT BUTTON CLICK HANDLED ===');
+                appLogger.log('=== EDIT BUTTON CLICK HANDLED ===');
             });
         });
 
@@ -908,17 +908,17 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
             enhanceTableRowVisuals();
         }, 100);
     }, (error) => {
-        console.error('Real-time listener error:', error);
+        appLogger.error('Real-time listener error:', error);
         // Fallback to one-time query if real-time fails
         window.firebaseModules.getDocs(q).then((querySnapshot) => {
-            console.log('Fallback to one-time query, found:', querySnapshot.size, 'applications');
+            appLogger.log('Fallback to one-time query, found:', querySnapshot.size, 'applications');
             // Use the same processing logic as above...
             const tbody = document.querySelector('.applications-table tbody');
             if (tbody) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #6b7280;">Błąd ładowania danych. Odśwież stronę.</td></tr>';
             }
         }).catch((fallbackError) => {
-            console.error('Fallback query also failed:', fallbackError);
+            appLogger.error('Fallback query also failed:', fallbackError);
             const tbody = document.querySelector('.applications-table tbody');
             if (tbody) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #dc2626;">Błąd połączenia z bazą danych.</td></tr>';
@@ -927,12 +927,12 @@ function loadApplications(filters = {}, showArchived = false, sortOrder = 'desc'
     });
 
     // Store the unsubscribe function globally for cleanup if needed
-    console.log('💾 Storing new real-time listener unsubscribe function');
+    appLogger.log('💾 Storing new real-time listener unsubscribe function');
     window.currentApplicationsListener = unsubscribe;
 
     // Reset loading flag
     isLoadingApplications = false;
-    console.log('✅ loadApplications completed, flag reset');
+    appLogger.log('✅ loadApplications completed, flag reset');
 }
 
 function autoFixColors() {
@@ -979,12 +979,12 @@ function enhanceTableRowVisuals() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('=== DOMContentLoaded FIRED ===');
+    appLogger.log('=== DOMContentLoaded FIRED ===');
 
     // Check for page visibility changes to refresh data when user returns
     document.addEventListener('visibilitychange', function () {
         if (!document.hidden && window.auth && window.auth.currentUser) {
-            console.log('Page became visible, refreshing applications...');
+            appLogger.log('Page became visible, refreshing applications...');
             const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
             loadApplications(getFilters(), document.getElementById('showArchived')?.checked, sortOrder);
         }
@@ -992,7 +992,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Check if user returned from add-application page
     if (document.referrer && document.referrer.includes('add-application.html')) {
-        console.log('User returned from add-application page, refreshing data...');
+        appLogger.log('User returned from add-application page, refreshing data...');
         setTimeout(() => {
             if (window.auth && window.auth.currentUser) {
                 const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
@@ -1003,16 +1003,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Wait for Firebase to be ready
     function waitForFirebase(callback) {
-        console.log('⏳ Waiting for Firebase...');
-        console.log('   - window.firebaseModules:', !!window.firebaseModules);
-        console.log('   - window.auth:', !!window.auth);
-        console.log('   - onSnapshot available:', !!window.firebaseModules?.onSnapshot);
+        appLogger.log('⏳ Waiting for Firebase...');
+        appLogger.log('   - window.firebaseModules:', !!window.firebaseModules);
+        appLogger.log('   - window.auth:', !!window.auth);
+        appLogger.log('   - onSnapshot available:', !!window.firebaseModules?.onSnapshot);
 
         if (window.firebaseModules && window.auth && window.firebaseModules.onSnapshot) {
-            console.log('✅ Firebase ready!');
+            appLogger.log('✅ Firebase ready!');
             callback();
         } else {
-            console.log('⏳ Firebase not ready yet, retrying in 100ms...');
+            appLogger.log('⏳ Firebase not ready yet, retrying in 100ms...');
             setTimeout(() => waitForFirebase(callback), 100);
         }
     }
@@ -1025,7 +1025,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 window.firebaseModules.signOut(window.auth).then(() => {
                     window.location.reload();
                 }).catch((error) => {
-                    console.error('Logout error:', error);
+                    appLogger.error('Logout error:', error);
                     // Still reload the page to clear the session
                     window.location.reload();
                 });
@@ -1052,14 +1052,14 @@ document.addEventListener('DOMContentLoaded', function () {
     function setupCloseModalHandler() {
         const closeEditModalBtn = document.getElementById('closeEditModal');
         if (closeEditModalBtn) {
-            console.log('✅ Setting up close modal handler');
+            appLogger.log('✅ Setting up close modal handler');
 
             // Remove any existing onclick handler first
             closeEditModalBtn.onclick = null;
 
             // Add the onclick handler
             closeEditModalBtn.onclick = function (e) {
-                console.log('🔴 Close button clicked!');
+                appLogger.log('🔴 Close button clicked!');
                 e.preventDefault();
                 e.stopPropagation();
 
@@ -1067,7 +1067,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const editFormMessage = document.getElementById('editFormMessage');
 
                 if (editModal) {
-                    console.log('Closing modal...');
+                    appLogger.log('Closing modal...');
                     editModal.classList.remove('active');
                     editModal.style.display = 'none'; // Force hide
 
@@ -1075,13 +1075,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         editFormMessage.textContent = '';
                     }
 
-                    console.log('Modal closed. Classes:', editModal.className);
+                    appLogger.log('Modal closed. Classes:', editModal.className);
                 } else {
-                    console.error('❌ Edit modal not found when trying to close');
+                    appLogger.error('❌ Edit modal not found when trying to close');
                 }
             };
 
-            console.log('Close button handler set successfully');
+            appLogger.log('Close button handler set successfully');
             return true;
         } else {
             console.warn('❌ closeEditModal button not found in DOM');
@@ -1092,7 +1092,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Reusable Google sign-in helper
     async function signInWithGoogle(button, statusElement) {
         if (!window.auth) {
-            console.error('Firebase auth not initialized');
+            appLogger.error('Firebase auth not initialized');
             return;
         }
 
@@ -1107,13 +1107,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const { GoogleAuthProvider, signInWithPopup } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(window.auth, provider);
-            console.log('✅ Successful sign in:', result.user.email);
+            appLogger.log('✅ Successful sign in:', result.user.email);
 
             if (button) {
                 button.innerHTML = '<i class="fas fa-check"></i> Zalogowano!';
             }
         } catch (error) {
-            console.error('❌ Sign in error:', error);
+            appLogger.error('❌ Sign in error:', error);
 
             if (button) {
                 button.innerHTML = originalText;
@@ -1150,21 +1150,21 @@ document.addEventListener('DOMContentLoaded', function () {
     function setupLoginButtonHandler() {
         const loginBtn = document.getElementById('loginBtn');
         if (loginBtn) {
-            console.log('✅ Setting up login button handler');
+            appLogger.log('✅ Setting up login button handler');
 
             // Remove any existing onclick handler first
             loginBtn.onclick = null;
 
             // Add the onclick handler - trigger Google sign in directly
             loginBtn.onclick = function (e) {
-                console.log('🔐 Login button clicked in header');
+                appLogger.log('🔐 Login button clicked in header');
                 e.preventDefault();
                 e.stopPropagation();
 
                 signInWithGoogle(loginBtn);
             };
 
-            console.log('Login button handler set successfully');
+            appLogger.log('Login button handler set successfully');
             return true;
         } else {
             console.warn('❌ loginBtn button not found in DOM');
@@ -1195,7 +1195,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (e.key === 'Escape' || e.keyCode === 27) {
             const editModal = document.getElementById('editModal');
             if (editModal && editModal.classList.contains('active')) {
-                console.log('🔴 Escape key pressed - closing modal');
+                appLogger.log('🔴 Escape key pressed - closing modal');
 
                 editModal.classList.remove('active');
                 editModal.style.display = 'none'; // Force hide
@@ -1296,7 +1296,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     debugImageUpload(`Successfully converted file ${i + 1}`, { name: file.name });
 
                 } catch (fileError) {
-                    console.error(`Error converting file ${file.name}:`, fileError);
+                    appLogger.error(`Error converting file ${file.name}:`, fileError);
                     errorCount++;
                 }
             }
@@ -1322,7 +1322,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
         } catch (error) {
-            console.error('Upload error:', error);
+            appLogger.error('Upload error:', error);
             document.getElementById('editFormMessage').textContent = `❌ Błąd podczas konwersji: ${error.message}`;
             document.getElementById('editFormMessage').style.color = "red";
         }
@@ -1547,42 +1547,42 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Sort functionality
     const sortOrderElement = document.getElementById('sortOrder');
-    console.log('Checking sortOrder element at startup:', sortOrderElement);
-    console.log('sortOrder element exists:', !!sortOrderElement);
+    appLogger.log('Checking sortOrder element at startup:', sortOrderElement);
+    appLogger.log('sortOrder element exists:', !!sortOrderElement);
 
     if (sortOrderElement) {
-        console.log('Setting up sortOrder event listener');
+        appLogger.log('Setting up sortOrder event listener');
         sortOrderElement.addEventListener('change', function () {
-            console.log('Sort order changed to:', this.value);
+            appLogger.log('Sort order changed to:', this.value);
             const showArchived = document.getElementById('showArchived')?.checked || false;
             loadApplications(getFilters(), showArchived, this.value);
         });
         sortOrderElement.setAttribute('data-listener-added', 'true');
-        console.log('sortOrder event listener attached successfully');
+        appLogger.log('sortOrder event listener attached successfully');
     } else {
-        console.log('sortOrder element not found at startup - will use fallback');
+        appLogger.log('sortOrder element not found at startup - will use fallback');
     }
 
     // Fallback event listener registration with retries
     function ensureSortListeners() {
         const sortOrderElement = document.getElementById('sortOrder');
-        console.log('ensureSortListeners called - element found:', !!sortOrderElement);
+        appLogger.log('ensureSortListeners called - element found:', !!sortOrderElement);
 
         if (sortOrderElement && !sortOrderElement.hasAttribute('data-listener-added')) {
-            console.log('Fallback: Adding sortOrder change listener');
+            appLogger.log('Fallback: Adding sortOrder change listener');
             sortOrderElement.addEventListener('change', function () {
-                console.log('Fallback sort order changed to:', this.value);
+                appLogger.log('Fallback sort order changed to:', this.value);
                 const showArchived = document.getElementById('showArchived')?.checked || false;
                 loadApplications(getFilters(), showArchived, this.value);
             });
             sortOrderElement.setAttribute('data-listener-added', 'true');
-            console.log('Fallback event listener attached successfully');
+            appLogger.log('Fallback event listener attached successfully');
             return true;
         } else if (sortOrderElement) {
-            console.log('sortOrder element already has listener attached');
+            appLogger.log('sortOrder element already has listener attached');
             return true;
         }
-        console.log('sortOrder element still not found');
+        appLogger.log('sortOrder element still not found');
         return false;
     }
 
@@ -1590,23 +1590,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const toggleSortButton = document.getElementById('toggleSort');
     const sortContainer = document.getElementById('sortContainer');
 
-    console.log('Toggle sort button:', toggleSortButton);
-    console.log('Sort container:', sortContainer);
+    appLogger.log('Toggle sort button:', toggleSortButton);
+    appLogger.log('Sort container:', sortContainer);
 
     if (toggleSortButton && sortContainer) {
         toggleSortButton.addEventListener('click', function () {
-            console.log('Toggle sort button clicked');
+            appLogger.log('Toggle sort button clicked');
             const isHidden = sortContainer.style.display === 'none';
-            console.log('Sort container was hidden:', isHidden);
+            appLogger.log('Sort container was hidden:', isHidden);
             sortContainer.style.display = isHidden ? 'block' : 'none';
             toggleSortButton.innerHTML = isHidden ? '<i class="fas fa-sort"></i> Ukryj sortowanie' : '<i class="fas fa-sort"></i> Sortuj według daty aplikowania';
 
             // If showing the container, ensure sort listeners are attached
             if (isHidden) {
-                console.log('Container was shown, ensuring sort listeners...');
+                appLogger.log('Container was shown, ensuring sort listeners...');
                 setTimeout(() => {
                     const result = ensureSortListeners();
-                    console.log('ensureSortListeners result:', result);
+                    appLogger.log('ensureSortListeners result:', result);
                 }, 50);
             }
         });
@@ -1775,34 +1775,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Test function for edit modal
     window.testEditModal = function () {
-        console.log('=== TESTING EDIT MODAL ===');
+        appLogger.log('=== TESTING EDIT MODAL ===');
 
         // Check if modal exists
         const editModal = document.getElementById('editModal');
-        console.log('Edit modal found:', !!editModal);
+        appLogger.log('Edit modal found:', !!editModal);
 
         if (editModal) {
-            console.log('Modal classes:', editModal.className);
-            console.log('Modal display style:', editModal.style.display);
-            console.log('Modal computed display:', window.getComputedStyle(editModal).display);
+            appLogger.log('Modal classes:', editModal.className);
+            appLogger.log('Modal display style:', editModal.style.display);
+            appLogger.log('Modal computed display:', window.getComputedStyle(editModal).display);
 
             // Try to open modal manually
-            console.log('Attempting to open modal manually...');
+            appLogger.log('Attempting to open modal manually...');
             editModal.classList.add('active');
-            console.log('Modal classes after adding active:', editModal.className);
-            console.log('Modal computed display after adding active:', window.getComputedStyle(editModal).display);
+            appLogger.log('Modal classes after adding active:', editModal.className);
+            appLogger.log('Modal computed display after adding active:', window.getComputedStyle(editModal).display);
 
             // Check if form exists
             const form = document.getElementById('editApplicationForm');
-            console.log('Form found:', !!form);
+            appLogger.log('Form found:', !!form);
 
             if (form) {
-                console.log('Form elements count:', form.elements.length);
-                console.log('Form submit button:', !!form.querySelector('button[type="submit"]'));
+                appLogger.log('Form elements count:', form.elements.length);
+                appLogger.log('Form submit button:', !!form.querySelector('button[type="submit"]'));
             }
         }
 
-        console.log('=== END TEST ===');
+        appLogger.log('=== END TEST ===');
 
         return {
             modalExists: !!editModal,
@@ -1813,11 +1813,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Comprehensive debug function
     window.debugAll = function () {
-        console.log('=== COMPREHENSIVE DEBUG ===');
+        appLogger.log('=== COMPREHENSIVE DEBUG ===');
 
         // Check loading overlay
         const loadingOverlay = document.getElementById('loadingOverlay');
-        console.log('Loading overlay:', {
+        appLogger.log('Loading overlay:', {
             element: !!loadingOverlay,
             display: loadingOverlay?.style.display,
             visible: loadingOverlay ? window.getComputedStyle(loadingOverlay).display : 'not found'
@@ -1826,7 +1826,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Check main sections
         const landingPage = document.getElementById('landingPage');
         const mainContent = document.getElementById('mainContent');
-        console.log('Page sections:', {
+        appLogger.log('Page sections:', {
             landingPage: {
                 element: !!landingPage,
                 display: landingPage?.style.display,
@@ -1840,7 +1840,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         // Check Firebase
-        console.log('Firebase status:', {
+        appLogger.log('Firebase status:', {
             auth: !!window.auth,
             firebaseModules: !!window.firebaseModules,
             currentUser: window.auth?.currentUser ? 'logged in' : 'not logged in',
@@ -1849,23 +1849,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Check edit buttons
         const editButtons = document.querySelectorAll('.edit-btn');
-        console.log('Edit buttons:', {
+        appLogger.log('Edit buttons:', {
             count: editButtons.length,
             firstButtonId: editButtons[0]?.getAttribute('data-id')
         });
 
         // Check applications table
         const tbody = document.querySelector('.applications-table tbody');
-        console.log('Applications table:', {
+        appLogger.log('Applications table:', {
             element: !!tbody,
             rowCount: tbody?.children.length || 0
         });
 
-        console.log('=== END COMPREHENSIVE DEBUG ===');
+        appLogger.log('=== END COMPREHENSIVE DEBUG ===');
 
         // Try to force show main content if user is authenticated
         if (window.auth?.currentUser) {
-            console.log('User is authenticated - forcing main content display');
+            appLogger.log('User is authenticated - forcing main content display');
             if (loadingOverlay) loadingOverlay.style.display = 'none';
             if (landingPage) landingPage.style.display = 'none';
             if (mainContent) {
@@ -1877,37 +1877,37 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Debug function to check Firebase status
     window.debugFirebase = function () {
-        console.log('=== DEBUG FIREBASE ===');
-        console.log('window.auth:', window.auth);
-        console.log('window.firebaseModules:', window.firebaseModules);
-        console.log('window.firebaseModules.onAuthStateChanged:', window.firebaseModules?.onAuthStateChanged);
-        console.log('Current user:', window.auth?.currentUser);
-        console.log('Landing page display:', document.getElementById('landingPage')?.style.display);
-        console.log('Main content display:', document.getElementById('mainContent')?.style.display);
-        console.log('Loading overlay display:', document.getElementById('loadingOverlay')?.style.display);
-        console.log('=== END DEBUG FIREBASE ===');
+        appLogger.log('=== DEBUG FIREBASE ===');
+        appLogger.log('window.auth:', window.auth);
+        appLogger.log('window.firebaseModules:', window.firebaseModules);
+        appLogger.log('window.firebaseModules.onAuthStateChanged:', window.firebaseModules?.onAuthStateChanged);
+        appLogger.log('Current user:', window.auth?.currentUser);
+        appLogger.log('Landing page display:', document.getElementById('landingPage')?.style.display);
+        appLogger.log('Main content display:', document.getElementById('mainContent')?.style.display);
+        appLogger.log('Loading overlay display:', document.getElementById('loadingOverlay')?.style.display);
+        appLogger.log('=== END DEBUG FIREBASE ===');
     };
 
     // Debug function to check edit buttons
     window.debugEditButtons = function () {
-        console.log('=== DEBUG EDIT BUTTONS ===');
+        appLogger.log('=== DEBUG EDIT BUTTONS ===');
         const editButtons = document.querySelectorAll('.edit-btn');
-        console.log('Found edit buttons:', editButtons.length);
+        appLogger.log('Found edit buttons:', editButtons.length);
         editButtons.forEach((btn, index) => {
-            console.log(`Button ${index + 1}:`, {
+            appLogger.log(`Button ${index + 1}:`, {
                 element: btn,
                 dataId: btn.getAttribute('data-id'),
                 hasEventListener: btn.onclick !== null,
                 innerHTML: btn.innerHTML
             });
         });
-        console.log('=== END DEBUG ===');
+        appLogger.log('=== END DEBUG ===');
 
         // Try to manually trigger openEditModal
         if (editButtons.length > 0) {
             const firstButton = editButtons[0];
             const appId = firstButton.getAttribute('data-id');
-            console.log('Testing openEditModal with appId:', appId);
+            appLogger.log('Testing openEditModal with appId:', appId);
             if (appId) {
                 openEditModal(appId);
             }
@@ -1916,12 +1916,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Simple quick check function for immediate debugging
     window.quickCheck = function () {
-        console.log('=== QUICK CHECK ===');
+        appLogger.log('=== QUICK CHECK ===');
 
         // Check loading overlay
         const loadingOverlay = document.getElementById('loadingOverlay');
         const loadingVisible = loadingOverlay ? window.getComputedStyle(loadingOverlay).display !== 'none' : false;
-        console.log('Loading overlay visible:', loadingVisible);
+        appLogger.log('Loading overlay visible:', loadingVisible);
 
         // Check main sections
         const landingPage = document.getElementById('landingPage');
@@ -1929,39 +1929,39 @@ document.addEventListener('DOMContentLoaded', function () {
         const landingVisible = landingPage ? window.getComputedStyle(landingPage).display !== 'none' : false;
         const mainVisible = mainContent ? window.getComputedStyle(mainContent).display !== 'none' : false;
 
-        console.log('Landing page visible:', landingVisible);
-        console.log('Main content visible:', mainVisible);
+        appLogger.log('Landing page visible:', landingVisible);
+        appLogger.log('Main content visible:', mainVisible);
 
         // Check Firebase
-        console.log('Firebase auth:', !!window.auth);
-        console.log('Current user:', window.auth?.currentUser ? 'logged in' : 'not logged in');
+        appLogger.log('Firebase auth:', !!window.auth);
+        appLogger.log('Current user:', window.auth?.currentUser ? 'logged in' : 'not logged in');
 
         // Check applications table
         const tbody = document.querySelector('.applications-table tbody');
         const rowCount = tbody?.children.length || 0;
-        console.log('Application rows:', rowCount);
+        appLogger.log('Application rows:', rowCount);
 
         // Check edit buttons
         const editButtons = document.querySelectorAll('.edit-btn');
-        console.log('Edit buttons found:', editButtons.length);
+        appLogger.log('Edit buttons found:', editButtons.length);
 
-        console.log('=== END QUICK CHECK ===');
+        appLogger.log('=== END QUICK CHECK ===');
 
         // Auto-fix if loading overlay is stuck
         if (loadingVisible) {
-            console.log('Loading overlay is stuck - hiding it...');
+            appLogger.log('Loading overlay is stuck - hiding it...');
             if (loadingOverlay) loadingOverlay.style.display = 'none';
 
             // Show appropriate content
             if (window.auth?.currentUser) {
-                console.log('User authenticated - showing main content');
+                appLogger.log('User authenticated - showing main content');
                 if (landingPage) landingPage.style.display = 'none';
                 if (mainContent) {
                     mainContent.style.display = 'block';
                     mainContent.style.opacity = '1';
                 }
             } else {
-                console.log('User not authenticated - showing landing page');
+                appLogger.log('User not authenticated - showing landing page');
                 if (landingPage) {
                     landingPage.style.display = 'block';
                     landingPage.style.opacity = '1';
@@ -1981,26 +1981,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Function to force hide loading overlay if it's blocking UI
     window.forceHideLoadingOverlay = function () {
-        console.log('=== FORCE HIDE LOADING OVERLAY ===');
+        appLogger.log('=== FORCE HIDE LOADING OVERLAY ===');
 
         const loadingOverlay = document.getElementById('loadingOverlay');
         if (loadingOverlay) {
-            console.log('Loading overlay found, hiding it...');
+            appLogger.log('Loading overlay found, hiding it...');
             loadingOverlay.style.display = 'none';
             loadingOverlay.style.visibility = 'hidden';
             loadingOverlay.style.opacity = '0';
             loadingOverlay.style.zIndex = '-1';
-            console.log('Loading overlay hidden');
+            appLogger.log('Loading overlay hidden');
         } else {
-            console.log('Loading overlay not found');
+            appLogger.log('Loading overlay not found');
         }
 
-        console.log('=== END FORCE HIDE ===');
+        appLogger.log('=== END FORCE HIDE ===');
     };
 
     // Function to check what's blocking the UI
     window.checkUIBlockers = function () {
-        console.log('=== CHECKING UI BLOCKERS ===');
+        appLogger.log('=== CHECKING UI BLOCKERS ===');
 
         const elements = [
             'loadingOverlay',
@@ -2015,7 +2015,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const element = document.getElementById(id);
             if (element) {
                 const styles = window.getComputedStyle(element);
-                console.log(`${id}:`, {
+                appLogger.log(`${id}:`, {
                     display: styles.display,
                     visibility: styles.visibility,
                     opacity: styles.opacity,
@@ -2023,17 +2023,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     position: styles.position
                 });
             } else {
-                console.log(`${id}: NOT FOUND`);
+                appLogger.log(`${id}: NOT FOUND`);
             }
         });
 
-        console.log('=== END UI BLOCKERS CHECK ===');
+        appLogger.log('=== END UI BLOCKERS CHECK ===');
     };
 
     // Initial load - wait for Firebase to be ready before loading data
-    console.log('🚀 Starting initial load...');
+    appLogger.log('🚀 Starting initial load...');
     waitForFirebase(() => {
-        console.log('🚀 Firebase ready, calling loadApplications...');
+        appLogger.log('🚀 Firebase ready, calling loadApplications...');
         loadApplications(
             getFilters(),
             document.getElementById('showArchived')?.checked,
@@ -2042,7 +2042,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const pendingEditId = localStorage.getItem('editAppId');
         if (pendingEditId) {
-            console.log('🔍 Found pending edit ID:', pendingEditId);
+            appLogger.log('🔍 Found pending edit ID:', pendingEditId);
             openEditModal(pendingEditId);
             localStorage.removeItem('editAppId');
         }
@@ -2061,7 +2061,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(() => {
         const loadingOverlay = document.getElementById('loadingOverlay');
         if (loadingOverlay && loadingOverlay.style.display !== 'none') {
-            console.log('Firebase loading timeout - forcing loading overlay hide');
+            appLogger.log('Firebase loading timeout - forcing loading overlay hide');
             loadingOverlay.style.display = 'none';
 
             // Show landing page if main content is not visible
