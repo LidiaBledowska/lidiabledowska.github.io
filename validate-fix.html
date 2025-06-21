@@ -147,16 +147,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBkqTxIdMfq7ZMOEZEPGlN5vDT1c5Wfq0w",
-            authDomain: "rekrutracker.firebaseapp.com",
-            projectId: "rekrutracker",
-            storageBucket: "rekrutracker.appspot.com",
-            messagingSenderId: "891806945901",
-            appId: "1:891806945901:web:d4cb5c7f8b9b8e6f9a8b5c"
-        };
+        import { firebaseConfig } from './src/firebase-config.js';
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);

@@ -2,16 +2,8 @@
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { firebaseConfig } from './src/firebase-config.js';
 
-const firebaseConfig = {
-    apiKey: "AIzaSyD7ZLyDHFBNsQe9j03YPi0xmdLbqdk_K68",
-    authDomain: "rekrutracker-app.firebaseapp.com",
-    projectId: "rekrutracker-app",
-    storageBucket: "rekrutracker-app.firebasestorage.app",
-    messagingSenderId: "758407291898",
-    appId: "1:758407291898:web:a573e2cd3b416596d37a43",
-    measurementId: "G-HQW1YLG9Q1"
-};
 
 export function initFirebase() {
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
