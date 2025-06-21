@@ -1002,7 +1002,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Wait for Firebase to be ready with timeout
-    function waitForFirebase(callback, maxAttempts = 30) {
+    function waitForFirebase(callback, maxAttempts = 20) {
         console.log('⏳ Waiting for Firebase...');
         console.log('   - window.firebaseModules:', !!window.firebaseModules);
         console.log('   - window.auth:', !!window.auth);
@@ -1015,18 +1015,18 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log(`⏳ Firebase not ready yet, retrying in 100ms... (${maxAttempts} attempts left)`);
             setTimeout(() => waitForFirebase(callback, maxAttempts - 1), 100);
         } else {
-            console.error('❌ Firebase failed to load after 3 seconds, hiding loading overlay');
+            console.error('❌ Firebase failed to load after 2 seconds, showing landing page as safe default');
             const loadingOverlay = document.getElementById('loadingOverlay');
             if (loadingOverlay) loadingOverlay.style.display = 'none';
             
-            // Show landing page if no user is authenticated
+            // Show landing page as safe default when Firebase fails
             const landingPage = document.getElementById('landingPage');
             const mainContent = document.getElementById('mainContent');
-            if (landingPage && (!window.auth?.currentUser)) {
+            if (landingPage) {
                 landingPage.style.display = 'block';
-            } else if (mainContent && window.auth?.currentUser) {
-                mainContent.style.display = 'block';
+                landingPage.style.opacity = '1';
             }
+            if (mainContent) mainContent.style.display = 'none';
         }
     }
 
@@ -1635,53 +1635,42 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const sortOrder = document.getElementById('sortOrder')?.value || 'desc';
 
-    // Initialize page state immediately and prevent page flashing
+    // Initialize page state - keep loading overlay visible until Firebase confirms auth state
     const landingPage = document.getElementById('landingPage');
     const mainContent = document.getElementById('mainContent');
     const mainMenuLink = document.getElementById('mainMenuLink');
+    const loadingOverlay = document.getElementById('loadingOverlay');
 
-    // Check if we're in the authenticated state by checking localStorage persistence
-    const isLikelyAuthenticated = localStorage.getItem('firebase:authUser:AIzaSyBQ3lWo31mLO2gF9cLG6KZzGLX3a3C7dGw:[DEFAULT]') !== null;
-
-    if (isLikelyAuthenticated) {
-        // User likely authenticated, show main content immediately
-        if (landingPage) landingPage.style.display = 'none';
-        if (mainContent) {
-            mainContent.style.display = 'block';
-            mainContent.style.opacity = '1';
-        }
-        // Show main menu link for likely authenticated users
-        if (mainMenuLink) {
-            mainMenuLink.style.display = 'inline';
-        }
-    } else {
-        // User likely not authenticated, show landing page
-        if (landingPage) {
-            landingPage.style.display = 'block';
-            landingPage.style.opacity = '1';
-        }
-        if (mainContent) mainContent.style.display = 'none';
-        // Hide main menu link for unauthenticated users
-        if (mainMenuLink) {
-            mainMenuLink.style.display = 'none';
-        }
+    // Hide all content initially to prevent flashing
+    if (landingPage) landingPage.style.display = 'none';
+    if (mainContent) mainContent.style.display = 'none';
+    if (mainMenuLink) mainMenuLink.style.display = 'none';
+    
+    // Keep loading overlay visible until Firebase auth state is determined
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'flex';
+        console.log('🔒 Keeping loading overlay visible until auth state is confirmed');
     }
 
     // Firebase auth state change handler
     if (window.firebaseModules && window.firebaseModules.onAuthStateChanged && window.auth) {
-        // Hide loading overlay immediately when Firebase is ready
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        if (loadingOverlay) {
-            console.log('🚀 Firebase ready - hiding loading overlay');
-            loadingOverlay.style.display = 'none';
-        }
+        console.log('🔐 Setting up Firebase auth state listener...');
 
         window.firebaseModules.onAuthStateChanged(window.auth, function (user) {
+            console.log('� Auth state changed:', user ? 'logged in' : 'logged out');
+            
             const landingPage = document.getElementById('landingPage');
             const mainContent = document.getElementById('mainContent');
             const googleSigninButtonMain = document.getElementById('google-signin-button-main');
             const mainUserStatus = document.getElementById('main-user-status');
             const mainMenuLink = document.getElementById('mainMenuLink');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+
+            // Hide loading overlay now that we know the auth state
+            if (loadingOverlay) {
+                console.log('🔓 Auth state confirmed - hiding loading overlay');
+                loadingOverlay.style.display = 'none';
+            }
 
             // Add smooth transition class if not already present
             if (landingPage && !landingPage.style.transition) {
@@ -2072,28 +2061,25 @@ document.addEventListener('DOMContentLoaded', function () {
         initializeDateFilters();
     }, 100);
 
-    // Fallback to hide loading overlay after 3 seconds if Firebase doesn't load
+    // Fallback to hide loading overlay after 2 seconds if Firebase doesn't load
     setTimeout(() => {
         const loadingOverlay = document.getElementById('loadingOverlay');
         if (loadingOverlay && loadingOverlay.style.display !== 'none') {
-            console.log('⚠️ Firebase loading timeout (3s) - forcing loading overlay hide');
+            console.log('⚠️ Firebase loading timeout (2s) - forcing loading overlay hide');
             loadingOverlay.style.display = 'none';
 
-            // Show appropriate content based on auth state
+            // Default to landing page if Firebase fails to load
             const mainContent = document.getElementById('mainContent');
             const landingPage = document.getElementById('landingPage');
 
-            if (window.auth?.currentUser && mainContent) {
-                console.log('User authenticated - showing main content');
-                mainContent.style.display = 'block';
-                if (landingPage) landingPage.style.display = 'none';
-            } else if (landingPage) {
-                console.log('No user or auth not ready - showing landing page');
+            console.log('Firebase timeout - showing landing page as safe default');
+            if (landingPage) {
                 landingPage.style.display = 'block';
-                if (mainContent) mainContent.style.display = 'none';
+                landingPage.style.opacity = '1';
             }
+            if (mainContent) mainContent.style.display = 'none';
         }
-    }, 3000);
+    }, 2000);
 
 });
 
